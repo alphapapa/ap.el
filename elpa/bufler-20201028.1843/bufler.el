@@ -678,9 +678,19 @@ buffer's depth in the group tree."
   (ignore depth)
   (file-size-human-readable (buffer-size buffer)))
 
+(defcustom bufler-vc-remote nil
+  "Whether to display remote files' version control state.
+Checking the version control state of remote files (e.g. ones
+accessed via TRAMP) can be slow, which delays the displaying of
+`bufler-list'.  When this option is nil, only local files will
+have their state displayed."
+  :type 'boolean)
+
 (bufler-define-column "VC" nil
   (ignore depth)
-  (when (buffer-file-name buffer)
+  (when (and (buffer-file-name buffer)
+             (or (not (file-remote-p (buffer-file-name buffer)))
+                 bufler-vc-remote))
     (when (and bufler-vc-refresh
                (vc-registered (buffer-file-name buffer)))
       (with-current-buffer buffer
@@ -959,6 +969,17 @@ NAME, okay, `checkdoc'?"
               (project-root (car (project-roots project))))
     (concat "Project: " project-root)))
 
+(bufler-defauto-group parent-project
+  (when-let* ((project (project-current nil (buffer-local-value 'default-directory buffer))))
+    (let* ((project-root (car (project-roots project)))
+           ;; Emacs needs a built-in function like `f-parent'.
+           (parent-dir (file-name-directory (directory-file-name project-root)))
+           (parent-dir-project (project-current nil parent-dir)))
+      (concat "Project: "
+              (if parent-dir-project
+                  (car (project-roots parent-dir-project))
+                project-root)))))
+
 (eval-and-compile
   (declare-function projectile-project-name "ext:projectile" t t)
   (if (require 'projectile nil 'noerror)
@@ -1011,6 +1032,7 @@ See documentation for details."
                  (auto-indirect () `(bufler-group 'auto-indirect))
                  (auto-mode () `(bufler-group 'auto-mode))
                  (auto-project () `(bufler-group 'auto-project))
+                 (auto-parent-project () `(bufler-group 'auto-parent-project))
                  (auto-projectile () `(bufler-group 'auto-projectile))
                  (auto-tramp () `(bufler-group 'auto-tramp))
                  (auto-workspace () `(bufler-group 'auto-workspace)))

@@ -40,7 +40,7 @@
      (type "IMPORTANT(i!)" "|")
      (sequence "PROJECT(p!)" "|" "COMPLETED(c!)")))
  '(package-selected-packages
-   '(burly dockerfile-mode unpackaged org-make-toc org-ql helm-org helm-bufler bufler helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent prism general doom-themes lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(bufler burly dockerfile-mode unpackaged org-make-toc org-ql helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent prism general doom-themes lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-update-melpa-p nil)
  '(rustic-ansi-faces
@@ -131,22 +131,53 @@
    "C-x B" #'bufler-workspace-focus-buffer
    "C-x C-b" #'bufler)
 
-  :config
-  (setf bufler-groups
-	;; Do this here rather than in :custom so it doesn't keep
-	;; getting saved into the customize-set-variables form and, I
-	;; guess, growing.  Makes sense but I'm not sure if it
-	;; actually happens.
-	(append (bufler-defgroups
-		  (group
-		   (group-or "Org"
-			     (dir "~/org")
-			     (name-match "*Org QL*" (rx bos "*Org QL")))
-		   (group (name-match "*Org QL*" (rx bos "*Org QL")))
-		   (group (auto-indirect)
-			  (auto-file))))
-		bufler-groups))
   :custom
+  (bufler-groups
+   (bufler-defgroups
+     (group (auto-workspace))
+     (group (group-or "Elfeed"
+                      (mode-match "*Elfeed*" (rx bos "elfeed-"))
+                      (name-match "elfeed config" (rx bos "elfeed." (or "el" "org")))))
+     (group
+      (group-not "*Special*"
+                 (group-or "*Special*"
+                           (mode-match "Magit" (rx bos "magit-status"))
+                           (mode-match "Org" (rx bos "org-"))
+                           (auto-file)
+                           (mode-match "Dired" (rx bos "dired-"))))
+      (group
+       (name-match "**Special**"
+                   (rx bos "*" (or "Messages" "Warnings" "scratch" "Backtrace") "*")))
+      (group
+       (group-or "*Help/Info*"
+                 (mode-match "*Help*" (rx bos "help-"))
+                 (mode-match "*Info*" (rx bos "info-")))
+       (auto-mode))
+      (group
+       (mode-match "*Magit* (non-status)" (rx bos (or "magit" "forge") "-"))
+       (auto-directory))
+      (group
+       (mode-match "*Helm*" (rx bos "helm-")))
+      (auto-mode))
+     (group
+      (group-or "Org"
+                (dir "~/org")
+                (name-match "*Org QL*" (rx bos "*Org QL")))
+      (group (name-match "*Org QL*" (rx bos "*Org QL")))
+      (group (auto-indirect)
+             (auto-file)))
+     (group-or "Emacs"
+               (dir "/usr/share/emacs")
+               (dir "~/.emacs.d")
+               (dir "~/src/emacs")
+               (dir "~/src/emacs/emacs"))
+     (group-or "Home"
+               (dir '("~/.config" "~/.homesick/repos/main"))
+               (dir "~/.bin"))
+     (group
+      (auto-parent-project))
+     (auto-directory)
+     (auto-mode)))
   (bufler-workspace-mode t)
   (bufler-workspace-tabs-mode t))
 
