@@ -289,27 +289,4 @@
 (use-package org-superstar
   :hook (org-mode . org-superstar-mode))
 
-(use-package comp
-  :config
-  (defcustom native-compile-async-jobs
-    (or (ignore-errors
-	  (string-to-number (shell-command-to-string "nproc")))
-	1)
-    "How many jobs to use."
-    :type 'integer)
-
-  (setf native-compile-async-jobs 2)
-
-  (defun ap/package-native-compile-async (package &optional all)
-    "Compile PACKAGE natively, or with prefix ALL, all packages."
-    (interactive (list (unless current-prefix-arg
-			 (completing-read "Package: " (mapcar #'car package-alist)))))
-    (let* ((directory (if package
-			  (file-name-directory (locate-library package))
-			package-user-dir)))
-      (native-compile-async directory native-compile-async-jobs t)
-      ;; (when package
-      ;; 	(load-library (symbol-name package)))
-      )))
-
 (find-file user-init-file)
