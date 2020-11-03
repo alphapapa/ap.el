@@ -31,6 +31,8 @@
  '(menu-bar-mode nil)
  '(objed-cursor-color "#ff665c")
  '(org-agenda-files '("~/org/inbox.org"))
+ '(org-log-into-drawer t)
+ '(org-superstar-remove-leading-stars t)
  '(org-todo-keywords
    '((sequence "TODO(t!)" "TODAY(a!)" "NEXT(n!)" "STARTED(s!)" "UNDERWAY(u!)" "WAITING(w@)" "SOMEDAY(o!)" "MAYBE(m!)" "|" "DONE(d@)" "CANCELED(c@)")
      (sequence "CHECK(k!)" "|" "DONE(d@)")
@@ -39,6 +41,7 @@
      (type "NOW(N!)" "|")
      (type "IMPORTANT(i!)" "|")
      (sequence "PROJECT(p!)" "|" "COMPLETED(c!)")))
+ '(org-use-speed-commands t)
  '(package-selected-packages
    '(bufler burly dockerfile-mode unpackaged org-make-toc org-ql helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent prism general doom-themes lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
