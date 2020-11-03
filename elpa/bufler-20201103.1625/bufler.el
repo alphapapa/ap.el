@@ -58,6 +58,16 @@
 
 (require 'bufler-group-tree)
 
+;;;; Compatibility
+
+(defalias 'bufler-project-root
+  ;; TODO: Remove this when support for Emacs <27 is dropped.
+  (if (fboundp 'project-root)
+      #'project-root
+    (with-no-warnings
+      (lambda (project)
+        (car (project-roots project))))))
+
 ;;;; Variables
 
 (defvar bufler-list-mode-map
@@ -641,6 +651,10 @@ That is, if its name starts with \" \"."
 Each function takes two arguments, the buffer and its depth in
 the group tree, and returns a string as its column value.")
 
+(defcustom bufler-column-name-modified-buffer-sigil "*"
+  "Displayed after the name of modified, file-backed buffers."
+  :type 'string)
+
 (defmacro bufler-define-column (name face &rest body)
   "Define a column formatting function with NAME.
 NAME should be a string.  BODY should return a string or nil.
@@ -662,17 +676,20 @@ buffer's depth in the group tree."
 (bufler-define-column "Name" nil
   ;; MAYBE: Move indentation back to `bufler-list'.  But this seems to
   ;; work well, and that might be more complicated.
-  (let ((mode-annotation (when (cl-loop for fn in bufler-buffer-mode-annotate-preds
+  (let ((indentation (make-string (* 2 depth) ? ))
+        (mode-annotation (when (cl-loop for fn in bufler-buffer-mode-annotate-preds
                                         thereis (funcall fn buffer))
                            (propertize (concat (replace-regexp-in-string
                                                 (rx "-mode" eos) ""
                                                 (symbol-name (buffer-local-value 'major-mode buffer))
                                                 t t)
                                                " ")
-                                       'face 'bufler-mode))))
-    (concat (make-string (* 2 depth) ? )
-            mode-annotation
-            (buffer-name buffer))))
+                                       'face 'bufler-mode)))
+        (modified (when (and (buffer-file-name buffer)
+                             (buffer-modified-p buffer))
+                    (propertize bufler-column-name-modified-buffer-sigil
+                                'face 'font-lock-warning-face))))
+    (concat indentation mode-annotation (buffer-name buffer) modified)))
 
 (bufler-define-column "Size" 'bufler-size
   (ignore depth)
@@ -966,18 +983,18 @@ NAME, okay, `checkdoc'?"
 (bufler-defauto-group project
   (when-let* ((project (with-current-buffer buffer
                          (project-current)))
-              (project-root (car (project-roots project))))
+              (project-root (bufler-project-root project)))
     (concat "Project: " project-root)))
 
 (bufler-defauto-group parent-project
   (when-let* ((project (project-current nil (buffer-local-value 'default-directory buffer))))
-    (let* ((project-root (car (project-roots project)))
+    (let* ((project-root (bufler-project-root project))
            ;; Emacs needs a built-in function like `f-parent'.
            (parent-dir (file-name-directory (directory-file-name project-root)))
            (parent-dir-project (project-current nil parent-dir)))
       (concat "Project: "
               (if parent-dir-project
-                  (car (project-roots parent-dir-project))
+                  (bufler-project-root parent-dir-project)
                 project-root)))))
 
 (eval-and-compile

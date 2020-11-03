@@ -1,4 +1,4 @@
-(define-package "bufler" "20201028.1843" "Group buffers into workspaces with programmable rules"
+(define-package "bufler" "20201103.1625" "Group buffers into workspaces with programmable rules"
   '((emacs "26.3")
     (dash "2.17")
     (dash-functional "2.17")
