@@ -1,4 +1,4 @@
-(define-package "burly" "20201027.1239" "Save and restore window configurations and their buffers"
+(define-package "burly" "20201105.2232" "Save and restore window configurations and their buffers"
   '((emacs "26.3")
     (map "2.1"))
   :authors

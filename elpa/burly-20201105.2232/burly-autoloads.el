@@ -14,6 +14,9 @@ Copy BUFFER's URL to the kill ring.
 
 \(fn BUFFER)" t nil)
 
+(autoload 'burly-kill-frames-url "burly" "\
+Copy current frameset's URL to the kill ring." t nil)
+
 (autoload 'burly-kill-windows-url "burly" "\
 Copy current frame's window configuration URL to the kill ring." t nil)
 
@@ -21,6 +24,11 @@ Copy current frame's window configuration URL to the kill ring." t nil)
 Open Burly URL.
 
 \(fn URL)" t nil)
+
+(autoload 'burly-bookmark-frames "burly" "\
+Bookmark the current frames as NAME.
+
+\(fn NAME)" t nil)
 
 (autoload 'burly-bookmark-windows "burly" "\
 Bookmark the current frame's window configuration as NAME.

@@ -85,6 +85,15 @@
                 :value-type (set (cons (const make-url-fn) (function :tag "Make-URL function"))
                                  (cons (const follow-url-fn) (function :tag "Follow-URL function")))))
 
+(defcustom burly-window-persistent-parameters
+  (list (cons 'burly-url 'writable)
+        (cons 'mode-line-format 'writable))
+  "Additional window parameters to persist.
+See Info node `(elisp)Window Parameters'."
+  :type '(alist :key-type (symbol :tag "Window parameter")
+                :value-type (choice (const :tag "Not saved" nil)
+                                    (const :tag "Saved" writable))))
+
 ;;;; Commands
 
 ;;;###autoload
@@ -92,6 +101,14 @@
   "Copy BUFFER's URL to the kill ring."
   (interactive "b")
   (let ((url (burly-buffer-url (get-buffer buffer))))
+    (kill-new url)
+    (message "%s" url)))
+
+;;;###autoload
+(defun burly-kill-frames-url ()
+  "Copy current frameset's URL to the kill ring."
+  (interactive)
+  (let ((url (burly-frames-url)))
     (kill-new url)
     (message "%s" url)))
 
@@ -116,7 +133,16 @@
                (subtype (car (last (split-string type "+" 'omit-nulls)))))
     (pcase-exhaustive subtype
       ((or "bookmark" "file" "name") (pop-to-buffer (burly-url-buffer url)))
+      ("frames" (burly--frameset-restore urlobj))
       ("windows" (burly--windows-set urlobj)))))
+
+;;;###autoload
+(defun burly-bookmark-frames (name)
+  "Bookmark the current frames as NAME."
+  (interactive (list (read-string "Save Burly bookmark: " burly-bookmark-prefix)))
+  (let ((record (list (cons 'url (burly-frames-url))
+                      (cons 'handler #'burly-bookmark-handler))))
+    (bookmark-store name record nil)))
 
 ;;;###autoload
 (defun burly-bookmark-windows (name)
@@ -183,32 +209,93 @@
     (cl-assert follow-fn nil "Major mode not in `burly-mode-map': %s" major-mode)
     (funcall follow-fn :buffer buffer :query query)))
 
+;;;;; Frames
+
+;; Looks like frameset.el should make this pretty easy.
+
+(require 'frameset)
+
+(cl-defun burly-frames-url (&optional (frames (frame-list)))
+  "Return URL for frameset of FRAMES.
+FRAMES defaults to all live frames."
+  (dolist (frame frames)
+    ;; Set URL window parameter for each window before saving state.
+    (burly--windows-set-url (window-list frame 'never)))
+  (let* ((window-persistent-parameters (append burly-window-persistent-parameters
+                                               window-persistent-parameters))
+         (query (frameset-save frames))
+         (filename (concat "?" (url-hexify-string (prin1-to-string query))))
+         (url (url-recreate-url (url-parse-make-urlobj "emacs+burly+frames" nil nil nil nil
+                                                       filename))))
+    (dolist (frame frames)
+      ;; Clear window parameters.
+      (burly--windows-set-url (window-list frame 'never) 'nullify))
+    url))
+
+(defun burly--frameset-restore (urlobj)
+  "Restore FRAMESET according to URLOBJ."
+  (pcase-let* ((`(,_ . ,query-string) (url-path-and-query urlobj))
+               (frameset (read (url-unhex-string query-string))))
+    ;; Restore buffers.  (Apparently `cl-loop''s in-ref doesn't work with
+    ;; its destructuring, so we can't just `setf' on `window-state'.)
+    (setf (frameset-states frameset)
+          (cl-loop for (frame-parameters . window-state) in (frameset-states frameset)
+                   collect (cons frame-parameters (burly--bufferize-window-state window-state))))
+    (frameset-restore frameset)))
+
 ;;;;; Windows
 
 (cl-defun burly-windows-url (&optional (frame (selected-frame)))
   "Return URL for window configuration on FRAME."
   (with-selected-frame frame
     (let* ((query (burly--window-state frame))
-           (filename (concat "?" (prin1-to-string query))))
+           (filename (concat "?" (url-hexify-string (prin1-to-string query)))))
       (url-recreate-url (url-parse-make-urlobj "emacs+burly+windows" nil nil nil nil
                                                filename)))))
 
 (cl-defun burly--window-state (&optional (frame (selected-frame)))
+  "Return window state for FRAME.
+Sets `burly-url' window parameter in each window before
+serializing."
   (with-selected-frame frame
     ;; Set URL window parameter for each window before saving state.
-    (cl-loop for window in (window-list nil 'never)
-             do (set-window-parameter window 'burly-url (burly-buffer-url (window-buffer window))))
-    (let* ((window-persistent-parameters (cons (cons 'burly-url 'writable)
-                                               window-persistent-parameters))
+    (burly--windows-set-url (window-list nil 'never))
+    (let* ((window-persistent-parameters (append burly-window-persistent-parameters
+                                                 window-persistent-parameters))
            (window-state (window-state-get nil 'writable)))
       ;; Clear window parameters we set (because they aren't kept
       ;; current, so leaving them could be confusing).
-      (cl-loop for window in (window-list nil 'never)
-               do (set-window-parameter window 'burly-url nil))
+      (burly--windows-set-url (window-list nil 'never) 'nullify)
       window-state)))
+
+(defun burly--windows-set-url (windows &optional nullify)
+  "Set `burly-url' window parameter in WINDOWS.
+If NULLIFY, set the parameter to nil."
+  (dolist (window windows)
+    (let ((value (if nullify nil (burly-buffer-url (window-buffer window)))))
+      (set-window-parameter window 'burly-url value))))
 
 (defun burly--windows-set (urlobj)
   "Set window configuration according to URLOBJ."
+  (pcase-let* ((window-persistent-parameters (append burly-window-persistent-parameters
+                                                     window-persistent-parameters))
+               (`(,_ . ,query-string) (url-path-and-query urlobj))
+               ;; FIXME: Remove this condition-case eventually, after giving users time to update their bookmarks.
+               (state (condition-case nil
+                          (read (url-unhex-string query-string))
+                        (invalid-read-syntax (display-warning 'burly "Please recreate that Burly bookmark (storage format changed)")
+                                             (read query-string))))
+               (state (burly--bufferize-window-state state)))
+    (window-state-put state (frame-root-window))
+    ;; HACK: Since `bookmark--jump-via' insists on calling a
+    ;; buffer-display function after handling the bookmark, we add a
+    ;; function to `bookmark-after-jump-hook' to restore the window
+    ;; configuration that we just set.
+    (setf burly--window-state (window-state-get (frame-root-window) 'writable))
+    (push #'burly--bookmark-window-state-hack bookmark-after-jump-hook)))
+
+(defun burly--bufferize-window-state (state)
+  "Return window state STATE with its buffers reincarnated."
   (cl-labels ((bufferize-state
                ;; Set windows' buffers in STATE.
                (state) (pcase state
@@ -224,15 +311,12 @@
                                    (new-buffer (burly-url-buffer burly-url)))
                         (setf (map-elt attrs 'buffer) (cons new-buffer buffer-attrs))
                         (cons 'leaf attrs))))
-    (pcase-let* ((`(,_ . ,query-string) (url-path-and-query urlobj))
-                 (state (bufferize-state (read query-string))))
-      (window-state-put state (frame-root-window))
-      ;; HACK: Since `bookmark--jump-via' insists on calling a
-      ;; buffer-display function after handling the bookmark, we add a
-      ;; function to `bookmark-after-jump-hook' to restore the window
-      ;; configuration that we just set.
-      (setf burly--window-state (window-state-get (frame-root-window) 'writable))
-      (push #'burly--bookmark-window-state-hack bookmark-after-jump-hook))))
+    (if-let ((leaf-pos (cl-position 'leaf state)))
+        ;; A one-window frame: the elements following `leaf' are that window's params.
+        (append (cl-subseq state 0 leaf-pos)
+                (car (mapcar #'bufferize-state (list (cl-subseq state leaf-pos)))))
+      ;; Multi-window frame.
+      (bufferize-state state))))
 
 ;;;;; Bookmarks
 
