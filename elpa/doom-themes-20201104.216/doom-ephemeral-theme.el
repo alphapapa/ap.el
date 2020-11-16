@@ -210,7 +210,6 @@
    (org-agenda-done :foreground teal)
    (org-todo :foreground red)
    (org-headline-done :foreground red)
-   (header-line :background base2 :foreground fg)
    (org-level-1 :foreground alt-blue)
    (org-level-2 :foreground violet)
    (org-level-3 :foreground blue)
@@ -257,6 +256,9 @@
    (company-box-background      :background base0  :foreground fg )
    (company-tooltip-common      :foreground violet                )
    (company-tooltip-selection   :background base0  :foreground red)
+
+   ;; lsp
+   (lsp-headerline-breadcrumb-symbols-face :foreground functions :weight 'bold)
   ))
 
 ;;; doom-ephemeral-theme.el ends here

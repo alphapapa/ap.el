@@ -78,6 +78,14 @@
 
 ;;;***
 
+;;;### (autoloads nil "doom-flatwhite-theme" "doom-flatwhite-theme.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from doom-flatwhite-theme.el
+
+(register-definition-prefixes "doom-flatwhite-theme" '("doom-f"))
+
+;;;***
+
 ;;;### (autoloads nil "doom-gruvbox-light-theme" "doom-gruvbox-light-theme.el"
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from doom-gruvbox-light-theme.el
@@ -131,6 +139,14 @@
 ;;; Generated autoloads from doom-material-theme.el
 
 (register-definition-prefixes "doom-material-theme" '("doom-material"))
+
+;;;***
+
+;;;### (autoloads nil "doom-miramare-theme" "doom-miramare-theme.el"
+;;;;;;  (0 0 0 0))
+;;; Generated autoloads from doom-miramare-theme.el
+
+(register-definition-prefixes "doom-miramare-theme" '("doom-miramare"))
 
 ;;;***
 
@@ -267,6 +283,14 @@
 ;;; Generated autoloads from doom-peacock-theme.el
 
 (register-definition-prefixes "doom-peacock-theme" '("doom-peacock"))
+
+;;;***
+
+;;;### (autoloads nil "doom-plain-theme" "doom-plain-theme.el" (0
+;;;;;;  0 0 0))
+;;; Generated autoloads from doom-plain-theme.el
+
+(register-definition-prefixes "doom-plain-theme" '("doom-plain"))
 
 ;;;***
 
