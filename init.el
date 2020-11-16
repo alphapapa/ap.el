@@ -8,15 +8,17 @@
  '(ansi-color-names-vector
    ["#1E1C31" "#FF8080" "#95FFA4" "#FFE9AA" "#91DDFF" "#C991E1" "#AAFFE4" "#CBE3E7"])
  '(bufler-workspace-mode t)
- '(bufler-workspace-tabs-mode t)
+ '(bufler-workspace-tabs-mode nil)
+ '(burly-before-open-bookmark-hook '(tab-bar-new-tab))
  '(comp-deferred-compilation t t)
  '(completion-styles '(basic partial-completion emacs22 substring flex initials))
  '(completions-format 'vertical)
  '(custom-enabled-themes '(doom-solarized-dark))
  '(custom-safe-themes
-   '("8d7684de9abb5a770fbfd72a14506d6b4add9a7d30942c6285f020d41d76e0fa" "f7216d3573e1bd2a2b47a2331f368b45e7b5182ddbe396d02b964b1ea5c5dc27" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "37144b437478e4c235824f0e94afa740ee2c7d16952e69ac3c5ed4352209eefb" "5d09b4ad5649fea40249dd937eaaa8f8a229db1cec9a1a0ef0de3ccf63523014" "229c5cf9c9bd4012be621d271320036c69a14758f70e60385e87880b46d60780" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa3bdd59ea708164e7821574822ab82a3c51e262d419df941f26d64d015c90ee" "d5f8099d98174116cba9912fe2a0c3196a7cd405d12fa6b9375c55fc510988b5" "7f791f743870983b9bb90c8285e1e0ba1bf1ea6e9c9a02c60335899ba20f3c94" "615123f602c56139c8170c153208406bf467804785007cdc11ba73d18c3a248b" "730a87ed3dc2bf318f3ea3626ce21fb054cd3a1471dcd59c81a4071df02cb601" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "a83f05e5e2f2538376ea2bfdf9e3cd8b7f7593b16299238c1134c1529503fa88" "3e3a1caddeee4a73789ff10ba90b8394f4cd3f3788892577d7ded188e05d78f4" default))
+   '("01cf34eca93938925143f402c2e6141f03abb341f27d1c2dba3d50af9357ce70" "8d7684de9abb5a770fbfd72a14506d6b4add9a7d30942c6285f020d41d76e0fa" "f7216d3573e1bd2a2b47a2331f368b45e7b5182ddbe396d02b964b1ea5c5dc27" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "37144b437478e4c235824f0e94afa740ee2c7d16952e69ac3c5ed4352209eefb" "5d09b4ad5649fea40249dd937eaaa8f8a229db1cec9a1a0ef0de3ccf63523014" "229c5cf9c9bd4012be621d271320036c69a14758f70e60385e87880b46d60780" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa3bdd59ea708164e7821574822ab82a3c51e262d419df941f26d64d015c90ee" "d5f8099d98174116cba9912fe2a0c3196a7cd405d12fa6b9375c55fc510988b5" "7f791f743870983b9bb90c8285e1e0ba1bf1ea6e9c9a02c60335899ba20f3c94" "615123f602c56139c8170c153208406bf467804785007cdc11ba73d18c3a248b" "730a87ed3dc2bf318f3ea3626ce21fb054cd3a1471dcd59c81a4071df02cb601" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "a83f05e5e2f2538376ea2bfdf9e3cd8b7f7593b16299238c1134c1529503fa88" "3e3a1caddeee4a73789ff10ba90b8394f4cd3f3788892577d7ded188e05d78f4" default))
  '(electric-pair-mode t)
  '(fci-rule-color "#62686E")
+ '(global-tab-line-mode t)
  '(inhibit-startup-screen t)
  '(ivy-mode t)
  '(ivy-sort-matches-functions-alist
@@ -43,7 +45,7 @@
      (sequence "PROJECT(p!)" "|" "COMPLETED(c!)")))
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(bufler burly dockerfile-mode unpackaged org-make-toc org-ql helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent prism general doom-themes lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(org-web-tools org-sidebar org-super-agenda bufler org-ql burly buttercup doom-themes ivy-posframe stream forge imenu-list helm-bufler magit-todos dockerfile-mode unpackaged org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent prism general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-update-melpa-p nil)
  '(rustic-ansi-faces
@@ -62,6 +64,7 @@
      (magit-todos-exclude-globs "makem.sh" "Makefile")
      (magit-todos-update)))
  '(scroll-bar-mode nil)
+ '(tab-bar-mode t)
  '(tool-bar-mode nil)
  '(vc-annotate-background "#242730")
  '(vc-annotate-color-map
@@ -95,6 +98,7 @@
  '(font-lock-builtin-face ((t (:weight bold))))
  '(font-lock-comment-face ((t (:slant italic))))
  '(font-lock-keyword-face ((t (:weight bold))))
+ '(italic ((t (:slant italic))))
  '(org-meta-line ((t (:inherit font-lock-comment-face))))
  '(tab-bar ((t (:inherit (header-line default) :weight bold))))
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
