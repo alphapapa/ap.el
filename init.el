@@ -289,6 +289,12 @@
 (use-package org-now
   :quelpa (org-now :fetcher github :repo "alphapapa/org-now"))
 
+(use-package org-ql
+  :quelpa (org-ql :fetcher github :repo "alphapapa/org-ql"))
+
+(use-package org-sidebar
+  :quelpa (org-sidebar :fetcher github :repo "alphapapa/org-sidebar"))
+
 (use-package org-superstar
   :hook (org-mode . org-superstar-mode))
 

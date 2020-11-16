@@ -1,0 +1,2 @@
+;;; Generated package description from /home/me/tmp/src/emacs/native-comp/.emacs.d/elpa/org-sidebar-20201114.507/org-sidebar.el  -*- no-byte-compile: t -*-
+(define-package "org-sidebar" "20201114.507" "Helpful sidebar for Org buffers" '((emacs "26.1") (s "1.10.0") (dash "2.13") (dash-functional "1.2.0") (org "9.0") (org-ql "0.2") (org-super-agenda "1.0")) :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("hypermedia" "outlines" "org" "agenda") :url "https://github.com/alphapapa/org-sidebar")
