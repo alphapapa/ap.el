@@ -45,7 +45,7 @@
      (sequence "PROJECT(p!)" "|" "COMPLETED(c!)")))
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(org-web-tools org-sidebar org-super-agenda bufler org-ql burly buttercup doom-themes ivy-posframe stream forge imenu-list helm-bufler magit-todos dockerfile-mode unpackaged org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent prism general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(org-ql with-simulated-input org-web-tools org-sidebar org-super-agenda bufler burly buttercup doom-themes ivy-posframe stream forge imenu-list helm-bufler magit-todos dockerfile-mode unpackaged org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent prism general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-update-melpa-p nil)
  '(rustic-ansi-faces

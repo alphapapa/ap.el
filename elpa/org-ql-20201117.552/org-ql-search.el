@@ -243,7 +243,7 @@ automatically from the query."
   "Insert content for org-ql dynamic block at point according to PARAMS.
 Valid parameters include:
 
-  :query    An Org QL query expression in either sexp or non-sexp
+  :query    An Org QL query expression in either sexp or string
             form.
 
   :columns  A list of columns, including `heading', `todo',
@@ -275,7 +275,9 @@ For example, an org-ql dynamic block header could look like:
   (-let* (((&plist :query :columns :sort :ts-format :take) params)
           (query (cl-etypecase query
                    (string (org-ql--plain-query query))
-                   (t query)))
+                   (list  ;; SAFETY: Query is in sexp form: ask for confirmation, because it could contain arbitrary code.
+                    (org-ql--ask-unsafe-query query)
+                    query)))
           (columns (or columns '(heading todo (priority "P"))))
           ;; MAYBE: Custom column functions.
           (format-fns
@@ -285,7 +287,8 @@ For example, an org-ql dynamic block header could look like:
                                (org-element-property :todo-keyword element)))
                  (cons 'heading (lambda (element)
                                   (org-make-link-string (org-element-property :raw-value element)
-                                                        (org-element-property :raw-value element))))
+                                                        (org-link-display-format
+                                                         (org-element-property :raw-value element)))))
                  (cons 'priority (lambda (element)
                                    (--when-let (org-element-property :priority element)
                                      (char-to-string it))))
