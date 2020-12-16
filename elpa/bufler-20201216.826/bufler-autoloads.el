@@ -11,12 +11,13 @@
 
 (autoload 'bufler-list "bufler" "\
 Show Bufler's list.
-With prefix argument FORCE-REFRESH, force refreshing of buffers'
-VC state, and clear `bufler-cache' and regenerate buffer
-groups (which can be useful after changing `bufler-groups' if the
-buffer list has not yet changed).
+With prefix argument ARG, force refreshing of buffers' VC state,
+clear `bufler-cache', and regenerate buffer groups (which can be
+useful after changing `bufler-groups' if the buffer list has not
+yet changed).  With two universal prefix args, also show buffers
+which are otherwise filtered by `bufler-filter-buffer-fns'.
 
-\(fn &optional FORCE-REFRESH)" t nil)
+\(fn &optional ARG)" t nil)
 
 (defalias 'bufler #'bufler-list)
 
@@ -68,12 +69,15 @@ Without any input, switch to the previous buffer, like
 `switch-to-buffer'.  If ALL-P (interactively, with universal
 prefix) or if the frame has no workspace, select from all
 buffers.  If SET-WORKSPACE-P (with two universal prefixes),
-select from all buffers and set the frame's workspace.
+select from all buffers and set the frame's workspace.  If
+NO-FILTER (with three universal prefixes), include buffers that
+would otherwise be filtered by
+`bufler-workspace-switch-buffer-filter-fns'.
 
 If `bufler-workspace-switch-buffer-sets-workspace' is non-nil,
 act as if SET-WORKSPACE-P is non-nil.
 
-\(fn &optional ALL-P SET-WORKSPACE-P)" t nil)
+\(fn &optional ALL-P SET-WORKSPACE-P NO-FILTER)" t nil)
 
 (autoload 'bufler-workspace-buffer-name-workspace "bufler-workspace" "\
 Set current buffer's workspace to NAME.
@@ -98,10 +102,13 @@ or call the function `bufler-workspace-mode'.")
 (autoload 'bufler-workspace-mode "bufler-workspace" "\
 When active, set the frame title according to current Bufler group.
 
-If called interactively, enable Bufler-Workspace mode if ARG is
-positive, and disable it if ARG is zero or negative.  If called
-from Lisp, also enable the mode if ARG is omitted or nil, and
-toggle it if ARG is `toggle'; disable the mode otherwise.
+If called interactively, toggle `Bufler-Workspace mode'.  If the
+prefix argument is positive, enable the mode, and if it is zero
+or negative, disable the mode.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
+the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
 
 The mode's hook is called both when the mode is enabled and when
 it is disabled.

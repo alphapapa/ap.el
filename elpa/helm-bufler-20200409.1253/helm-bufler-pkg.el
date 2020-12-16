@@ -1,2 +1,0 @@
-;;; Generated package description from /home/me/tmp/src/emacs/native-comp/.emacs.d/elpa/helm-bufler-20200409.1253/helm-bufler.el  -*- no-byte-compile: t -*-
-(define-package "helm-bufler" "20200409.1253" "Helm source for Bufler" '((emacs "26.3") (bufler "0.2pre") (helm "1.9.4")) :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("convenience") :url "https://github.com/alphapapa/bufler.el")
