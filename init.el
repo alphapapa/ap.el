@@ -87,7 +87,8 @@
     (cons 320 "#754f56")
     (cons 340 "#62686E")
     (cons 360 "#62686E")))
- '(vc-annotate-very-old-color nil))
+ '(vc-annotate-very-old-color nil)
+ '(which-key-mode t))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
