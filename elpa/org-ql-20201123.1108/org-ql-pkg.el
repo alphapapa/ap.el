@@ -1,11 +1,11 @@
-(define-package "org-ql" "20201117.552" "Org Query Language, search command, and agenda-like view"
+(define-package "org-ql" "20201123.1108" "Org Query Language, search command, and agenda-like view"
   '((emacs "26.1")
     (dash "2.13")
     (dash-functional "1.2.0")
     (f "0.17.2")
     (map "2.1")
     (org "9.0")
-    (org-super-agenda "1.2pre")
+    (org-super-agenda "1.2")
     (ov "1.0.6")
     (peg "0.6")
     (s "1.12.0")

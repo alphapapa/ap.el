@@ -578,7 +578,7 @@ dates in the past, and negative for dates in the future."
 ;; than `org-ql-view' saved views, the link type is "org-ql-search".
 
 (org-link-set-parameters "org-ql-search"
-                         :follow #'org-ql-view--link-open
+                         :follow #'org-ql-view--link-follow
                          :store #'org-ql-view--link-store)
 
 ;; We require the URL libraries in the functions to hopefully avoid
@@ -588,10 +588,13 @@ dates in the past, and negative for dates in the future."
   (require 'url-parse)
   (require 'url-util))
 
-(defun org-ql-view--link-open (path)
+(defun org-ql-view--link-follow (path &optional _ignored)
   "Open Org QL query for current buffer at PATH.
 PATH should be the part of an \"org-ql-search:\" URL after the
-protocol.  See, e.g. `org-ql-view--link-store'."
+protocol.  See, e.g. `org-ql-view--link-store'.
+
+The optional, second argument is temporarily _IGNORED for
+purposes of compatibility with changes in Org 9.4."
   (require 'url-parse)
   (require 'url-util)
   (when (version<= "9.3" (org-version))
@@ -772,7 +775,7 @@ When opened, the link searches the buffer it's opened from."
                   ;; Read sexp query.
                   (read query)
                 ;; Parse non-sexp query into sexp query.
-                (org-ql--plain-query query)))))
+                (org-ql--query-string-to-sexp query)))))
 
 (define-infix-command org-ql-view--transient-in ()
   :description (lambda () (org-ql-view--format-transient-lisp-argument "In buffers/files" org-ql-view-buffers-files))

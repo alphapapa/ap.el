@@ -17,6 +17,8 @@ For convenience, arguments should be unquoted.
 
 (function-put 'org-ql 'lisp-indent-function 'defun)
 
+(make-obsolete 'org-ql '"Please use functions `org-ql-select' or `org-ql-query' instead" '"org-ql 0.5")
+
 (autoload 'org-ql-select "org-ql" "\
 Return items matching QUERY in BUFFERS-OR-FILES.
 
@@ -199,8 +201,7 @@ Show Org QL View BOOKMARK in current buffer.
 
 ;;;***
 
-;;;### (autoloads nil nil ("helm-org-ql.el" "org-ql-pkg.el") (0 0
-;;;;;;  0 0))
+;;;### (autoloads nil nil ("org-ql-pkg.el") (0 0 0 0))
 
 ;;;***
 

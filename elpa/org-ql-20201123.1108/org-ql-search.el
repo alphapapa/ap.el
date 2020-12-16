@@ -158,7 +158,7 @@ necessary."
                                 ;; Read sexp query.
                                 (read query)
                               ;; Parse non-sexp query into sexp query.
-                              (org-ql--plain-query query)))
+                              (org-ql--query-string-to-sexp query)))
                     (list query)))
            (results (org-ql-select buffers-files query
                       :action 'element-with-markers
@@ -197,15 +197,14 @@ If `org-ql-block-header' is non-nil, it is used as the header
 string for the block, otherwise a the header is formed
 automatically from the query."
   (let (narrow-p old-beg old-end)
-    (when-let* ((from (pcase org-agenda-overriding-restriction
+    (when-let* ((from (pcase org-agenda-restrict
                         ('nil (org-agenda-files nil 'ifmode))
-                        ('file (get 'org-agenda-files 'org-restrict))
-                        ('subtree (prog1 org-agenda-restrict
-                                    (with-current-buffer org-agenda-restrict
-                                      ;; Narrow the buffer; remember to widen it later.
-                                      (setf old-beg (point-min) old-end (point-max)
-                                            narrow-p t)
-                                      (narrow-to-region org-agenda-restrict-begin org-agenda-restrict-end))))))
+                        (_ (prog1 org-agenda-restrict
+                             (with-current-buffer org-agenda-restrict
+			       ;; Narrow the buffer; remember to widen it later.
+			       (setf old-beg (point-min) old-end (point-max)
+                                     narrow-p t)
+			       (narrow-to-region org-agenda-restrict-begin org-agenda-restrict-end))))))
                 (items (org-ql-select from query
                          :action 'element-with-markers
                          :narrow narrow-p)))
@@ -274,7 +273,7 @@ For example, an org-ql dynamic block header could look like:
   #+BEGIN: org-ql :query (todo \"UNDERWAY\") :columns (priority todo heading) :sort (priority date) :ts-format \"%Y-%m-%d %H:%M\""
   (-let* (((&plist :query :columns :sort :ts-format :take) params)
           (query (cl-etypecase query
-                   (string (org-ql--plain-query query))
+                   (string (org-ql--query-string-to-sexp query))
                    (list  ;; SAFETY: Query is in sexp form: ask for confirmation, because it could contain arbitrary code.
                     (org-ql--ask-unsafe-query query)
                     query)))
