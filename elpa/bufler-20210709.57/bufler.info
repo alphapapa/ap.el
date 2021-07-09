@@ -460,7 +460,7 @@ File: README.info,  Node: Ivy support,  Next: Prism support,  Prev: Helm support
 Bufler does not require nor depend on Ivy, but because it uses
 ‘completing-read’, Bufler requires no special configuration to work with
 ‘ivy-mode’ for selecting buffers.  For example, this shows
-‘bufler-switch-buffers’ with ‘ivy-mode’ activated (in the
+‘bufler-switch-buffer’ with ‘ivy-mode’ activated (in the
 ‘spacemacs-dark’ theme):
 
 
@@ -538,8 +538,8 @@ File: README.info,  Node: 03-pre,  Next: 02,  Up: Changelog
      customized to show just the last element).
    • Show an asterisk next to buffers with unsaved changes.  (Thanks to
      Tatu Lahtela (https://github.com/ration).)
-   • Option ‘bufler-name-column-width’ limits the width of buffer names
-     in the buffer list.  (Thanks to Tory S.  Anderson
+   • Name and path columns optionally limit width to that defined in
+     their customization options.  (Thanks to Tory S.  Anderson
      (https://github.com/WorldsEndless).)
    • Column ‘Mode’ shows buffer’s major mode, sans ‘-mode’ suffix.
    • More filtering options: ‘bufler-filter-buffer-fns’,
@@ -549,6 +549,12 @@ File: README.info,  Node: 03-pre,  Next: 02,  Up: Changelog
      be hidden in ‘bufler-list’ and ‘bufler-switch-buffer’, and filters
      may be disabled by calling those commands with universal prefix
      arguments.
+   • Option ‘bufler-list-display-buffer-action’, which controls how the
+     ‘bufler-list’ buffer is displayed.
+
+   *Fixed*
+   • Option ‘bufler-filter-buffer-modes’ had the wrong customization
+     type.
 
 
 File: README.info,  Node: 02,  Next: 01,  Prev: 03-pre,  Up: Changelog
@@ -616,15 +622,15 @@ Node: Default groups example11134
 Node: Group types14061
 Node: Helm support17007
 Node: Ivy support17753
-Node: Prism support18181
-Node: Compared to Ibuffer18621
-Node: Changelog20371
-Node: 03-pre20540
-Node: 0221940
-Node: 0122085
-Node: Credits22184
-Node: Development22873
-Node: License23043
+Node: Prism support18180
+Node: Compared to Ibuffer18620
+Node: Changelog20370
+Node: 03-pre20539
+Node: 0222161
+Node: 0122306
+Node: Credits22405
+Node: Development23094
+Node: License23264
 
 End Tag Table
 

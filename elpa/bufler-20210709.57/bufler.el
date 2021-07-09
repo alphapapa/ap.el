@@ -5,7 +5,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/bufler.el
 ;; Package-Version: 0.3-pre
-;; Package-Requires: ((emacs "26.3") (dash "2.17") (dash-functional "2.17") (f "0.17") (pretty-hydra "0.2.2") (magit-section "0.1"))
+;; Package-Requires: ((emacs "26.3") (dash "2.18") (f "0.17") (pretty-hydra "0.2.2") (magit-section "0.1"))
 ;; Keywords: convenience
 
 ;;; License:
@@ -52,7 +52,6 @@
 (require 'outline)
 
 (require 'dash)
-(require 'dash-functional)
 (require 'f)
 (require 'magit-section)
 
@@ -115,6 +114,8 @@ See `bufler-cache-related-dirs-p'.")
   :link '(custom-manual "(Bufler)Top")
   :group 'convenience)
 
+;;;;; Options
+
 (defcustom bufler-use-cache t
   "Cache computed buffer groups.
 Since a buffer's directory, mode, project directory, etc rarely
@@ -165,7 +166,7 @@ must be called to get up-to-date results."
                      magit-diff-mode magit-process-mode magit-revision-mode magit-section-mode
                      special-mode timer-list-mode)
   "List of major modes whose buffers are not shown by default."
-  :type '(repeat string))
+  :type '(repeat symbol))
 
 (defcustom bufler-filter-buffer-name-regexps
   (list (rx "*Compile-Log*") (rx "*Disabled Command*")
@@ -229,6 +230,13 @@ The cache should not be allowed to grow unbounded, so it's
 cleared with a timer that runs this many seconds after the last
 `bufler-list' command."
   :type 'boolean)
+
+(defcustom bufler-list-display-buffer-action
+  '((display-buffer-reuse-window display-buffer-in-previous-window display-buffer-same-window))
+  "The ACTION argument passed to `display-buffer' (which see).
+Used when `bufler-list' is called."
+  :type '(cons (repeat :tag "Action functions" function)
+               (alist :tag "Action alist")))
 
 (defcustom bufler-list-mode-hook
   '(hl-line-mode)
@@ -361,7 +369,7 @@ which are otherwise filtered by `bufler-filter-buffer-fns'."
         (setf bufler-cache nil))
       (pcase-let* ((inhibit-read-only t)
                    (bufler-vc-refresh arg)
-                   (groups (bufler-buffers :filter-fns (unless (>= arg 16)
+                   (groups (bufler-buffers :filter-fns (unless (and (numberp arg) (>= arg 16))
                                                          bufler-filter-buffer-fns)))
                    (`(,*format-table . ,column-sizes) (bufler-format-buffer-groups groups))
                    (header (concat (format (format " %%-%ss" (cdar column-sizes)) (caar column-sizes))
@@ -382,7 +390,7 @@ which are otherwise filtered by `bufler-filter-buffer-fns'."
               (insert-thing it nil 0)))
           (setf header-line-format header)
           (setf buffer-read-only t)
-          (pop-to-buffer (current-buffer))
+          (pop-to-buffer (current-buffer) bufler-list-display-buffer-action)
           (goto-char pos))
         ;; Cancel cache-clearing idle timer and start a new one.
         (when bufler-cache-related-dirs-timer
@@ -523,27 +531,43 @@ NAME, okay, `checkdoc'?"
   "Return buffers grouped by GROUPS.
 If PATH, return only buffers from the group at PATH.  If
 FILTER-FNS, remove buffers that match any of them."
-  (cl-flet ((buffers
-             () (bufler-group-tree groups
-                  (if filter-fns
-                      (cl-loop with buffers = (cl-delete-if-not #'buffer-live-p (buffer-list))
-                               for fn in filter-fns
-                               do (setf buffers (cl-remove-if fn buffers))
-                               finally return buffers)
-                    (buffer-list)))))
-    (let ((buffers (if bufler-use-cache
-                       (let ((key (sxhash (buffer-list))))
-                         (if (eq key (car bufler-cache))
-                             ;; Buffer list unchanged.
-                             (or (map-elt (cdr bufler-cache) filter-fns)
-                                 ;; Different filters.
-                                 (setf (map-elt (cdr bufler-cache) filter-fns) (buffers)))
-                           ;; Buffer list has changed.
-                           (cddr (setf bufler-cache (cons key (cons filter-fns (buffers)))))))
-                     (buffers))))
-      (if path
-          (bufler-group-tree-at path buffers)
-        buffers))))
+  (cl-labels ((grouped-buffers
+               () (bufler-group-tree groups
+                    (if filter-fns
+                        (cl-loop with buffers = (cl-delete-if-not #'buffer-live-p (buffer-list))
+                                 for fn in filter-fns
+                                 do (setf buffers (cl-remove-if fn buffers))
+                                 finally return buffers)
+                      (buffer-list))))
+              (cached-buffers
+               (key) (when (eql key (car bufler-cache))
+                       ;; Buffer list unchanged: return cached result.
+                       (or (map-elt (cdr bufler-cache) filter-fns)
+                           ;; Different filters: group and filter and return cached result.
+
+                           ;; NOTE: (setf (map-elt (cdr CACHE) VALUE) ought to be returning the
+                           ;; VALUE, but it seems to be returning (cdr CACHE) instead, so we have to
+                           ;; work around that.  The `setf' docstring says, "The return value is the
+                           ;; last VAL in the list," so this may be a bug in the `map-elt' expander.
+
+                           ;; TODO: Compare against behavior of (setf (alist-get ...)) and report a bug if necessary.
+                           (let ((grouped-buffers (grouped-buffers)))
+                             (setf (map-elt (cdr bufler-cache) filter-fns) grouped-buffers)
+                             grouped-buffers))))
+              (buffers
+               () (if bufler-use-cache
+                      (let ((key (sxhash (buffer-list))))
+                        (or (cached-buffers key)
+                            ;; Buffer list has changed: group buffers and cache result.
+
+                            ;; NOTE: See above, but here we don't use `map-elt', because the cache is being
+                            ;; reset, so there's only one cache entry, so we access its value with `cdadr'.
+                            (cdadr
+                             (setf bufler-cache (cons key (list (cons filter-fns (grouped-buffers))))))))
+                    (grouped-buffers))))
+    (if path
+        (bufler-group-tree-at path (buffers))
+      (buffers))))
 
 (cl-defun bufler-buffer-alist-at (path &key filter-fns)
   "Return alist of (display . buffer) cells at PATH.
@@ -691,34 +715,52 @@ That is, if its name starts with \"*\"."
 Each function takes two arguments, the buffer and its depth in
 the group tree, and returns a string as its column value.")
 
-(defcustom bufler-column-name-width nil
-  "Maximum width of buffer name column."
-  :type '(choice (integer :tag "Number of characters")
-                 (const :tag "Unlimited" nil)))
-
 (defcustom bufler-column-name-modified-buffer-sigil "*"
   "Displayed after the name of modified, file-backed buffers."
   :type 'string)
 
-(defmacro bufler-define-column (name face &rest body)
+(defmacro bufler-define-column (name plist &rest body)
   "Define a column formatting function with NAME.
-NAME should be a string.  BODY should return a string or nil.
-FACE, if non-nil, is applied to the string.  In the BODY,
-`buffer' is bound to the buffer, and `depth' is bound to the
-buffer's depth in the group tree."
+NAME should be a string.  BODY should return a string or nil.  In
+the BODY, `buffer' is bound to the buffer, and `depth' is bound
+to the buffer's depth in the group tree.
+
+PLIST may be a plist setting the following options:
+
+  `:face' is a face applied to the string.
+
+  `:max-width' defines a customization option for the column's
+  maximum width with the specified value as its default: an
+  integer limits the width, while nil does not."
   (declare (indent defun))
   (cl-check-type name string)
-  (let ((fn-name (intern (concat "bufler-column-format-" (downcase name)))))
+  (pcase-let* ((fn-name (intern (concat "bufler-column-format-" (downcase name))))
+               ((map :face :max-width) plist)
+               (max-width-variable (intern (concat "bufler-column-" name "-max-width")))
+               (max-width-docstring (format "Maximum width of the %s column." name)))
     `(progn
+       ,(when (plist-member plist :max-width)
+          `(defcustom ,max-width-variable
+             ,max-width
+             ,max-width-docstring
+             :type '(choice (integer :tag "Maximum width")
+                            (const :tag "Unlimited width" nil))))
        (defun ,fn-name (buffer depth)
          (if-let ((string (progn ,@body)))
-             (if ,face
-                 (propertize string 'face ,face)
+             (progn
+               ,(when max-width
+                  `(when ,max-width-variable
+                     (setf string (truncate-string-to-width string ,max-width-variable))))
+               ,(when face
+                  ;; Faces are not defined until load time, while this checks type at expansion
+                  ;; time, so we can only test that the argument is a symbol, not a face.
+                  (cl-check-type face symbol ":face must be a face symbol")
+                  `(setf string (propertize string 'face ',face)))
                string)
            ""))
        (setf (map-elt bufler-column-format-fns ,name) #',fn-name))))
 
-(bufler-define-column "Name" nil
+(bufler-define-column "Name" (:max-width nil)
   ;; MAYBE: Move indentation back to `bufler-list'.  But this seems to
   ;; work well, and that might be more complicated.
   (let ((indentation (make-string (* 2 depth) ? ))
@@ -730,20 +772,18 @@ buffer's depth in the group tree."
                                                 t t)
                                                " ")
                                        'face 'bufler-mode)))
-        (buffer-name (if bufler-column-name-width
-                         (truncate-string-to-width (buffer-name buffer) bufler-column-name-width)
-                       (buffer-name buffer)))
+        (buffer-name (buffer-name buffer))
         (modified (when (and (buffer-file-name buffer)
                              (buffer-modified-p buffer))
                     (propertize bufler-column-name-modified-buffer-sigil
                                 'face 'font-lock-warning-face))))
     (concat indentation mode-annotation buffer-name modified)))
 
-(bufler-define-column "Size" 'bufler-size
+(bufler-define-column "Size" (:face bufler-size)
   (ignore depth)
   (file-size-human-readable (buffer-size buffer)))
 
-(bufler-define-column "Mode" 'bufler-mode
+(bufler-define-column "Mode" (:face bufler-mode)
   (ignore depth)
   (string-remove-suffix
    "-mode" (symbol-name (buffer-local-value 'major-mode buffer))))
@@ -756,7 +796,7 @@ accessed via TRAMP) can be slow, which delays the displaying of
 have their state displayed."
   :type 'boolean)
 
-(bufler-define-column "VC" nil
+(bufler-define-column "VC" ()
   (ignore depth)
   (when (and (buffer-file-name buffer)
              (or (not (file-remote-p (buffer-file-name buffer)))
@@ -771,7 +811,7 @@ have their state displayed."
       ((and 'edited it) (propertize (symbol-name it) 'face 'bufler-vc))
       (it (propertize (symbol-name it) 'face 'bufler-dim)))))
 
-(bufler-define-column "Path" 'bufler-path
+(bufler-define-column "Path" (:face bufler-path :max-width nil)
   (ignore depth)
   (or (buffer-file-name buffer)
       (buffer-local-value 'list-buffers-directory buffer)
@@ -1125,17 +1165,15 @@ See documentation for details."
                (mode-match "*Help*" (rx bos "help-"))
                (mode-match "*Info*" (rx bos "info-"))))
     (group
-     ;; Subgroup collecting all special buffers (i.e. ones that are not
-     ;; file-backed), except `magit-status-mode' buffers (which are allowed to fall
+     ;; Subgroup collecting all special buffers (i.e. ones that are not file-backed), except
+     ;; certain ones like Dired, Forge, or Magit Status buffers (which are allowed to fall
      ;; through to other groups, so they end up grouped with their project buffers).
-     (group-and "*Special*"
-                (lambda (buffer)
-                  (unless (or (funcall (mode-match "Magit" (rx bos "magit-status"))
-                                       buffer)
-                              (funcall (mode-match "Dired" (rx bos "dired"))
-                                       buffer)
-                              (funcall (auto-file) buffer))
-                    "*Special*")))
+     (group-not "*Special"
+                (group-or "*Special*"
+                          (mode-match "Magit" (rx bos "magit-status"))
+                          (mode-match "Forge" (rx bos "forge-"))
+                          (mode-match "Dired" (rx bos "dired"))
+                          (auto-file)))
      (group
       ;; Subgroup collecting these "special special" buffers
       ;; separately for convenience.
@@ -1143,7 +1181,7 @@ See documentation for details."
                   (rx bos "*" (or "Messages" "Warnings" "scratch" "Backtrace") "*")))
      (group
       ;; Subgroup collecting all other Magit buffers, grouped by directory.
-      (mode-match "*Magit* (non-status)" (rx bos (or "magit" "forge") "-"))
+      (mode-match "*Magit* (non-status)" (rx bos "magit-"))
       (auto-directory))
      ;; Subgroup for Helm buffers.
      (mode-match "*Helm*" (rx bos "helm-"))
