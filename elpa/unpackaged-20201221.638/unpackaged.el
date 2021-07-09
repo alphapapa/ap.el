@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Keywords: convenience
-;; Package-Version: 20200210.148
+;; Package-Version: 20201221.638
 ;; URL: https://github.com/alphapapa/unpackaged.el
 ;; Package-Requires: ((emacs "25.1") (dash "2.13") (s "1.10.0") (org "9.0") (use-package "2.4"))
 
@@ -40,7 +40,15 @@
 (require 's)
 (require 'use-package)
 
+;;;; Customization
+
+(defgroup unpackaged nil
+  "Options for `unpackaged'."
+  :group 'convenience)
+
 ;;; Faces, fonts
+
+(require 'seq)
 
 (defvar lorem-ipsum-text)
 
@@ -81,6 +89,9 @@ stop selecting fonts."
     (pop-to-buffer (current-buffer))))
 
 ;;; ibuffer
+
+(require 'ibuffer)
+(require 'ibuf-ext)
 
 ;;;###autoload
 (defun unpackaged/ibuffer-toggle-all-filter-groups (toggle-empty)
@@ -136,7 +147,29 @@ With prefix, toggle `ibuffer-show-empty-filter-groups'."
                             (when (eq (widget-get widget :custom-state) 'modified)
                               (widget-apply widget :custom-set)))))))
 
+(defun unpackaged/customize-theme-faces (theme &rest faces)
+  "Customize THEME with FACES.
+Advises `enable-theme' with a function that customizes FACES when
+THEME is enabled.  If THEME is already enabled, also applies
+faces immediately.  Calls `custom-theme-set-faces', which see."
+  (declare (indent defun))
+  (when (member theme custom-enabled-themes)
+    ;; Theme already enabled: apply faces now.
+    (let ((custom--inhibit-theme-enable nil))
+      (apply #'custom-theme-set-faces theme faces)))
+  (let ((fn-name (intern (concat "unpackaged/enable-theme-advice-for-" (symbol-name theme)))))
+    ;; Apply advice for next time theme is enabled.
+    (fset fn-name
+          (lambda (enabled-theme)
+            (when (eq enabled-theme theme)
+              (let ((custom--inhibit-theme-enable nil))
+                (apply #'custom-theme-set-faces theme faces)))))
+    (advice-remove #'enable-theme fn-name)
+    (advice-add #'enable-theme :after fn-name)))
+
 ;;; Elfeed
+
+(defvar elfeed-search-filter)
 
 (cl-defmacro unpackaged/elfeed-search-view-hydra-define (name body views)
   "Define a pretty hydra named NAME with BODY and VIEWS.
@@ -293,10 +326,17 @@ choice's name, and the rest of which is its body forms."
   :type '(repeat regexp))
 
 ;;;###autoload
-(defun unpackaged/lorem-ipsum-overlay ()
+(defun unpackaged/lorem-ipsum-overlay (&optional replace-p)
   "Overlay all text in current buffer with \"lorem ipsum\" text.
 When called again, remove overlays.  Useful for taking
 screenshots without revealing buffer contents.
+
+If REPLACE-P is non-nil (interactively, with prefix), replace
+buffer contents rather than overlaying them.  When a buffer is
+very large and would have so many overlays that performance would
+be prohibitively slow, you may replace the buffer contents
+instead.  (Of course, be careful about saving the buffer after
+replacing its contents.)
 
 Each piece of non-whitespace text in the buffer is compared with
 regexps in `unpackaged/lorem-ipsum-overlay-exclude', and ones
@@ -315,7 +355,7 @@ could be matched against the exclude regexp (in `rx' syntax):
 And the line would be overlaid like:
 
   #+TITLE: parturient.et"
-  (interactive)
+  (interactive "P")
   (require 'lorem-ipsum)
   (let ((ovs (overlays-in (point-min) (point-max))))
     (if (cl-loop for ov in ovs
@@ -329,7 +369,7 @@ And the line would be overlaid like:
                                     (-flatten it) (apply #'concat it)
                                     (split-string it (rx (or space punct)) 'omit-nulls)))
             (case-fold-search nil))
-        (cl-labels ((overlay-match (group)
+        (cl-labels ((overlay-group (group)
                                    (let* ((beg (match-beginning group))
                                           (end (match-end group))
                                           (replacement-word (lorem-word (match-string group)))
@@ -337,6 +377,12 @@ And the line would be overlaid like:
                                      (when replacement-word
                                        (overlay-put ov :lorem-ipsum-overlay t)
                                        (overlay-put ov 'display replacement-word))))
+                    (replace-group (group)
+                                   (let* ((beg (match-beginning group))
+                                          (end (match-end group))
+                                          (replacement-word (lorem-word (match-string group))))
+                                     (when replacement-word
+                                       (setf (buffer-substring beg end) replacement-word))))
                     (lorem-word (word)
                                 (if-let* ((matches (lorem-matches (length word))))
                                     (apply-case word (downcase (seq-random-elt matches)))
@@ -367,8 +413,13 @@ And the line would be overlaid like:
               (unless (cl-member (match-string 0) unpackaged/lorem-ipsum-overlay-exclude
                                  :test (lambda (string regexp)
                                          (string-match-p regexp string)))
-                (overlay-match 2))
+                (if replace-p
+                    (replace-group 2)
+                  (overlay-group 2)))
               (goto-char (match-end 2)))))))))
+
+(eval-when-compile
+  (require 'dbus))
 
 (cl-defun unpackaged/mpris-track (&optional player)
   "Return the artist, album, and title of the track playing in MPRIS-supporting player.
@@ -406,6 +457,12 @@ output string."
                 "")))))
 
 ;;; Org
+
+(defvar org-agenda-overriding-header)
+(defvar org-agenda-sorting-strategy)
+(defvar org-agenda-restrict)
+(defvar org-agenda-restrict-begin)
+(defvar org-agenda-restrict-end)
 
 ;;;###autoload
 (defun unpackaged/org-agenda-current-subtree-or-region (only-todos)
@@ -686,7 +743,7 @@ kill-ring, prompting if not found.  With prefix, prompt for URL."
         (delete-directory temp-dir)))))
 
 ;;;###autoload
-(defun unpackaged/org-fix-blank-lines (prefix)
+(defun unpackaged/org-fix-blank-lines (&optional prefix)
   "Ensure that blank lines exist between headings and between headings and their contents.
 With prefix, operate on whole buffer. Ensures that blank lines
 exist after each headings's drawers."
@@ -719,91 +776,97 @@ exist after each headings's drawers."
                          nil
                        'tree)))
 
-(define-minor-mode unpackaged/org-export-html-with-useful-ids-mode
-  "Attempt to export Org as HTML with useful link IDs.
+(eval-when-compile
+  (require 'easy-mmode)
+  (require 'ox))
+
+(use-package ox
+  :config
+  (define-minor-mode unpackaged/org-export-html-with-useful-ids-mode
+    "Attempt to export Org as HTML with useful link IDs.
 Instead of random IDs like \"#orga1b2c3\", use heading titles,
 made unique when necessary."
-  :global t
-  (if unpackaged/org-export-html-with-useful-ids-mode
-      (advice-add #'org-export-get-reference :override #'unpackaged/org-export-get-reference)
-    (advice-remove #'org-export-get-reference #'unpackaged/org-export-get-reference)))
+    :global t
+    (if unpackaged/org-export-html-with-useful-ids-mode
+        (advice-add #'org-export-get-reference :override #'unpackaged/org-export-get-reference)
+      (advice-remove #'org-export-get-reference #'unpackaged/org-export-get-reference)))
 
-(defun unpackaged/org-export-get-reference (datum info)
-  "Like `org-export-get-reference', except uses heading titles instead of random numbers."
-  (let ((cache (plist-get info :internal-references)))
-    (or (car (rassq datum cache))
-        (let* ((crossrefs (plist-get info :crossrefs))
-               (cells (org-export-search-cells datum))
-               ;; Preserve any pre-existing association between
-               ;; a search cell and a reference, i.e., when some
-               ;; previously published document referenced a location
-               ;; within current file (see
-               ;; `org-publish-resolve-external-link').
-               ;;
-               ;; However, there is no guarantee that search cells are
-               ;; unique, e.g., there might be duplicate custom ID or
-               ;; two headings with the same title in the file.
-               ;;
-               ;; As a consequence, before re-using any reference to
-               ;; an element or object, we check that it doesn't refer
-               ;; to a previous element or object.
-               (new (or (cl-some
-                         (lambda (cell)
-                           (let ((stored (cdr (assoc cell crossrefs))))
-                             (when stored
-                               (let ((old (org-export-format-reference stored)))
-                                 (and (not (assoc old cache)) stored)))))
-                         cells)
-                        (when (org-element-property :raw-value datum)
-                          ;; Heading with a title
-                          (unpackaged/org-export-new-title-reference datum cache))
-                        ;; NOTE: This probably breaks some Org Export
-                        ;; feature, but if it does what I need, fine.
-                        (org-export-format-reference
-                         (org-export-new-reference cache))))
-               (reference-string new))
-          ;; Cache contains both data already associated to
-          ;; a reference and in-use internal references, so as to make
-          ;; unique references.
-          (dolist (cell cells) (push (cons cell new) cache))
-          ;; Retain a direct association between reference string and
-          ;; DATUM since (1) not every object or element can be given
-          ;; a search cell (2) it permits quick lookup.
-          (push (cons reference-string datum) cache)
-          (plist-put info :internal-references cache)
-          reference-string))))
+  (defun unpackaged/org-export-get-reference (datum info)
+    "Like `org-export-get-reference', except uses heading titles instead of random numbers."
+    (let ((cache (plist-get info :internal-references)))
+      (or (car (rassq datum cache))
+          (let* ((crossrefs (plist-get info :crossrefs))
+                 (cells (org-export-search-cells datum))
+                 ;; Preserve any pre-existing association between
+                 ;; a search cell and a reference, i.e., when some
+                 ;; previously published document referenced a location
+                 ;; within current file (see
+                 ;; `org-publish-resolve-external-link').
+                 ;;
+                 ;; However, there is no guarantee that search cells are
+                 ;; unique, e.g., there might be duplicate custom ID or
+                 ;; two headings with the same title in the file.
+                 ;;
+                 ;; As a consequence, before re-using any reference to
+                 ;; an element or object, we check that it doesn't refer
+                 ;; to a previous element or object.
+                 (new (or (cl-some
+                           (lambda (cell)
+                             (let ((stored (cdr (assoc cell crossrefs))))
+                               (when stored
+                                 (let ((old (org-export-format-reference stored)))
+                                   (and (not (assoc old cache)) stored)))))
+                           cells)
+                          (when (org-element-property :raw-value datum)
+                            ;; Heading with a title
+                            (unpackaged/org-export-new-title-reference datum cache))
+                          ;; NOTE: This probably breaks some Org Export
+                          ;; feature, but if it does what I need, fine.
+                          (org-export-format-reference
+                           (org-export-new-reference cache))))
+                 (reference-string new))
+            ;; Cache contains both data already associated to
+            ;; a reference and in-use internal references, so as to make
+            ;; unique references.
+            (dolist (cell cells) (push (cons cell new) cache))
+            ;; Retain a direct association between reference string and
+            ;; DATUM since (1) not every object or element can be given
+            ;; a search cell (2) it permits quick lookup.
+            (push (cons reference-string datum) cache)
+            (plist-put info :internal-references cache)
+            reference-string))))
 
-(defun unpackaged/org-export-new-title-reference (datum cache)
-  "Return new reference for DATUM that is unique in CACHE."
-  (cl-macrolet ((inc-suffixf (place)
-                             `(progn
-                                (string-match (rx bos
-                                                  (minimal-match (group (1+ anything)))
-                                                  (optional "--" (group (1+ digit)))
-                                                  eos)
-                                              ,place)
-                                ;; HACK: `s1' instead of a gensym.
-                                (-let* (((s1 suffix) (list (match-string 1 ,place)
-                                                           (match-string 2 ,place)))
-                                        (suffix (if suffix
-                                                    (string-to-number suffix)
-                                                  0)))
-                                  (setf ,place (format "%s--%s" s1 (cl-incf suffix)))))))
-    (let* ((title (org-element-property :raw-value datum))
-           (ref (url-hexify-string (substring-no-properties title)))
-           (parent (org-element-property :parent datum)))
-      (while (--any (equal ref (car it))
-                    cache)
-        ;; Title not unique: make it so.
-        (if parent
-            ;; Append ancestor title.
-            (setf title (concat (org-element-property :raw-value parent)
-                                "--" title)
-                  ref (url-hexify-string (substring-no-properties title))
-                  parent (org-element-property :parent parent))
-          ;; No more ancestors: add and increment a number.
-          (inc-suffixf ref)))
-      ref)))
+  (defun unpackaged/org-export-new-title-reference (datum cache)
+    "Return new reference for DATUM that is unique in CACHE."
+    (cl-macrolet ((inc-suffixf (place)
+                               `(progn
+                                  (string-match (rx bos
+                                                    (minimal-match (group (1+ anything)))
+                                                    (optional "--" (group (1+ digit)))
+                                                    eos)
+                                                ,place)
+                                  ;; HACK: `s1' instead of a gensym.
+                                  (-let* (((s1 suffix) (list (match-string 1 ,place)
+                                                             (match-string 2 ,place)))
+                                          (suffix (if suffix
+                                                      (string-to-number suffix)
+                                                    0)))
+                                    (setf ,place (format "%s--%s" s1 (cl-incf suffix)))))))
+      (let* ((title (org-element-property :raw-value datum))
+             (ref (url-hexify-string (substring-no-properties title)))
+             (parent (org-element-property :parent datum)))
+        (while (--any (equal ref (car it))
+                      cache)
+          ;; Title not unique: make it so.
+          (if parent
+              ;; Append ancestor title.
+              (setf title (concat (org-element-property :raw-value parent)
+                                  "--" title)
+                    ref (url-hexify-string (substring-no-properties title))
+                    parent (org-element-property :parent parent))
+            ;; No more ancestors: add and increment a number.
+            (inc-suffixf ref)))
+        ref))))
 
 ;;;###autoload
 (define-minor-mode unpackaged/org-table-face-mode
@@ -922,6 +985,10 @@ otherwise call `org-self-insert-command'."
 
 (unpackaged/def-org-maybe-surround "~" "=" "*" "/" "+")
 
+(require 'org)
+
+(require 'ts)
+
 ;;;###autoload
 (defun unpackaged/org-refile-to-datetree-using-ts-in-entry (which-ts file &optional subtree-p)
   "Refile current entry to datetree in FILE using timestamp found in entry.
@@ -958,7 +1025,9 @@ search whole subtree."
 
 ;;;###autoload
 (cl-defun unpackaged/org-refile-to-datetree (file &key (date (calendar-current-date)) entry)
-  "Refile ENTRY or current node to entry for DATE in datetree in FILE."
+  "Refile ENTRY or current node to entry for DATE in datetree in FILE.
+DATE should be a list of (MONTH DAY YEAR) integers, e.g. as
+returned by `calendar-current-date'."
   (interactive (list (read-file-name "File: " (concat org-directory "/") nil 'mustmatch nil
                                      (lambda (filename)
                                        (string-suffix-p ".org" filename)))))
@@ -1149,11 +1218,60 @@ NAME may be a string or symbol."
              do (--each descs
                   (package-delete it force)))))
 
+(defun unpackaged/reload-package (package &optional allp)
+  "Reload PACKAGE's features.
+If ALLP is non-nil (interactively, with prefix), load all of its
+features; otherwise only load ones that were already loaded.
+
+This is useful to reload a package after upgrading it.  Since a
+package may provide multiple features, to reload it properly
+would require either restarting Emacs or manually unloading and
+reloading each loaded feature.  This automates that process.
+
+Note that this unloads all of the package's symbols before
+reloading.  Any data stored in those symbols will be lost, so if
+the package would normally save that data, e.g. when a mode is
+deactivated or when Emacs exits, the user should do so before
+using this command."
+  (interactive
+   (list (intern (completing-read "Package: "
+                                  (mapcar #'car package-alist) nil t))
+         current-prefix-arg))
+  ;; This finds features in the currently installed version of PACKAGE, so if
+  ;; it provided other features in an older version, those are not unloaded.
+  (when (yes-or-no-p (format "Unload all of %s's symbols and reload its features? " package))
+    (let* ((package-name (symbol-name package))
+           (package-dir (file-name-directory
+                         (locate-file package-name load-path (get-load-suffixes))))
+           (package-files (directory-files package-dir 'full (rx ".el" eos)))
+           (package-features
+            (cl-loop for file in package-files
+                     when (with-temp-buffer
+                            (insert-file-contents file)
+                            (when (re-search-forward (rx bol "(provide" (1+ space)) nil t)
+                              (goto-char (match-beginning 0))
+                              (cadadr (read (current-buffer)))))
+                     collect it)))
+      (unless allp
+        (setf package-features (seq-intersection package-features features)))
+      (dolist (feature package-features)
+        (ignore-errors
+          ;; Ignore error in case it's not loaded.
+          (unload-feature feature 'force)))
+      (dolist (feature package-features)
+        (require feature))
+      (message "Reloaded: %s" (mapconcat #'symbol-name package-features " ")))))
+
+(defvar quelpa-upgrade-p)
+
 ;;;###autoload
-(defun unpackaged/quelpa-use-package-upgrade ()
+(cl-defun unpackaged/quelpa-use-package-upgrade (&key (reloadp t))
   "Eval the current `use-package' form with `quelpa-upgrade-p' true.
-Deletes the package first to remove obsolete versions."
-  (interactive)
+Delete the package first to remove obsolete versions.  When
+RELOADP is non-nil, reload the package's features after upgrade
+using `unpackaged/reload-package'; otherwise (interactively, with
+prefix), leave old features loaded."
+  (interactive (list :reloadp (not current-prefix-arg)))
   (save-excursion
     (if (or (looking-at (rx "(use-package "))
             (let ((limit (save-excursion
@@ -1165,9 +1283,11 @@ Deletes the package first to remove obsolete versions."
           (pcase-let* ((`(use-package ,package-name . ,rest) (read (current-buffer))))
             (cl-assert package-name nil "Can't determine package name")
             (cl-assert (memq :quelpa rest) nil "`:quelpa' form not found")
-            (unpackaged/package-delete-all-versions package-name 'force))
-          (let ((quelpa-upgrade-p t))
-            (call-interactively #'eval-defun)))
+            (unpackaged/package-delete-all-versions package-name 'force)
+            (let ((quelpa-upgrade-p t))
+              (call-interactively #'eval-defun))
+            (when reloadp
+              (unpackaged/reload-package package-name))))
       (user-error "Not in a `use-package' form"))))
 
 (use-package package
@@ -1270,6 +1390,8 @@ buffer, otherwise just change the current paragraph."
 
 (advice-add #'iedit-mode :around #'unpackaged/iedit-scoped)
 
+(defvar flyspell-previous-command)
+
 ;;;###autoload
 (defun unpackaged/iedit-or-flyspell ()
   "Toggle `iedit-mode' or correct previous misspelling with `flyspell', depending on context.
@@ -1299,7 +1421,7 @@ to choose a different correction."
       ;; First correction was not wanted; use popup to choose
       (progn
         (save-excursion
-          (undo))  ; This doesn't move point, which I think may be the problem.
+          (undo)) ; This doesn't move point, which I think may be the problem.
         (flyspell-region (line-beginning-position) (line-end-position))
         (call-interactively 'flyspell-correct-previous-word-generic)))))
 
@@ -1436,8 +1558,9 @@ command was called, go to its unstaged changes section."
   (save-buffer)
   (unpackaged/magit-status))
 
+(require 'hydra)
+
 (use-package smerge-mode
-  :after hydra
   :config
   (defhydra unpackaged/smerge-hydra
     (:color pink :hint nil :post (smerge-auto-leave))
@@ -1477,6 +1600,9 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
                                      (unpackaged/smerge-hydra/body)))))
 
 ;;; Web
+
+(eval-when-compile
+  (require 'esxml-query))
 
 ;;;###autoload
 (cl-defun unpackaged/feed-for-url (url &key (prefer 'atom) (all nil))

@@ -37,6 +37,13 @@ Overlay all text in current buffer with \"lorem ipsum\" text.
 When called again, remove overlays.  Useful for taking
 screenshots without revealing buffer contents.
 
+If REPLACE-P is non-nil (interactively, with prefix), replace
+buffer contents rather than overlaying them.  When a buffer is
+very large and would have so many overlays that performance would
+be prohibitively slow, you may replace the buffer contents
+instead.  (Of course, be careful about saving the buffer after
+replacing its contents.)
+
 Each piece of non-whitespace text in the buffer is compared with
 regexps in `unpackaged/lorem-ipsum-overlay-exclude', and ones
 that match are not overlaid.  Note that the regexps are compared
@@ -53,7 +60,9 @@ could be matched against the exclude regexp (in `rx' syntax):
 
 And the line would be overlaid like:
 
-  #+TITLE: parturient.et" t nil)
+  #+TITLE: parturient.et
+
+\(fn &optional REPLACE-P)" t nil)
 
 (autoload 'unpackaged/org-agenda-current-subtree-or-region "unpackaged" "\
 Display an agenda view for the current subtree or region.
@@ -105,17 +114,23 @@ Ensure that blank lines exist between headings and between headings and their co
 With prefix, operate on whole buffer. Ensures that blank lines
 exist after each headings's drawers.
 
-\(fn PREFIX)" t nil)
+\(fn &optional PREFIX)" t nil)
 
 (autoload 'unpackaged/org-table-face-mode "unpackaged" "\
 Apply `org-table' face family to all text in Org tables.
 Useful for forcibly applying the face to portions of table data
 that might have a different face, which could affect alignment.
 
-If called interactively, enable Unpackaged/Org-Table-Face mode if
-ARG is positive, and disable it if ARG is zero or negative.  If
-called from Lisp, also enable the mode if ARG is omitted or nil,
-and toggle it if ARG is `toggle'; disable the mode otherwise.
+If called interactively, toggle `Unpackaged/Org-Table-Face mode'.
+If the prefix argument is positive, enable the mode, and if it is
+zero or negative, disable the mode.
+
+If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
+the mode if ARG is nil, omitted, or is a positive number.
+Disable the mode if ARG is a negative number.
+
+The mode's hook is called both when the mode is enabled and when
+it is disabled.
 
 \(fn &optional ARG)" t nil)
 
@@ -143,6 +158,8 @@ Return timestamp objects for all Org timestamps in entry.
 
 (autoload 'unpackaged/org-refile-to-datetree "unpackaged" "\
 Refile ENTRY or current node to entry for DATE in datetree in FILE.
+DATE should be a list of (MONTH DAY YEAR) integers, e.g. as
+returned by `calendar-current-date'.
 
 \(fn FILE &key (DATE (calendar-current-date)) ENTRY)" t nil)
 
@@ -163,7 +180,12 @@ Call `org-sort' until \\[keyboard-quit] is pressed." t nil)
 
 (autoload 'unpackaged/quelpa-use-package-upgrade "unpackaged" "\
 Eval the current `use-package' form with `quelpa-upgrade-p' true.
-Deletes the package first to remove obsolete versions." t nil)
+Delete the package first to remove obsolete versions.  When
+RELOADP is non-nil, reload the package's features after upgrade
+using `unpackaged/reload-package'; otherwise (interactively, with
+prefix), leave old features loaded.
+
+\(fn &key (RELOADP t))" t nil)
 
 (autoload 'unpackaged/flex-fill-paragraph "unpackaged" "\
 Fill paragraph, incrementing fill column to cause a change when repeated.
