@@ -1,4 +1,4 @@
-(define-package "bufler" "20210709.57" "Group buffers into workspaces with programmable rules"
+(define-package "bufler" "20210710.351" "Group buffers into workspaces with programmable rules"
   '((emacs "26.3")
     (dash "2.18")
     (f "0.17")
@@ -10,7 +10,7 @@
   '("Adam Porter" . "adam@alphapapa.net")
   :keywords
   '("convenience")
-  :url "https://github.com/alphapapa/bufler.el")
+  :url ...)
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; End:

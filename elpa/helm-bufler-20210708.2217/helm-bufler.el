@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/bufler.el
-;; Package-Version: 20201216.813
+;; Package-Version: 20210708.2217
 ;; Package-X-Original-Version: 0.3-pre
 ;; Package-Requires: ((emacs "26.3") (bufler "0.2-pre") (helm "1.9.4"))
 ;; Keywords: convenience
@@ -66,10 +66,7 @@ This mimics `bufler-workspace-switch-buffer'."
     :candidates (lambda ()
                   (let* ((bufler-vc-state nil)
                          (group-path (unless current-prefix-arg
-                                       ;; FIXME: This initial-nil-skipping logic probably belongs elsewhere.
-                                       (if (car (frame-parameter nil 'bufler-workspace-path))
-                                           (frame-parameter nil 'bufler-workspace-path)
-                                         (cdr (frame-parameter nil 'bufler-workspace-path))))))
+                                       (frame-parameter nil 'bufler-workspace-path))))
                     (pcase current-prefix-arg
                       ((or `nil '(4) '(16))
                        (bufler-buffer-alist-at

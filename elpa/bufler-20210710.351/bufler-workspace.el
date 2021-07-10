@@ -65,7 +65,7 @@ May be customized to, e.g. only return the last element of a path."
 
 (defcustom bufler-workspace-switch-buffer-filter-fns
   '(bufler--buffer-hidden-p bufler--buffer-mode-filtered-p bufler--buffer-name-filtered-p)
-  "Buffers that match these functions are not shown when offering buffers for switching."
+  "Buffers matching these functions are hidden when offering buffers for switching."
   :type '(repeat
           (choice (function-item bufler--buffer-hidden-p)
                   (function-item bufler--buffer-mode-filtered-p)
@@ -197,7 +197,11 @@ Works as `tab-line-tabs-function'."
   (let (buffers)
     (--tree-map-nodes (bufferp it)
                       (push it buffers)
-                      (bufler-buffers :path (frame-parameter frame 'bufler-workspace-path)))
+                      (bufler-buffers :path (frame-parameter frame 'bufler-workspace-path)
+                                      ;; Like the default function, `tab-line-tabs-buffer-list',
+                                      ;; we remove hidden buffers.
+                                      :filter-fns (list (lambda (buffer)
+                                                          (= (aref (buffer-name buffer) 0) ?\s)))))
     (cl-sort buffers #'string< :key #'buffer-name)))
 
 (defun bufler-workspace-mode-lighter ()
@@ -232,6 +236,18 @@ Completion is done in steps when descending into branches."
       (cl-typecase path
         (list path)
         (atom (list path))))))
+
+;;;; Autoload bufler-workspace-tabs on Emacs 27+
+
+;; This is better than autoloading all the forms in bufler-workspace-tabs.el,
+;; because that causes the generated autoloads file to be the source file for
+;; the forms defined in it (and it loads them all into memory as autoloads
+;; unnecessarily).
+
+;;;###autoload
+(cl-eval-when (load)
+  (when (require 'tab-bar nil t)
+    (require 'bufler-workspace-tabs)))
 
 ;;;; Footer
 
