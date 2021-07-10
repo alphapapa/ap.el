@@ -1,2 +1,0 @@
-;;; Generated package description from /home/test/.emacs.d/elpa/pretty-hydra-20191014.337/pretty-hydra.el  -*- no-byte-compile: t -*-
-(define-package "pretty-hydra" "20191014.337" "A macro for creating nice-looking hydras" '((hydra "0.15.0") (s "1.12.0") (dash "2.15.0") (dash-functional "1.2.0") (emacs "24")) :authors '(("Jerry Peng" . "pr2jerry@gmail.com")) :maintainer '("Jerry Peng" . "pr2jerry@gmail.com") :url "https://github.com/jerrypnz/major-mode-hydra.el")

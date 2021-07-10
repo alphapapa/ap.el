@@ -1,4 +1,4 @@
-;;; pretty-hydra-autoloads.el --- automatically extracted autoloads
+;;; pretty-hydra-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -73,7 +73,7 @@ Radio is considered on when STATUS is non-nil, otherwise off.
 
 \(fn NAME STATUS)" nil nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "pretty-hydra" '("pretty-hydra-")))
+(register-definition-prefixes "pretty-hydra" '("pretty-hydra-"))
 
 ;;;***
 
