@@ -7,20 +7,21 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector
    ["#1E1C31" "#FF8080" "#95FFA4" "#FFE9AA" "#91DDFF" "#C991E1" "#AAFFE4" "#CBE3E7"])
- '(bufler-workspace-mode t)
- '(bufler-workspace-tabs-mode nil)
+ '(bufler-columns '("Name" "Size" "Mode" "VC" "Path"))
  '(burly-before-open-bookmark-hook '(tab-bar-new-tab))
  '(comp-deferred-compilation t t)
+ '(completion-cycle-threshold 5)
  '(completion-styles '(basic partial-completion emacs22 substring flex initials))
  '(completions-format 'vertical)
  '(custom-enabled-themes '(doom-solarized-dark))
  '(custom-safe-themes
    '("01cf34eca93938925143f402c2e6141f03abb341f27d1c2dba3d50af9357ce70" "8d7684de9abb5a770fbfd72a14506d6b4add9a7d30942c6285f020d41d76e0fa" "f7216d3573e1bd2a2b47a2331f368b45e7b5182ddbe396d02b964b1ea5c5dc27" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "37144b437478e4c235824f0e94afa740ee2c7d16952e69ac3c5ed4352209eefb" "5d09b4ad5649fea40249dd937eaaa8f8a229db1cec9a1a0ef0de3ccf63523014" "229c5cf9c9bd4012be621d271320036c69a14758f70e60385e87880b46d60780" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa3bdd59ea708164e7821574822ab82a3c51e262d419df941f26d64d015c90ee" "d5f8099d98174116cba9912fe2a0c3196a7cd405d12fa6b9375c55fc510988b5" "7f791f743870983b9bb90c8285e1e0ba1bf1ea6e9c9a02c60335899ba20f3c94" "615123f602c56139c8170c153208406bf467804785007cdc11ba73d18c3a248b" "730a87ed3dc2bf318f3ea3626ce21fb054cd3a1471dcd59c81a4071df02cb601" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "a83f05e5e2f2538376ea2bfdf9e3cd8b7f7593b16299238c1134c1529503fa88" "3e3a1caddeee4a73789ff10ba90b8394f4cd3f3788892577d7ded188e05d78f4" default))
- '(electric-pair-mode t)
+ '(delete-by-moving-to-trash t)
+ '(doom-outrun-electric-brighter-modeline t)
+ '(doom-outrun-electric-comment-bg t)
  '(fci-rule-color "#62686E")
  '(global-tab-line-mode t)
  '(inhibit-startup-screen t)
- '(ivy-mode t)
  '(ivy-sort-matches-functions-alist
    '((t . ivy--shorter-matches-first)
      (ivy-completion-in-region . ivy--shorter-matches-first)
@@ -35,19 +36,12 @@
  '(org-agenda-files '("~/org/inbox.org"))
  '(org-log-into-drawer t)
  '(org-superstar-remove-leading-stars t)
- '(org-todo-keywords
-   '((sequence "TODO(t!)" "TODAY(a!)" "NEXT(n!)" "STARTED(s!)" "UNDERWAY(u!)" "WAITING(w@)" "SOMEDAY(o!)" "MAYBE(m!)" "|" "DONE(d@)" "CANCELED(c@)")
-     (sequence "CHECK(k!)" "|" "DONE(d@)")
-     (sequence "TO-READ(r!)" "READING(R!)" "|" "HAVE-READ(d@)")
-     (sequence "TO-WATCH(!)" "WATCHING(!)" "SEEN(!)")
-     (type "NOW(N!)" "|")
-     (type "IMPORTANT(i!)" "|")
-     (sequence "PROJECT(p!)" "|" "COMPLETED(c!)")))
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(org-ql with-simulated-input org-web-tools org-sidebar org-super-agenda bufler burly buttercup doom-themes ivy-posframe stream forge imenu-list helm-bufler magit-todos dockerfile-mode unpackaged org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent prism general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(bufler helm-bufler unpackaged prism snow imenu-anywhere which-key sr-speedbar helm-org-ql org-ql org-sticky-header with-simulated-input org-web-tools org-sidebar org-super-agenda burly buttercup doom-themes ivy-posframe stream forge imenu-list magit-todos dockerfile-mode org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
- '(quelpa-update-melpa-p nil)
+ '(quelpa-checkout-melpa-p nil)
+ '(quelpa-self-upgrade-p nil)
  '(rustic-ansi-faces
    ["#242730" "#ff665c" "#7bc275" "#FCCE7B" "#51afef" "#C57BDB" "#5cEfFF" "#bbc2cf"])
  '(safe-local-variable-values
@@ -103,11 +97,7 @@
  '(org-meta-line ((t (:inherit font-lock-comment-face))))
  '(tab-bar ((t (:inherit (header-line default) :weight bold))))
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
- '(tab-bar-tab-inactive ((t (:inherit tab-bar))))
- '(tab-line ((t (:inherit (header-line default) :underline "#5d4d7a" :height 0.9))))
- '(tab-line-tab ((t (:inherit (highlight tab-line)))))
- '(tab-line-tab-current ((t (:inherit tab-line-tab))))
- '(tab-line-tab-inactive ((t (:inherit tab-line)))))
+ '(tab-bar-tab-inactive ((t (:inherit tab-bar)))))
 
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")))
@@ -115,6 +105,9 @@
 (package-initialize)
 
 ;; (native-compile-async "~/.emacs.d/elpa/" 3 t)
+
+(use-package use-package
+  :custom (use-package-enable-imenu-support t))
 
 (use-package general)
 
@@ -150,6 +143,7 @@
       (group-not "*Special*"
                  (group-or "*Special*"
                            (mode-match "Magit" (rx bos "magit-status"))
+                           (mode-match "Forge" (rx bos "forge-"))
                            (mode-match "Org" (rx bos "org-"))
                            (auto-file)
                            (mode-match "Dired" (rx bos "dired-"))))
@@ -178,14 +172,19 @@
                (dir "/usr/share/emacs")
                (dir "~/.emacs.d")
                (dir "~/src/emacs")
-               (dir "~/src/emacs/emacs"))
+               (dir "~/src/emacs/emacs")
+               (dir "~/src/archive/emacs"))
      (group-or "Home"
                (dir '("~/.config" "~/.homesick/repos/main"))
                (dir "~/.bin"))
      (group
-      (auto-parent-project))
+      (auto-parent-project)
+      (auto-indirect))
      (auto-directory)
      (auto-mode)))
+  (bufler-reverse t)
+  (bufler-face-prefix "prism-level-")
+  (bufler-initial-face-depth 1)
   (bufler-workspace-mode t)
   (bufler-workspace-tabs-mode t))
 
@@ -215,6 +214,8 @@
   (emacs-lisp-mode . lispy-mode))
 
 (use-package prism
+  :quelpa (prism :fetcher github :repo "alphapapa/prism.el")
+
   :hook
   (emacs-lisp-mode . prism-mode)
 
@@ -295,8 +296,12 @@
   :quelpa (org-now :fetcher github :repo "alphapapa/org-now"))
 
 (use-package org-ql
-  :quelpa (org-ql :fetcher github :repo "alphapapa/org-ql"))
+  :quelpa (org-ql :fetcher github :repo "alphapapa/org-ql"
+	    :files (:defaults (:exclude "helm-org-ql.el"))))
 
+(use-package helm-org-ql
+  :quelpa (helm-org-ql :fetcher github :repo "alphapapa/org-ql"
+		       :files ("helm-org-ql.el")))
 (use-package org-sidebar
   :quelpa (org-sidebar :fetcher github :repo "alphapapa/org-sidebar"))
 
@@ -304,3 +309,8 @@
   :hook (org-mode . org-superstar-mode))
 
 (find-file user-init-file)
+
+;; (define-advice imenu-list-show (:override ())
+;;   (display-buffer-in-side-window
+;;    (get-buffer imenu-list-buffer-name)
+;;    '((side . right))))
