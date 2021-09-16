@@ -5,3 +5,7 @@ elpa/archives/
 /forge-database.sqlite
 /bookmarks
 /.org-id-locations
+/early-init.el
+/projects
+/srecode-map.el
+/url/

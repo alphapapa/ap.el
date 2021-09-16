@@ -1,4 +1,4 @@
-;;; scrollkeeper-autoloads.el --- automatically extracted autoloads
+;;; scrollkeeper-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -27,7 +27,7 @@ window height; see `scrollkeeper-scroll-distance'.
 
 (defalias 'scrollkeeper-up #'scrollkeeper-contents-down)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "scrollkeeper" '("scrollkeeper-")))
+(register-definition-prefixes "scrollkeeper" '("scrollkeeper-"))
 
 ;;;***
 

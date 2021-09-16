@@ -1,4 +1,4 @@
-;;; org-make-toc-autoloads.el --- automatically extracted autoloads
+;;; org-make-toc-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 

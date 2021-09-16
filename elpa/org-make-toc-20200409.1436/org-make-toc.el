@@ -5,7 +5,6 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/org-make-toc
 ;; Package-Version: 20200409.1436
-;; Package-Commit: 26fbd6a7e1e7f8e473fe3a5f74faec715c3a05aa
 ;; Version: 0.5
 ;; Package-Requires: ((emacs "26.1") (dash "2.12") (s "1.10.0") (org "9.0"))
 ;; Keywords: Org, convenience

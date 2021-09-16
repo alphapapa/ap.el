@@ -5,6 +5,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/scrollkeeper.el
 ;; Package-Version: 20190109.629
+;; Package-Commit: 3c4ac6b6b44686d31c260ee0b19daaee59bdccd6
 ;; Keywords: convenience
 ;; Version: 0.1.1
 ;; Package-Requires: ((emacs "25.1"))
@@ -208,8 +209,7 @@ window height; see `scrollkeeper-scroll-distance'."
   (when (eq 'unspecified (face-attribute 'scrollkeeper-guideline-highlight :background))
     (face-spec-set 'scrollkeeper-guideline-highlight
                    `((t :background ,(face-attribute (car scrollkeeper-guideline-dynamic-background)
-                                                     (cdr scrollkeeper-guideline-dynamic-background))
-			:extend t))
+                                                     (cdr scrollkeeper-guideline-dynamic-background))))
                    'face-defface-spec))
   (pulse-momentary-highlight-one-line (point) 'scrollkeeper-guideline-highlight))
 

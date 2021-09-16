@@ -1,0 +1,2 @@
+;;; Generated package description from helm-org-ql.el  -*- no-byte-compile: t -*-
+(define-package "helm-org-ql" "20210608.1556" "Helm support for org-ql" '((emacs "26.1") (dash "2.18.1") (s "1.12.0") (helm-org "1.0") (org-ql "0.6pre")) :commit "94f9e6f3031b32cf5e2149beca7074807235dcb0" :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :url "https://github.com/alphapapa/org-ql")
