@@ -240,6 +240,9 @@
   :custom
   (electric-pair-mode t))
 
+(use-package embark
+  :bind (("C-." . embark-act)))
+
 (use-package eww
   :general
   (:keymaps 'eww-mode-map
