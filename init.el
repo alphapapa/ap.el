@@ -8,6 +8,7 @@
  '(ansi-color-names-vector
    ["#1E1C31" "#FF8080" "#95FFA4" "#FFE9AA" "#91DDFF" "#C991E1" "#AAFFE4" "#CBE3E7"])
  '(bufler-columns '("Name" "Size" "Mode" "VC" "Path"))
+ '(bufler-workspace-mode t nil nil "Customized with use-package bufler")
  '(burly-before-open-bookmark-hook '(tab-bar-new-tab))
  '(comint-input-ignoredups t)
  '(comp-deferred-compilation t t)
@@ -15,7 +16,7 @@
  '(completions-format 'vertical)
  '(custom-enabled-themes '(doom-solarized-dark))
  '(custom-safe-themes
-   '("cf922a7a5c514fad79c483048257c5d8f242b21987af0db813d3f0b138dfaf53" "01cf34eca93938925143f402c2e6141f03abb341f27d1c2dba3d50af9357ce70" "8d7684de9abb5a770fbfd72a14506d6b4add9a7d30942c6285f020d41d76e0fa" "f7216d3573e1bd2a2b47a2331f368b45e7b5182ddbe396d02b964b1ea5c5dc27" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "37144b437478e4c235824f0e94afa740ee2c7d16952e69ac3c5ed4352209eefb" "5d09b4ad5649fea40249dd937eaaa8f8a229db1cec9a1a0ef0de3ccf63523014" "229c5cf9c9bd4012be621d271320036c69a14758f70e60385e87880b46d60780" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa3bdd59ea708164e7821574822ab82a3c51e262d419df941f26d64d015c90ee" "d5f8099d98174116cba9912fe2a0c3196a7cd405d12fa6b9375c55fc510988b5" "7f791f743870983b9bb90c8285e1e0ba1bf1ea6e9c9a02c60335899ba20f3c94" "615123f602c56139c8170c153208406bf467804785007cdc11ba73d18c3a248b" "730a87ed3dc2bf318f3ea3626ce21fb054cd3a1471dcd59c81a4071df02cb601" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "a83f05e5e2f2538376ea2bfdf9e3cd8b7f7593b16299238c1134c1529503fa88" "3e3a1caddeee4a73789ff10ba90b8394f4cd3f3788892577d7ded188e05d78f4" default))
+   '("a7b20039f50e839626f8d6aa96df62afebb56a5bbd1192f557cb2efb5fcfb662" "246a9596178bb806c5f41e5b571546bb6e0f4bd41a9da0df5dfbca7ec6e2250c" "cf922a7a5c514fad79c483048257c5d8f242b21987af0db813d3f0b138dfaf53" "01cf34eca93938925143f402c2e6141f03abb341f27d1c2dba3d50af9357ce70" "8d7684de9abb5a770fbfd72a14506d6b4add9a7d30942c6285f020d41d76e0fa" "f7216d3573e1bd2a2b47a2331f368b45e7b5182ddbe396d02b964b1ea5c5dc27" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "37144b437478e4c235824f0e94afa740ee2c7d16952e69ac3c5ed4352209eefb" "5d09b4ad5649fea40249dd937eaaa8f8a229db1cec9a1a0ef0de3ccf63523014" "229c5cf9c9bd4012be621d271320036c69a14758f70e60385e87880b46d60780" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa3bdd59ea708164e7821574822ab82a3c51e262d419df941f26d64d015c90ee" "d5f8099d98174116cba9912fe2a0c3196a7cd405d12fa6b9375c55fc510988b5" "7f791f743870983b9bb90c8285e1e0ba1bf1ea6e9c9a02c60335899ba20f3c94" "615123f602c56139c8170c153208406bf467804785007cdc11ba73d18c3a248b" "730a87ed3dc2bf318f3ea3626ce21fb054cd3a1471dcd59c81a4071df02cb601" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "a83f05e5e2f2538376ea2bfdf9e3cd8b7f7593b16299238c1134c1529503fa88" "3e3a1caddeee4a73789ff10ba90b8394f4cd3f3788892577d7ded188e05d78f4" default))
  '(delete-by-moving-to-trash t)
  '(doom-outrun-electric-brighter-modeline t)
  '(doom-outrun-electric-comment-bg t)
@@ -23,7 +24,6 @@
  '(frame-resize-pixelwise t)
  '(global-tab-line-mode t)
  '(inhibit-startup-screen t)
- '(ivy-mode t nil nil "Customized with use-package ivy")
  '(ivy-sort-matches-functions-alist
    '((t . ivy--shorter-matches-first)
      (ivy-completion-in-region . ivy--shorter-matches-first)
@@ -45,7 +45,7 @@
  '(org-superstar-remove-leading-stars t)
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(selectrum-prescient selectrum consult marginalia orderless vertico minions bufler helm-bufler unpackaged prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda burly doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(embark taxy selectrum-prescient selectrum consult marginalia orderless vertico minions bufler helm-bufler unpackaged prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda burly doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-checkout-melpa-p nil)
  '(quelpa-self-upgrade-p nil)
@@ -207,7 +207,9 @@
 
 (use-package burly
   :quelpa
-  (burly :fetcher github :repo "alphapapa/burly.el"))
+  (burly :fetcher github :repo "alphapapa/burly.el")
+
+  :bind (("C-x t R" . burly-reset-tab)))
 
 (use-package company
   :hook (prog-mode . company-mode))
@@ -218,6 +220,11 @@
 	      ("M-g M-i" . consult-imenu-multi)
 	      ("M-g l" . consult-line)
 	      ("M-g M-l" . consult-line-multi)))
+
+(use-package deffy
+  :bind (:map global-map
+	      ("C-x p d" . deffy-project)
+	      ("M-g d" . deffy-jump)))
 
 (use-package dired
   :bind (:map dired-mode-map
@@ -230,11 +237,12 @@
   :init (dogears-mode)
   ;; These bindings are optional, of course:
   :bind (:map global-map
-              ("M-g d" . dogears-go)
+              ("M-g M-d" . dogears-go)
               ("M-g M-b" . dogears-back)
               ("M-g M-f" . dogears-forward)
-              ("M-g M-d" . dogears-list)
-              ("M-g M-D" . dogears-sidebar)))
+              ("M-g M-D" . dogears-list)
+              ;; ("M-g M-D" . dogears-sidebar)
+	      ))
 
 (use-package elec-pair
   :custom
@@ -290,8 +298,15 @@
   :after magit
   :config (magit-todos-mode 1))
 
+(use-package doom-themes
+  :config
+  (unpackaged/customize-theme-faces 'doom-solarized-dark
+    `(mode-line ((t :box (:line-width 1 :color ,(face-foreground 'font-lock-builtin-face)))))
+    `(header-line ((t :box nil :background ,(face-background 'region))))))
+
 (use-package modus-themes
-  :init
+  ;; FIXME: These aren't being activated until I eval this form manually.  *sigh*
+  :config
   (unpackaged/customize-theme-faces 'modus-operandi
     '(font-lock-keyword-face ((t :weight bold)))
     '(font-lock-warning-face ((t :weight bold))))
@@ -301,7 +316,7 @@
 
 (use-package orderless
   :custom
-  (completion-styles '(orderless)))
+  (completion-styles '(orderless flex)))
 
 (use-package org
   :general
@@ -471,11 +486,15 @@
   ([remap scroll-up-command] #'scrollkeeper-down))
 
 (use-package selectrum
-  :init (selectrum-mode))
+  ;; Trying Vertico instead.  See comment below.
+  ;; :init (selectrum-mode)
+  )
 
 (use-package selectrum-prescient
+    ;; Trying Vertico instead.  See comment below.
   :after selectrum
-  :init (selectrum-prescient-mode))
+  ;; :init (selectrum-prescient-mode)
+  )
 
 (use-package topsy
   :hook (prog-mode . topsy-mode))
@@ -485,9 +504,15 @@
   (unpackaged :fetcher github :repo "alphapapa/unpackaged.el"))
 
 (use-package vertico
-  :init (vertico-mode 1)
-  :custom
-  (vertico-resize t))
+  ;; Commenting out for now, because `selectrum-prescient-mode' is
+  ;; very nice.  If/when
+  ;; <https://github.com/raxod502/prescient.el/issues/89> is done, it
+  ;; should be usable with `vertico', I guess.  Actually, daviwil and
+  ;; karthink in #systemcrafters showed me that Vertico does a kind of
+  ;; frecency or recency itself, so `selectrum-prescient-mode' may not
+  ;; be needed, or Vertico may be close enough.  Let's leave it on and
+  ;; try it.
+  :init (vertico-mode))
 
 (use-package window
   :config
@@ -507,6 +532,17 @@ Also set its `no-delete-other-windows' parameter to match."
       (set-window-dedicated-p window (not (window-dedicated-p window)))
       (set-window-parameter window 'no-delete-other-windows
 			    (window-dedicated-p window)))))
+
+(use-package custom
+  :config
+  (defun ap/switch-theme (theme)
+    "Disable active themes and load THEME."
+    (interactive
+     (list (intern (completing-read "Theme: "
+				    (->> (custom-available-themes)
+                                         (-map #'symbol-name))))))
+    (mapc #'disable-theme custom-enabled-themes)
+    (load-theme theme 'no-confirm)))
 
 (find-file user-init-file)
 

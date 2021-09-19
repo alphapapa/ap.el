@@ -1,0 +1,1245 @@
+This is debbugs-ug.info, produced by makeinfo version 6.5 from
+debbugs-ug.texi.
+
+Copyright (C) 2015-2021 Free Software Foundation, Inc.
+
+     Permission is granted to copy, distribute and/or modify this
+     document under the terms of the GNU Free Documentation License,
+     Version 1.2 or any later version published by the Free Software
+     Foundation; with no Invariant Sections, with the Front-Cover, or
+     Back-Cover Texts.  A copy of the license is included in the section
+     entitled "GNU Free Documentation License" in the Emacs manual.
+
+     This document is part of a collection distributed under the GNU
+     Free Documentation License.  If you want to distribute this
+     document separately from the collection, you can do so by adding a
+     copy of the license to the document, as described in section 6 of
+     the license.
+
+     All Emacs Lisp code contained in this document may be used,
+     distributed, and modified without restriction.
+INFO-DIR-SECTION Emacs
+START-INFO-DIR-ENTRY
+* Debbugs UG: (debbugs-ug).  Debbugs User Interface in Emacs.
+END-INFO-DIR-ENTRY
+
+
+File: debbugs-ug.info,  Node: Top,  Next: Retrieving Bugs,  Up: (dir)
+
+Debbugs User Guide
+******************
+
+Debbugs is a bugtracking system (BTS) that was initially written for the
+Debian project but currently used also by the GNU project.  The main
+distinctive feature of Debbugs is that it's mostly email-based.  All
+actions on bug reports: opening, closing, changing the status,
+commenting, forwarding are performed via email by sending specially
+composed letters to the particular email addresses.  However, searching
+the bug reports, querying bug report status and viewing comments have
+been web-based for a long time.  To overcome this inconvenience the
+Debbugs/SOAP service was introduced.
+
+   Based on the Debbugs/SOAP service, frontends are written which offer
+handling of bugs inside Emacs.  These frontends are restricted to the
+GNU Debbugs server.  Bugs are presented either as tabulated list
+('debbugs-gnu') or as 'org-mode' TODO list ('debbugs-org', *note Org
+Mode: (org)Top.).  As backend they use the 'debbugs' Emacs library
+(*note Debbugs Programmer's Manual: (debbugs)Top.).
+
+* Menu:
+
+* Retrieving Bugs::             How to retrieve bugs.
+* Searching Bugs::              How to search in the debbugs database.
+* Presenting Bugs::             How the results are presented.
+* Minor Mode::                  How to use browse bug URLs.
+
+* Command Index::               Debbugs commands.
+* Variable Index::              User options and variables.
+* Key Index::                   Keyboard strokes on bug report buffers.
+* Mail Command Index::          Debbugs control mailserver commands.
+
+
+File: debbugs-ug.info,  Node: Retrieving Bugs,  Next: Searching Bugs,  Prev: Top,  Up: Top
+
+1 Retrieving Bugs
+*****************
+
+Bugs are retrieved by the 'debbugs-gnu' or 'debbugs-org' commands.  In
+their simple version, they retrieve just bugs for the '"emacs"' package
+on the GNU Debbugs server, filtered by bug severities.  Further
+filtering is possible when the commands are called with a prefix.
+
+   When the bug numbers to be retrieved are known, the commands
+'debbugs-gnu-bugs' or 'debbugs-org-bugs' are applicable.
+
+   The commands 'debbugs-gnu-patches' / 'debbugs-org-patches',
+'debbugs-gnu-tagged' / 'debbugs-org-tagged' and
+'debbugs-gnu-emacs-release-blocking-reports' /
+'debbugs-org-emacs-release-blocking-reports' retrieve bugs with a
+predefined filter.
+
+ -- Command: debbugs-gnu severities &optional packages archivedp
+          suppress tags
+ -- Command: debbugs-org severities &optional packages archivedp
+          suppress tags
+
+     These commands retrieve bug reports from the GNU Debbugs server.
+     'debbugs-gnu' returns a tabulated list, and 'debbugs-org' returns a
+     list of TODO items in 'org-mode'.  In order not to stress the GNU
+     Debbugs server, the bugs are retrieved in chunks of 500 bugs.
+     However, the bug report buffer shows all retrieved bugs then, in
+     reverse bug number order.
+
+     SEVERITIES is a list of strings which filter for the severities of
+     the bugs to be retrieved.  Valid severities are '"serious"',
+     '"important"', '"normal"', '"minor"' and '"wishlist"' (see also the
+     constant 'debbugs-gnu-all-severities').  If the list is empty,
+     there is no filtering with respect to severities.  The keyword
+     '"tagged"', which is also possible, is not a severity in the GNU
+     Debbugs server but allows restricting the result to bugs with a
+     given user tag.
+
+     PACKAGES, also a list of strings, points to the defined software
+     packages on the GNU Debbugs server which should be taken into
+     account.  The existing package names are compiled into the constant
+     'debbugs-gnu-all-packages'.
+
+     ARCHIVEDP, if non-'nil', extends the retrieval to also apply to
+     archived bugs on the GNU Debbugs server.
+
+     When SUPPRESS is non-'nil', closed bugs are suppressed from being
+     retrieved from the Debbugs server.  Which bugs are regarded as
+     suppressed is configured via the user option
+     'debbugs-gnu-suppress-bugs'.  By default bugs marked as '"done"'
+     are suppressed from being retrieved.
+
+     When SEVERITIES contains the severity '"tagged"', TAGS is consulted
+     in order to restrict the result to bugs which are tagged with one
+     of the strings of the list TAGS.  This list can also be empty; in
+     this case locally tagged bugs are included in the results.
+
+     When called interactively, the commands require just the SEVERITIES
+     and the TAGS (if SEVERITIES includes '"tagged"').  In order to
+     provide the other arguments interactively, the commands must be
+     called with a prefix, like 'C-u M-x debbugs-gnu'.  In the
+     minibuffer, lists must be entered separated by commas.
+
+     Default values for interactive use can be configured with the user
+     options 'debbugs-gnu-default-severities' and
+     'debbugs-gnu-default-packages'.
+
+     *note Presenting Bugs:: for the presentation of the results.
+
+ -- Command: debbugs-gnu-package &optional packages
+
+     This command shows all bugs for a given list of PACKAGES, sorted by
+     severity and whether already resolved.  It is
+     'debbugs-gnu-default-packages' per default.
+
+     If the package '"emacs"' is member of the PACKAGES list, also all
+     unresolved bugs for the next Emacs release are shown, like
+     'debbugs-gnu-emacs-release-blocking-reports' does (see below).
+
+     *note Presenting Bugs:: for the presentation of the results.
+
+ -- Command: debbugs-gnu-bugs &rest bugs
+ -- Command: debbugs-org-bugs &rest bugs
+
+     The commands 'debbugs-gnu-bugs' and 'debbugs-org-bugs' show bugs
+     specified by their bug number.  Interactively, the bug numbers must
+     be entered as a comma-separated list of bugs or bug ranges.
+
+     A bug range has the form '12345-21345' or '-123'.  In the former
+     case, all bugs from 12345 until 21345 are presented, and in the
+     latter case the last 123 bugs are shown, counting from the highest
+     bug number in the repository.
+
+     A default value for interactive use can be configured in the user
+     option 'debbugs-gnu-default-bug-number-list'.
+
+     *note Presenting Bugs:: for the presentation of the results.
+
+ -- Command: debbugs-gnu-patches
+ -- Command: debbugs-org-patches
+
+     The commands 'debbugs-gnu-patches' and 'debbugs-org-patches' show
+     all unarchived bugs of the packages declared in
+     'debbugs-gnu-default-packages', and tagged with '"patch"'.  This is
+     useful for bug triaging.
+
+     *note Presenting Bugs:: for the presentation of the results.
+
+ -- Command: debbugs-gnu-tagged
+ -- Command: debbugs-org-tagged
+
+     The commands 'debbugs-gnu-tagged' and 'debbugs-org-tagged' show all
+     bugs tagged locally.  This list is useful for keeping track of bugs
+     you are currently working on.
+
+     *note Presenting Bugs:: for the presentation of the results.
+
+ -- Command: debbugs-gnu-emacs-release-blocking-reports &optional
+          release
+ -- Command: debbugs-org-emacs-release-blocking-reports &optional
+          release
+
+     The package '"emacs"' has the additional commands
+     'debbugs-gnu-emacs-release-blocking-reports' and
+     'debbugs-org-emacs-release-blocking-reports', which show all
+     blocking bugs for a given Emacs release.  The user option
+     'debbugs-gnu-emacs-current-release' contains the release number the
+     blocking reports are selected for; a prefix argument allows to
+     change this when called interactively.
+
+ -- User Option: debbugs-show-progress
+
+     If this user option is non-'nil', a progress report is shown when
+     retrieving bugs, defaults to t.
+
+
+File: debbugs-ug.info,  Node: Searching Bugs,  Next: Presenting Bugs,  Prev: Retrieving Bugs,  Up: Top
+
+2 Searching in the Debbugs Database
+***********************************
+
+The GNU Debbugs server allows searching the text of the messages
+submitted to the bugs in the database.  It uses a HyperEstraier based
+search engine
+(https://fallabs.com/hyperestraier/uguide-en.html#searchcond)(1).
+
+   The search engine uses an index over the bug database.  This index is
+refreshed daily; search hits may not include recent changes made the
+same day.
+
+ -- Command: debbugs-gnu-search
+ -- Command: debbugs-org-search
+
+     Both these commands are completely interactive.  They ask for a
+     '"search phrase"' for the text search.  It is just a string which
+     contains the words to be searched for followed by each other.  If
+     there are operators like "AND", "ANDNOT" and "OR" between the
+     words, the search happens for words at different positions in the
+     text.  Only complete words, contained in a message body, are
+     searched for.
+
+     Wildcard searches are also supported.  It can be used for forward
+     match search and backward match search of words.  For example,
+     "[BW] euro" matches words which begin with "euro".  "[EW] sphere"
+     matches words which end with "sphere".  Moreover, regular
+     expressions are also supported.  For example, "[RX] ^inter.*al$"
+     matches words which begin with "inter" and end with "al".(2)
+     Several wildcards must be separated by the operators explained
+     above.
+
+     While the words to be searched for are case insensitive, the
+     operators must be specified in upper case.
+
+     While the search for the phrase is performed only in the bodies of
+     the messages belonging to a bug report, it is also possible to
+     restrict the search using further bug attributes.  The commands ask
+     for such attribute-value pairs, until an empty attribute is
+     returned.  Possible attributes are
+
+     'severity'
+          A comma-separated list of bug severities, *Note Retrieving
+          Bugs::.
+
+     'package'
+          A comma-separated list of defined software packages on the GNU
+          Debbugs server, *Note Retrieving Bugs::.
+
+     'tags'
+          A comma-separated list of defined user tags.
+
+     'author'
+          The email address of a message originator.
+
+     'date'
+          A time period during which the bug has been submitted or
+          modified.
+
+     'subject'
+          Word(s) contained in the subject of the bug report.
+
+     'status'
+          The status of the bug report.  Valid values are "open",
+          "forwarded" and "done".
+
+     It is also possible to apply these commands with an empty search
+     phrase.  In this case, the GNU Debbugs server is searched only for
+     bugs which match the given attributes.  The attributes to be
+     applied are the same as already described, plus
+
+     'archive'
+          Whether archived bugs shall be searched (no value to be
+          entered).
+
+     'src'
+          Bugs which belong to a given source, if that attribute is set.
+
+     'tag'
+          An arbitrary string the bug is annotated with.  Usually, this
+          is the same as the status mentioned above.
+
+     'owner'
+     'submitter'
+     'maint'
+     'correspondent'
+          The email address of the bug's owner, submitter, maintainer,
+          or correspondent (somebody who has participated in bug
+          messages).
+
+     'log_modified'
+     'last_modified'
+     'found_date'
+     'fixed_date'
+          The date of the last update, or the date of the bug report /
+          bug fix.
+
+     'unarchived'
+          The date the bug was unarchived, if ever.
+
+     'done'
+          The email address of the worker who closed the bug (if done).
+
+     'forwarded'
+          A URL or an email address.
+
+     'msgid'
+          The message id of the initial bug report.
+
+     'summary'
+          The summary of the bug report.
+
+     Not all of these attributes can be queried on the GNU Debbugs
+     server via the Debbugs/SOAP backend.  In this case, the results of
+     a query are filtered on the client side, which is indicated by the
+     string "(client-side filter)" in the minibuffer after the attribute
+     name.  Note, that client side filters perform badly, because they
+     can be applied only after all bugs have been downloaded.
+
+     These commands show also a progress report when
+     'debbugs-show-progress' is non-'nil'.
+
+   ---------- Footnotes ----------
+
+   (1) This has been added to the Debbugs/SOAP backend of the GNU
+Debbugs server only.
+
+   (2) Simplified forms, as described in the Hyperestraier User Guide,
+are not supported.
+
+
+File: debbugs-ug.info,  Node: Presenting Bugs,  Next: Minor Mode,  Prev: Searching Bugs,  Up: Top
+
+3 Presenting Bugs
+*****************
+
+The commands described in the previous chapters generate (a) report
+buffer(s) applicable for navigation.  'debbugs-gnu-*' displays a
+tabulated list, and 'debbugs-org-*' displays a list of TODO items in
+'org-mode'.
+
+* Menu:
+
+* Tabulated Lists::             Tabulated Lists.
+* TODO Items::                  TODO Items.
+* Control Messages::            Control Messages.
+* Applying Patches::            Applying Patches in the Emacs Repository.
+* Posting Patches::             Posting Patches to Debbugs from the Emacs Repository.
+
+
+File: debbugs-ug.info,  Node: Tabulated Lists,  Next: TODO Items,  Up: Presenting Bugs
+
+3.1 Tabulated Lists
+===================
+
+A tabulated list of bug reports consisting of four columns for every bug
+entry: 'Id' (the bug number), 'State' (some bug attributes), 'Submitter'
+(the name of the bug submitter), and 'Title' (the bug subject).  By
+default the bugs are sorted descending by 'Id'; this can be changed by
+clicking in the headline.
+
+   Different foreground colors represent further information on the bug
+report.  If the bug number uses a red color ('debbugs-gnu-tagged'), the
+bug has been tagged locally.  The same face is used to mark bugs in the
+submitter or title column, when the bug has been reported / is
+maintained by the user.
+
+   The bug state can appear in different colors: red ('debbugs-gnu-new',
+nobody has answered this bug yet), ForestGreen ('debbugs-gnu-handled',
+the bug has been modified recently), MidnightBlue
+('debbugs-gnu-pending', the bug is pending), orange
+('debbugs-gnu-stale', the bug has not been touched for a while), and
+DarkGrey ('debbugs-gnu-done', the bug is closed).  Archived bugs are
+shown with inverse face ('debbugs-gnu-archived').
+
+   A DarkGrey background color ('debbugs-gnu-marked') in the title
+column shows bugs which have been marked locally.
+
+   The minor mode 'debbugs-gnu-mode' is active in bug report buffers.
+This enables the following key strokes:
+
+'<RET>'        'debbugs-gnu-select-report'
+'<mouse-1>'    Show the email messages that discuss the bug.
+'<mouse-2>'    
+               
+'A'            'debbugs-gnu-select-current-bugs'
+               Show the email messages for all currently displayed
+               messages (including merged reports).  Limited by user
+               option 'debbugs-gnu-select-bugs-limit'.
+               
+'d'            'debbugs-gnu-display-status'
+               Show all bug attributes.
+               
+'/'            'debbugs-gnu-narrow-to-status'
+               Narrow the list of bugs to the bugs that match the given
+               regex in 'State', 'Submitter' or 'Title'.  With a prefix
+               argument 'C-u', the list of bugs is narrowed to a match
+               in 'State' only.
+               
+'R'            'debbugs-gnu-show-all-blocking-reports'
+               Narrow the list of bug reports to the ones that are
+               blocking the current Emacs release, as specified in
+               'debbugs-gnu-emacs-current-release'.  With a prefix
+               argument 'C-u', the current Emacs release is read from
+               the minibuffer.
+               
+'w'            'debbugs-gnu-widen'
+               Restore the full list again after narrowing.
+               
+'g'            'debbugs-gnu-rescan'
+               Reload all bugs.  With a prefix argument 'C-u', the bug
+               status cache is disabled, and all bug reports are
+               retrieved from the GNU Debbugs server.
+               
+'B'            'debbugs-gnu-show-blocking-reports'
+'b'            'debbugs-gnu-show-blocked-by-reports'
+               Show all bug reports which are blocking / blocked by
+               this bug.
+               
+'s'            'debbugs-gnu-toggle-sort'
+               Toggle sorting order of bugs.
+               
+'t'            'debbugs-gnu-toggle-tag'
+               Toggle local tag of bugs.
+               
+'m'            'debbugs-gnu-toggle-mark'
+               Toggle local mark of bugs.
+               
+'x'            'debbugs-gnu-toggle-suppress'
+               Toggle showing of closed bugs.
+               
+'C'            'debbugs-gnu-send-control-message'
+               Send a control message for this bug,
+               *note Control Messages::.
+               
+'E'            'debbugs-gnu-make-control-message'
+               Make (but don't send) a control message for this bug,
+               *note Control Messages::.
+
+   Tagging a bug locally via 't' is an efficient way to keep bugs
+visible you are working on.  The command 'debbugs-gnu-tagged' shows all
+locally tagged bugs in a list.
+
+   Marking a bug locally via 'm' is meant for single sessions.  This is
+a mean to mark bugs for different reasons, like marking a bug in a list
+you have processed already during a bug triage.
+
+   Both tagged and marked bugs are kept persistent in the file
+'debbugs-gnu-persistency-file'.
+
+   The user option 'debbugs-gnu-suppress-closed' controls whether closed
+bugs are shown in the initial list.
+
+   The user option 'debbugs-gnu-mail-backend' controls the presentation
+of email messages produced by typing '<RET>' or by clicking the mouse on
+a bug: if its value is 'gnus', the default, a GNUS ephemeral group for
+that bug will be shown; if its value is 'rmail', the command will
+present an Rmail folder instead.
+
+
+File: debbugs-ug.info,  Node: TODO Items,  Next: Control Messages,  Prev: Tabulated Lists,  Up: Presenting Bugs
+
+3.2 TODO Items
+==============
+
+TODO items are offered as usual in 'org-mode'.  The bug attributes are
+mapped onto properties of these items.  They can be shown by the usual
+navigation in 'org-mode'.
+
+   Bug severities are mapped onto org severities, see
+'debbugs-org-severity-priority'.
+
+   The minor mode 'debbugs-org-mode' is active in bug report buffers.
+This enables the following key strokes:
+
+'<TAB>'     'org-cycle'
+            Outline the bug report attributes in 'org-mode'.
+            
+'C-c # d'   'debbugs-gnu-display-status'
+            Show all bug attributes.
+            
+'C-c # t'   'debbugs-gnu-toggle-tag'
+            Toggle local tag of bugs.
+            
+'C-c # m'   'debbugs-gnu-toggle-mark'
+            Toggle local mark of bugs.
+            
+'C-c # C'   'debbugs-gnu-send-control-message'
+            Send a control message for this bug, *note Control Messages::.
+            
+'C-c # E'   'debbugs-gnu-make-control-message'
+            Make (but don't send) a control message for this bug, *note Control Messages::.
+
+   When the bug attributes are shown by 'org-cycle', there is a link
+'Messages' which opens the messages for that bug.  The user options
+'debbugs-gnu-suppress-closed' and 'debbugs-gnu-mail-backend' have the
+same meaning as in *note Tabulated Lists::.
+
+
+File: debbugs-ug.info,  Node: Control Messages,  Next: Applying Patches,  Prev: TODO Items,  Up: Presenting Bugs
+
+3.3 Control Messages
+====================
+
+Debbugs control messages are sent by email to the GNU Debbugs control
+server.  Their format is described in
+<https://debbugs.gnu.org/server-control.html>.
+
+   A control message can be initiated in the tabulated list of bugs, in
+the list of org TODO items, or in the GNUS ephemeral group or Rmail
+folder opened for the messages belonging to a given bug.  Control
+messages can be sent to unarchived bugs only, in case a bug is archived
+the control message 'unarchive' must be sent first.
+
+   In the minibuffer, the following control messages can be requested
+(assuming that 12345 is the bug the control message is intended for).
+The strings show the exact format of the control messages.  For the
+meaning of the control messages, *Note Mail Command Index::.
+
+'block'
+'unblock'
+     "block|unblock 12345 by 54321"
+
+     The second bug number is read interactively.  It could be also a
+     list of comma-separated bug numbers.
+
+'close'
+'done'
+     "close 12345 25.1"
+
+     The second argument, the Emacs version, is read interactively if
+     the bug belongs to the '"emacs"' package.
+
+'confirmed'
+'easy'
+'help'
+'moreinfo'
+'notabug'
+'patch'
+'pending'
+'security'
+'unreproducible'
+'wontfix'
+     "tags 12345 confirmed|easy|help|moreinfo|notabug"
+
+     "tags 12345 patch|pending|security|unreproducible|wontfix"
+
+     If the command invoking the control message has been prefixed with
+     'C-u', the respective tag is removed from the bug, like
+
+     "tags 12345 - confirmed"
+
+'donenotabug'
+'doneunreproducible'
+'donewontfix'
+     "tags 12345 notabug|unreproducible|wontfix"
+     "close 12345 25.1"
+
+     The second argument in the close message, the Emacs version, is
+     read interactively if the bug belongs to the '"emacs"' package.
+
+'found'
+'notfound'
+'fixed'
+'notfixed'
+     "found|notfound|fixed|notfixed 12345 25.1"
+
+     The second argument, the Emacs version, is read interactively if
+     the bug belongs to the '"emacs"' package.
+
+'forwarded'
+     "forwarded 12345 ADDRESS"
+
+     The address, an email address or a URL, is read interactively.
+
+'forcemerge'
+'merge'
+     "forcemerge|merge 12345 54321"
+
+     The second bug number is read interactively.  It can be also a list
+     of comma-separated bug numbers.
+
+'invalid'
+     "tags 12345 notabug"
+     "tags 12345 wontfix"
+     "close 12345"
+
+'noowner'
+'notforwarded'
+     "noowner|notforwarded 12345"
+
+'owner'
+     "owner 12345 !"
+
+'reassign'
+     "reassign 12345 PACKAGE"
+
+     The comma-separated package names on the GNU Debbugs server are
+     read interactively.  Reassigning to the pseudo package '"spam"' let
+     the bug disappear from the bug database.
+
+'reopen'
+     "reopen 12345"
+
+'retitle'
+     "retitle 12345 TITLE"
+
+     The new bug title is read interactively.
+
+'serious'
+'important'
+'normal'
+'minor'
+'wishlist'
+     "severity 12345 serious|important|normal|minor|wishlist"
+
+'unarchive'
+     "unarchive 12345"
+
+'unmerge'
+     "unmerge 12345"
+
+'usertag'
+     "user USERNAME"
+     "usertag 12345 TAG"
+
+     The username, read interactively, is either a package name or an
+     email address.  The tag to be set is also read interactively.
+
+'documentation'
+     "user emacs"
+     "usertag 12345 documentation"
+
+   How the control messages are sent is controlled by the
+'debbugs-gnu-send-mail-function' user option.  If it is 'nil' (the
+default value), the value of 'send-mail-function' is used.  This could
+be inconvenient, for example when an external interactive mail client is
+configured.
+
+
+File: debbugs-ug.info,  Node: Applying Patches,  Next: Posting Patches,  Prev: Control Messages,  Up: Presenting Bugs
+
+3.4 Applying Patches in the Emacs Repository
+============================================
+
+Several bugs carry a proposed patch in one of their messages.  Usually,
+those bugs are marked with the with '"patch"' tag.  *note Retrieving
+Bugs:: how to show such bugs.
+
+   If a GNUS ephemeral group for such a bug is opened, it is possible to
+apply the patch directly to the Emacs repository.  Move the cursor to
+the message containing a patch, and hit 'M-m'.  It determines whether
+one or several patches are in the MIME attachments or just included in
+the message, applies them, runs 'make -k' in the 'lisp' subdirectory,
+and shows a '*vc-dir*' buffer of the Emacs repository with the changed
+file(s).
+
+   The Emacs repository is determined via the user options
+'debbugs-gnu-trunk-directory' or 'debbugs-gnu-branch-directory'.  The
+latter one is used, when the patch is applied with the prefixed command
+'C-u M-m'.  If the predefined directory does not point to an existing
+path, it is read from the minibuffer.
+
+   A further 'M-m' in the corresponding '*vc-diff*' buffer opens the
+modified file.  Here you can apply 'M-m' again.  This creates a
+ChangeLog entry with all needed information.  A final 'M-m' in the
+'ChangeLog' buffer commits the patch via '*vc-log*'.
+
+
+File: debbugs-ug.info,  Node: Posting Patches,  Prev: Applying Patches,  Up: Presenting Bugs
+
+3.5 Posting Patches to Debbugs from the Emacs Repository
+========================================================
+
+Once you have committed a patch locally to fix a bug you usually want to
+post it to the bug thread for review and testing.  And when the patch is
+deemed satisfactory and pushed to the official repository, the bug
+should be marked closed.
+
+   The query for commit (or commit range) to use is controlled by
+'debbugs-gnu-read-commit-range-hook'.  Initially it has an entry which
+operates in '*vc-change-log*' buffers, but additional entries may be
+added to give sensible results for other modes that work with git.
+
+   The command 'debbugs-gnu-pick-commits' (bound to 'c' in
+'*vc-change-log*' buffers by default) helps automate both these
+processes: it queries for a commit (or commit range), and a bug number
+(defaulting to the bug number mentioned in the commit message).  It then
+jumps you to a buffer associated with the bug.  When you reply to a
+message in the bug thread, you are asked whether to post the commits as
+patches (optionally tagging the bug with '"patch"'), or announce that
+the bug has been fixed by the selected commits (optionally closing the
+bug and marking as closed in the Emacs version corresponding to the
+patch).
+
+   For example, suppose you are reading the message of "Bug#12345:
+foo-mode fails to call frobnicate on startup" in a message buffer.  You
+decide to fix it, so you switch to the source code, add in the missing
+call and commit locally, with the commit message "* lisp/foo-mode.el
+(foo-mode): Call frobnicate (Bug#12345)."  Use 'C-x v l' to run
+'vc-print-log', and navigate to the new commit.  Press 'c' and then
+'<RET>' to accept the default bug number (which will be 12345 since it's
+in the commit message) in response to the prompt.  You are then popped
+to the message buffer, and when you reply to the message, press 'p' to
+post the git formatted patch as an attachment for review, and then
+answer 'y' to tag the bug with '"patch"' when the message is sent.
+Assuming you get favorable reviews, you then push it, and again hit 'c'
+but this time press 'a' (for "announce") after replying to the relevant
+bug thread message.  This will insert some text describing the commit
+and where it was pushed to, and answering 'y' will arrange for the bug
+to be closed when the message is sent.
+
+* Menu:
+
+* Customizing debbugs-gnu-pick-commits::
+
+
+File: debbugs-ug.info,  Node: Customizing debbugs-gnu-pick-commits,  Up: Posting Patches
+
+3.5.1 Customizing debbugs-gnu-pick-commits
+------------------------------------------
+
+The string inserted to describe an announced commit is controlled by the
+user option 'debbugs-gnu-commit-description-format', it is a format
+string passed to the '--format' argument of 'git show'.  Additionally,
+if the remote url matches an entry in
+'debbugs-gnu-git-remote-info-alist', then its 'commit-url' subitem is
+appended to the commit description.  By default this user option is
+configured for the GNU Emacs and GNU ELPA repositories, more entries may
+be added to work with other repositories of other packages.
+
+
+File: debbugs-ug.info,  Node: Minor Mode,  Next: Command Index,  Prev: Presenting Bugs,  Up: Top
+
+4 Minor Mode
+************
+
+Emacs uses 'bug-reference.el' for adding hyperlinks to bugs in files
+like 'ChangeLog', or in commentary sections of other files.  The
+reference to such bugs have a specialized format, <Bug#12345>.  The
+hyperlinks are implemented as minor modes 'bug-reference-mode' and
+'bug-reference-prog-mode'.
+
+   This package adds a new minor mode 'debbugs-browse-mode' on top of
+them.  Instead of using the default built-in Emacs browser for a given
+bug reference, it opens a corresponding bug report buffer.  The user
+option 'debbugs-browse-function' controls, whether 'debbugs-gnu-bugs' or
+'debbugs-org-bugs' is called.
+
+   This minor mode is applicable for all URLs, not only bug references.
+Any URL with the format <https://debbugs.gnu.org/12345> or
+<https://bugs.gnu.org/54321> will be shown in a bug report buffer, when
+'debbugs-browse-mode' is enabled.  See user option
+'debbugs-browse-url-regexp' for the syntax of supported URLs.
+
+   In order to enable it globally, you can add the following forms to
+your '~/.emacs':
+
+     (add-hook 'bug-reference-mode-hook 'debbugs-browse-mode)
+     (add-hook 'bug-reference-prog-mode-hook 'debbugs-browse-mode)
+
+
+File: debbugs-ug.info,  Node: Command Index,  Next: Variable Index,  Prev: Minor Mode,  Up: Top
+
+Command Index
+*************
+
+ [index ]
+* Menu:
+
+* debbugs-browse-mode:                   Minor Mode.          (line  12)
+* debbugs-gnu:                           Retrieving Bugs.     (line  20)
+* debbugs-gnu-bugs:                      Retrieving Bugs.     (line  84)
+* debbugs-gnu-emacs-release-blocking-reports: Retrieving Bugs.
+                                                              (line 120)
+* debbugs-gnu-package:                   Retrieving Bugs.     (line  72)
+* debbugs-gnu-patches:                   Retrieving Bugs.     (line 101)
+* debbugs-gnu-pick-commits:              Posting Patches.     (line  16)
+* debbugs-gnu-search:                    Searching Bugs.      (line  15)
+* debbugs-gnu-tagged:                    Retrieving Bugs.     (line 111)
+* debbugs-org:                           Retrieving Bugs.     (line  22)
+* debbugs-org-bugs:                      Retrieving Bugs.     (line  85)
+* debbugs-org-emacs-release-blocking-reports: Retrieving Bugs.
+                                                              (line 122)
+* debbugs-org-patches:                   Retrieving Bugs.     (line 102)
+* debbugs-org-search:                    Searching Bugs.      (line  16)
+* debbugs-org-tagged:                    Retrieving Bugs.     (line 112)
+
+
+File: debbugs-ug.info,  Node: Variable Index,  Next: Key Index,  Prev: Command Index,  Up: Top
+
+Variable Index
+**************
+
+ [index ]
+* Menu:
+
+* debbugs-browse-function:               Minor Mode.          (line  12)
+* debbugs-gnu-all-packages:              Retrieving Bugs.     (line  41)
+* debbugs-gnu-all-severities:            Retrieving Bugs.     (line  32)
+* debbugs-gnu-branch-directory:          Applying Patches.    (line  18)
+* debbugs-gnu-commit-description-format: Customizing debbugs-gnu-pick-commits.
+                                                              (line   6)
+* debbugs-gnu-default-bug-number-list:   Retrieving Bugs.     (line  96)
+* debbugs-gnu-default-packages:          Retrieving Bugs.     (line  66)
+* debbugs-gnu-default-severities:        Retrieving Bugs.     (line  66)
+* debbugs-gnu-default-suppress-bugs:     Retrieving Bugs.     (line  49)
+* debbugs-gnu-git-remote-info-alist:     Customizing debbugs-gnu-pick-commits.
+                                                              (line   6)
+* debbugs-gnu-mail-backend:              Tabulated Lists.     (line 104)
+* debbugs-gnu-persistency-file:          Tabulated Lists.     (line  98)
+* debbugs-gnu-read-commit-range-hook:    Posting Patches.     (line  11)
+* debbugs-gnu-send-mail-function:        Control Messages.    (line 135)
+* debbugs-gnu-suppress-closed:           Tabulated Lists.     (line 101)
+* debbugs-gnu-trunk-directory:           Applying Patches.    (line  18)
+* debbugs-org-severity-priority:         TODO Items.          (line  10)
+* debbugs-show-progress:                 Retrieving Bugs.     (line 133)
+
+
+File: debbugs-ug.info,  Node: Key Index,  Next: Mail Command Index,  Prev: Variable Index,  Up: Top
+
+Key Index
+*********
+
+ [index ]
+* Menu:
+
+* /:                                     Tabulated Lists.     (line  44)
+* A:                                     Tabulated Lists.     (line  36)
+* B:                                     Tabulated Lists.     (line  65)
+* b:                                     Tabulated Lists.     (line  66)
+* C:                                     Tabulated Lists.     (line  82)
+* C-c # C:                               TODO Items.          (line  28)
+* C-c # d:                               TODO Items.          (line  19)
+* C-c # E:                               TODO Items.          (line  31)
+* C-c # m:                               TODO Items.          (line  25)
+* C-c # t:                               TODO Items.          (line  22)
+* d:                                     Tabulated Lists.     (line  41)
+* E:                                     Tabulated Lists.     (line  86)
+* g:                                     Tabulated Lists.     (line  60)
+* m:                                     Tabulated Lists.     (line  76)
+* M-m:                                   Applying Patches.    (line  10)
+* <mouse-1>:                             Tabulated Lists.     (line  33)
+* <mouse-2>:                             Tabulated Lists.     (line  34)
+* R:                                     Tabulated Lists.     (line  50)
+* <RET>:                                 Tabulated Lists.     (line  32)
+* <RET> <1>:                             Tabulated Lists.     (line 104)
+* s:                                     Tabulated Lists.     (line  70)
+* t:                                     Tabulated Lists.     (line  73)
+* <TAB>:                                 TODO Items.          (line  16)
+* w:                                     Tabulated Lists.     (line  57)
+* x:                                     Tabulated Lists.     (line  79)
+
+
+File: debbugs-ug.info,  Node: Mail Command Index,  Prev: Key Index,  Up: Top
+
+Debbugs control mailserver commands
+***********************************
+
+'reassign bugnumber package [ version ]'
+     Records that bug #bugnumber is a bug in package.  This can be used
+     to set the package if the user forgot the pseudo-header, or to
+     change an earlier assignment.  No notifications are sent to anyone
+     (other than the usual information in the processing transcript).
+
+     If you supply a version, the bug tracking system will note that the
+     bug affects that version of the newly-assigned package.
+
+     You can assign a bug to two packages at once by separating the
+     package names with a comma.  However, you should only do this if
+     the bug can be fixed by a change to either package.  If this is not
+     the case, you should clone the bug and reassign the clone to the
+     other package.
+
+'reopen bugnumber [ originator-address | = | ! ]'
+     Reopens #bugnumber if it is closed.
+
+     By default, or if you specify =, the original submitter is still as
+     the originator of the report, so that they will get the ack when it
+     is closed again.
+
+     If you supply an originator-address the originator will be set to
+     the address you supply.  If you wish to become the new originator
+     of the reopened report you can use the !  shorthand or specify your
+     own email address.
+
+     It is usually a good idea to tell the person who is about to be
+     recorded as the originator that you're reopening the report, so
+     that they will know to expect the ack which they'll get when it is
+     closed again.
+
+     If the bug is not closed then reopen won't do anything, not even
+     change the originator.  To change the originator of an open bug
+     report, use the submitter command; note that this will inform the
+     original submitter of the change.
+
+     If the bug was recorded as being closed in a particular version of
+     a package but recurred in a later version, it is better to use the
+     found command instead.
+
+'found bugnumber [ version ]'
+     Record that #bugnumber has been encountered in the given version of
+     the package to which it is assigned.
+
+     The bug tracking system uses this information, in conjunction with
+     fixed versions recorded when closing bugs, to display lists of bugs
+     open in various versions of each package.  It considers a bug to be
+     open when it has no fixed version, or when it has been found more
+     recently than it has been fixed.
+
+     If no version is given, then the list of fixed versions for the bug
+     is cleared.  This is identical to the behaviour of reopen.
+
+     This command will only cause a bug to be marked as not done if no
+     version is specified, or if the version being marked found is equal
+     to the version which was last marked fixed.  (If you are certain
+     that you want the bug marked as not done, use reopen in conjunction
+     with found.
+
+     This command was introduced in preference to reopen because it was
+     difficult to add a version to that command's syntax without
+     suffering ambiguity.
+
+'notfound bugnumber version'
+     Remove the record that #bugnumber was encountered in the given
+     version of the package to which it is assigned.
+
+     This differs from closing the bug at that version in that the bug
+     is not listed as fixed in that version either; no information about
+     that version will be known.  It is intended for fixing mistakes in
+     the record of when a bug was found.
+
+'fixed bugnumber version'
+     Indicate that bug #bugnumber was fixed in the given version of the
+     package to which it is assigned.  version may be a fully qualified
+     version, of the form sourcepackagename/version.
+
+     This does not cause the bug to be marked as closed, it merely adds
+     another version in which the bug was fixed.  Use the bugnumber-done
+     address to close a bug and mark it fixed in a particular version.
+
+'notfixed bugnumber version'
+     Remove the record that bug #bugnumber has been fixed in the given
+     version.  version may be a fully qualified version, of the form
+     sourcepackagename/version.
+
+     This command is equivalent to found followed by notfound (the found
+     removes the fixed at a particular version, and notfound removes the
+     found) with the exception that the bug is not reopened if the found
+     version is greater than any existing fixed version.  It is intended
+     for fixing mistakes in the record of when a bug was fixed; in most
+     cases, you actually want found, not notfixed.
+
+'submitter bugnumber originator-address | !'
+     Changes the originator of #bugnumber to originator-address.
+
+     If you wish to become the new originator of the report you can use
+     the !  shorthand or specify your own email address.
+
+     While the reopen command changes the originator of other bugs
+     merged with the one being reopened, submitter does not affect
+     merged bugs.
+
+'forwarded bugnumber address'
+     Notes that bugnumber has been forwarded to the upstream maintainer
+     at address.  This does not actually forward the report.  This can
+     be used to change an existing incorrect forwarded-to address, or to
+     record a new one for a bug that wasn't previously noted as having
+     been forwarded.  address should generally be a URI, or possibly an
+     email address.  Using a URI where possible allows tools to query a
+     remote bug tracking system (such as bugzilla) for a bug's status.
+
+     Example usage:
+
+          forwarded 12345 https://bugz.illa.foo/cgi/54321
+
+'notforwarded bugnumber'
+     Forgets any idea that bugnumber has been forwarded to any upstream
+     maintainer.  If the bug was not recorded as having been forwarded
+     then this will do nothing.
+
+'retitle bugnumber new-title'
+     Changes the title of a bug report to that specified (the default is
+     the Subject mail header from the original report).
+
+     Unlike most of the other bug-manipulation commands when used on one
+     of a set of merged reports this will change the title of only the
+     individual bug requested, and not all those with which it is
+     merged.
+
+'severity bugnumber severity'
+     Set the severity level for bug report #bugnumber to severity.  No
+     notification is sent to the user who reported the bug.
+
+     Severities are serious, important, normal, minor, wishlist.
+
+     For their meanings please consult the general developers'
+     documentation for the bug system.
+
+'clone bugnumber NewID [ new IDs ... ]'
+     The clone control command allows you to duplicate a bug report.  It
+     is useful in the case where a single report actually indicates that
+     multiple distinct bugs have occurred.  "New IDs" are negative
+     numbers, separated by spaces, which may be used in subsequent
+     control commands to refer to the newly duplicated bugs.  A new
+     report is generated for each new ID.
+
+     Example usage:
+
+          clone 12345 -1 -2
+          reassign -1 foo
+          retitle -1 foo: foo sucks
+          reassign -2 bar
+          retitle -2 bar: bar sucks when used with foo
+          severity -2 wishlist
+          clone 123456 -3
+          reassign -3 foo
+          retitle -3 foo: foo sucks
+          merge -1 -3
+
+'merge bugnumber bugnumber ...'
+     Merges two or more bug reports.  When reports are merged opening,
+     closing, marking or unmarking as forwarded and reassigning any of
+     the bugs to a new package will have an identical effect on all of
+     the merged reports.
+
+     Before bugs can be merged they must be in exactly the same state:
+     either all open or all closed, with the same forwarded-to upstream
+     author address or all not marked as forwarded, all assigned to the
+     same package or package(s) (an exact string comparison is done on
+     the package to which the bug is assigned), and all of the same
+     severity.  If they don't start out in the same state you should use
+     reassign, reopen and so forth to make sure that they are before
+     using merge.  Titles are not required to match, and will not be
+     affected by the merge.
+
+     If any of the bugs listed in a merge command is already merged with
+     another bug then all the reports merged with any of the ones listed
+     will all be merged together.  Merger is like equality: it is
+     reflexive, transitive and symmetric.
+
+     Merging reports causes a note to appear on each report's logs; on
+     the WWW pages this includes links to the other bugs.
+
+     Merged reports are all expired simultaneously, and only when all of
+     the reports each separately meet the criteria for expiry.
+
+'forcemerge bugnumber bugnumber ...'
+     Forcibly merges two or more bug reports.  The first bug is chosen
+     as the master bug, and its settings are assigned to the bugs listed
+     next in the command.  See the text above for a description of what
+     merging means.
+
+     Note that this makes it possible to close bugs by merging; you are
+     responsible for notifying submitters with an appropriate close
+     message if you do this.
+
+'unmerge bugnumber'
+     Disconnects a bug report from any other reports with which it may
+     have been merged.  If the report listed is merged with several
+     others then they are all left merged with each other; only their
+     associations with the bug explicitly named are removed.
+
+     If many bug reports are merged and you wish to split them into two
+     separate groups of merged reports you must unmerge each report in
+     one of the new groups separately and then merge them into the
+     required new group.
+
+     You can only unmerge one report with each unmerge command; if you
+     want to disconnect more than one bug simply include several unmerge
+     commands in your message.
+
+'tags bugnumber [ + | - | = ] tag [ tag ... ]'
+     Sets tags for the bug report #bugnumber.  No notification is sent
+     to the user who reported the bug.  Setting the action to + means to
+     add each given tag, - means to remove each given tag, and = means
+     to ignore the current tags and set them afresh to the list
+     provided.  The default action is adding.
+
+     Example usage:
+
+          # same as 'tags 123456 + patch'
+          tags 123456 patch
+
+          # same as 'tags 123456 + help security'
+          tags 123456 help security
+
+          # add 'fixed' and 'pending' tags
+          tags 123456 + fixed pending
+
+          # remove 'unreproducible' tag
+          tags 123456 - unreproducible
+
+          # set tags to exactly 'moreinfo' and 'unreproducible'
+          tags 123456 = moreinfo unreproducible
+
+     Available tags currently include patch, wontfix, moreinfo,
+     unreproducible, help, pending, fixed, security, notabug and easy.
+
+     For their meanings please consult the general developers'
+     documentation for the bug system.
+
+'block bugnumber by bug [ bug ... ]'
+'unblock bugnumber by bug [ bug ... ]'
+     Use to note that one bug blocks another bug from being fixed.  The
+     first listed bug is the one being blocked, and it is followed by
+     the bug or bugs that are blocking it.  Use unblock to unblock a
+     bug.
+
+     Example usage:
+
+          # indicates that 7890 cannot be fixed until 123456 is fixed
+          block 7890 by 123456
+          # indicates that 7890 can be fixed before 123456 after all
+          unblock 7890 by 123456
+
+'close bugnumber [ fixed-version ] (deprecated)'
+     Close bug report #bugnumber.
+
+     A notification is sent to the user who reported the bug, but (in
+     contrast to mailing bugnumber-done) the text of the mail which
+     caused the bug to be closed is not included in that notification.
+     The maintainer who closes a report should ensure, probably by
+     sending a separate message, that the user who reported the bug
+     knows why it is being closed.  The use of this command is therefore
+     deprecated.
+
+     If you supply a fixed-version, the bug tracking system will note
+     that the bug was fixed in that version of the package.
+
+'package [ packagename ... ]'
+     Limits the following commands so that they will only apply to bugs
+     filed against the listed packages.  You can list one or more
+     packages.  If you don't list any packages, the following commands
+     will apply to all bugs.  You're encouraged to use this as a safety
+     feature in case you accidentally use the wrong bug numbers.
+
+     Example usage:
+
+          package foo
+          reassign 123456 bar 1.0-1
+
+          package bar
+          retitle 123456 bar: bar sucks
+          severity 123456 normal
+
+          package
+          severity 234567 wishlist
+
+'owner bugnumber address | !'
+     Sets address to be the "owner" of #bugnumber.  The owner of a bug
+     claims responsibility for fixing it.  This is useful to share out
+     work in cases where a package has a team of maintainers.
+
+     If you wish to become the owner of the bug yourself, you can use
+     the !  shorthand or specify your own email address.
+
+'noowner bugnumber'
+     Forgets any idea that the bug has an owner other than the usual
+     maintainer.  If the bug had no owner recorded then this will do
+     nothing.
+
+'archive bugnumber'
+     Archives a bug that was previously archived if the bug fulfills the
+     requirements for archival, ignoring time.
+
+'unarchive bugnumber'
+     Unarchives a bug that was previously archived.  Unarchival should
+     generally be coupled with reopen and found/fixed as approprite.
+     Bugs that have been unarchived can be archived using archive
+     assuming the non-time based archival requirements are met.
+
+'#...'
+     One-line comment.  The # must be at the start of the line.  The
+     text of comments will be included in the acknowledgement sent to
+     the sender and to affected maintainers, so you can use this to
+     document the reasons for your commands.
+
+'quit'
+'stop'
+'thank'
+'thanks'
+'thankyou'
+'thank you'
+'--'
+     On a line by itself, in any case, possibly followed by whitespace,
+     tells the control server to stop processing the message; the
+     remainder of the message can include explanations, signatures or
+     anything else, none of it will be detected by the control server.
+
+
+
+Tag Table:
+Node: Top1092
+Node: Retrieving Bugs2700
+Node: Searching Bugs8689
+Ref: Searching Bugs-Footnote-113195
+Ref: Searching Bugs-Footnote-213283
+Node: Presenting Bugs13374
+Node: Tabulated Lists14040
+Node: TODO Items18801
+Node: Control Messages20209
+Node: Applying Patches23835
+Node: Posting Patches25218
+Node: Customizing debbugs-gnu-pick-commits27703
+Node: Minor Mode28404
+Node: Command Index29677
+Node: Variable Index31048
+Node: Key Index32671
+Node: Mail Command Index34642
+Ref: Mail Command Index: reassign34795
+Ref: Mail Command Index: reopen35556
+Ref: Mail Command Index: found36710
+Ref: Mail Command Index: notfound37791
+Ref: Mail Command Index: fixed38200
+Ref: Mail Command Index: notfixed38641
+Ref: Mail Command Index: submitter39259
+Ref: Mail Command Index: forwarded39653
+Ref: Mail Command Index: notforwarded40266
+Ref: Mail Command Index: retitle40467
+Ref: Mail Command Index: severity40851
+Ref: Mail Command Index: clone41182
+Ref: Mail Command Index: merge41947
+Ref: Mail Command Index: forcemerge43334
+Ref: Mail Command Index: unmerge43778
+Ref: Mail Command Index: tags44481
+Ref: Mail Command Index: block45547
+Ref: Mail Command Index: unblock45584
+Ref: Mail Command Index: close46070
+Ref: Mail Command Index: package46720
+Ref: Mail Command Index: owner47327
+Ref: Mail Command Index: noowner47690
+Ref: Mail Command Index: archive47863
+Ref: Mail Command Index: unarchive48004
+Ref: Mail Command Index: #48297
+Ref: Mail Command Index: quit48557
+Ref: Mail Command Index: stop48564
+Ref: Mail Command Index: thank48571
+Ref: Mail Command Index: thanks48579
+Ref: Mail Command Index: thankyou48588
+Ref: Mail Command Index: thank you48599
+Ref: Mail Command Index: --48611
+
+End Tag Table
