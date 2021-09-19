@@ -5,7 +5,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/taxy.el
-;; Version: 0.6
+;; Version: 0.7
 ;; Package-Requires: ((emacs "26.3"))
 ;; Keywords: lisp
 
@@ -111,6 +111,13 @@ when reusing taxy definitions."
         (taxy-items taxy) nil
         (taxy-taxys taxy) (mapcar #'taxy-emptied (taxy-taxys taxy)))
   taxy)
+
+(defun taxy-flatten (taxy)
+  ;; TODO: Document this function.
+  "Return a list of items in TAXY and its sub-taxys."
+  (append (taxy-items taxy)
+          (cl-loop for taxy in (taxy-taxys taxy)
+                   append (taxy-flatten taxy))))
 
 (defun taxy-mapcar-items (fn taxy)
   "Return copy of TAXY, having replaced its items with the value of FN on each.

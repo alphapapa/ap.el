@@ -4,6 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Keywords: convenience, lisp
+;; Package-Requires: ((emacs "27.2") (taxy "0.7"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,11 +27,14 @@
 
 ;;; Code:
 
+(require 'map)
+
+(require 'taxy)
 (require 'taxy-magit-section)
 
 (cl-defstruct deffy-def
   ;; Okay, the name of this struct is silly, but at least it's concise.
-  file pos form)
+  file pos form name type docstring)
 
 (defgroup deffy nil
   "Show an overview of definitions in an Emacs Lisp project or buffer."
@@ -38,8 +42,12 @@
 
 ;;;; Keys
 
-(taxy-define-key-definer deffy-define-key deffy-keys "deffy"
-  "FIXME: Docstring.")
+(cl-eval-when (compile load eval)
+  ;; I don't understand why using `cl-eval-when' is necessary, but it
+  ;; seems to be.
+  (taxy-define-key-definer deffy-define-key deffy-keys "deffy-key"
+    ;; FIXME: Docstring.
+    ""))
 
 (deffy-define-key file ()
   (file-relative-name (deffy-def-file item) deffy-directory))
@@ -65,30 +73,19 @@
 
 ;;;; Columns
 
-(taxy-magit-section-define-column-definer "deffy")
+(cl-eval-when (compile load eval)
+  ;; I don't understand why using `cl-eval-when' is necessary, but it
+  ;; seems to be.
+  (taxy-magit-section-define-column-definer "deffy"))
 
 (deffy-define-column "Definition" (:max-width 45 :face font-lock-function-name-face)
-  (let ((form-defines (pcase-exhaustive (cadr (deffy-def-form item))
-			((and (pred atom) it) it)
-			(`(quote ,it) it)
-			(`(,it . ,_) it))))
-    (format "%s" form-defines)))
+  (format "%s" (deffy-def-name item)))
 
 (deffy-define-column "Type" (:max-width 25 :face font-lock-type-face)
-  (format "%s" (car (deffy-def-form item))))
+  (format "%s" (deffy-def-type item)))
 
 (deffy-define-column "Docstring" (:max-width nil :face font-lock-doc-face)
-  (when-let ((docstring
-	      (pcase (deffy-def-form item)
-		(`(,(or 'defun 'cl-defun 'defmacro 'cl-defmacro) ,_name ,_args
-		   ,(and (pred stringp) docstring) . ,_)
-		 docstring)
-		(`(,(or 'defvar 'defvar-local 'defcustom) ,_name ,_value
-		   ,(and (pred stringp) docstring) . ,_)
-		 docstring)
-		(_ ;; Use the first string found, if any.
-		 (cl-find-if #'stringp (deffy-def-form item))))))
-    (replace-regexp-in-string "\n" "  " docstring)))
+  (deffy-def-docstring item))
 
 (unless deffy-columns
   ;; TODO: Automate this or document it
@@ -161,8 +158,8 @@ buffer."
 				;; :heading-face-fn #'heading-face
 				args))
 		(def-name (def) (format "%s" (cl-second (deffy-def-form def)))))
-      (when (get-buffer buffer-name)
-	(kill-buffer buffer-name))
+      ;; (when (get-buffer buffer-name)
+      ;;   (kill-buffer buffer-name))
       (with-current-buffer (get-buffer-create buffer-name)
 	(deffy-mode)
 	(setq-local deffy-taxy-default-keys keys
@@ -195,6 +192,8 @@ buffer."
 		column-sizes (cdr format-cons)
 		header-line-format (taxy-magit-section-format-header
 				    column-sizes deffy-column-formatters))
+          (delete-all-overlays)
+          (erase-buffer)
 	  (save-excursion
 	    (taxy-magit-section-insert taxy :items 'last
 	      ;; :blank-between-depth bufler-taxy-blank-between-depth
@@ -235,11 +234,21 @@ Interactively, with prefix, display in dedicated side window."
   (deffy :display-buffer-action (or deffy-display-buffer-action
 				    '((display-buffer-same-window)))))
 
-(defun deffy-goto-form ()
-  "Go to form at point."
-  (interactive)
-  (pcase-let (((cl-struct deffy-def file pos)
-	       (oref (magit-current-section) value)))
+(defun deffy-jump (def)
+  "Jump to definition DEF.
+Interactively, read DEF from visible Deffy window with
+completion; with prefix, from all Deffy buffers."
+  (interactive
+   (list (deffy--read-def
+           (if current-prefix-arg
+	       (cl-loop for buffer in (buffer-list)
+		        when (eq 'deffy-mode (buffer-local-value 'major-mode buffer))
+		        collect buffer)
+	     (cl-loop for window in (window-list)
+		      when (eq 'deffy-mode
+			       (buffer-local-value 'major-mode (window-buffer window)))
+		      return (list (window-buffer window)))))))
+  (pcase-let (((cl-struct deffy-def file pos) def))
     (pop-to-buffer
      (or (find-buffer-visiting file)
 	 (find-file-noselect file))
@@ -249,14 +258,16 @@ Interactively, with prefix, display in dedicated side window."
     (backward-sexp 1)))
 
 (defun deffy-mouse-1 (event)
+  "Call `deffy-RET' with point at EVENT's position."
   (interactive "e")
   (mouse-set-point event)
   (call-interactively #'deffy-RET))
 
 (defun deffy-RET ()
+  "Go to form at point, or expand section at point."
   (interactive)
   (cl-etypecase (oref (magit-current-section) value)
-    (deffy-def (call-interactively #'deffy-goto-form))
+    (deffy-def (deffy-jump (oref (magit-current-section) value)))
     (taxy-magit-section (call-interactively #'magit-section-cycle))
     (null nil)))
 
@@ -267,6 +278,64 @@ Interactively, with prefix, display in dedicated side window."
 
 ;;;; Functions
 
+(cl-defun deffy--read-def
+    (deffy-buffers &key
+      affixation-fn
+      (annotate-fn (lambda (def)
+		     (concat (deffy-def-type def) " " (deffy-def-docstring def))))
+      (group-fn #'deffy-def-file))
+  "Read form selected from Deffy BUFFERS with completion."
+  (unless deffy-buffers
+    (user-error "No Deffy buffers to find in"))
+  (cl-labels ((def-cons
+		(def) (cons (propertize
+			     (format "%s" (deffy-def-name def))
+			     :annotation (funcall annotate-fn def)
+			     :group (funcall group-fn def)
+			     :def def)
+			    def))
+	      (buffer-taxy
+	       (buffer) (with-current-buffer buffer
+			  (save-excursion
+			    (goto-char (point-min))
+			    (oref (magit-current-section) value))))
+	      (annotate
+	       (candidate)
+	       (concat (propertize " " 'display '(space :align-to center))
+		       (get-text-property 0 :annotation candidate)))
+	      (group
+	       (candidate transform)
+	       (pcase transform
+		 (`nil (get-text-property 0 :group candidate))
+		 (_ candidate)))
+	      (affix (candidates)
+		     (cl-loop for candidate in candidates collect
+		              (list (propertize candidate
+					        'face 'font-lock-function-name-face)
+			            (concat (propertize (deffy-type
+						          (get-text-property 0 :def candidate))
+						        'face 'font-lock-type-face)
+				            "  ")
+			            (concat (propertize " " 'display '(space :align-to center))
+				            (get-text-property 0 :annotation candidate))))))
+    (pcase (length deffy-buffers)
+      (1 (setf annotate-fn #'deffy-def-docstring
+	       group-fn #'deffy-key-type))
+      (_ (setf annotate-fn #'deffy-def-docstring
+               affixation-fn #'affix)))
+    (let* ((taxys (mapcar #'buffer-taxy deffy-buffers))
+	   (items (mapcan #'taxy-flatten taxys))
+	   (alist (setf items (mapcar #'def-cons items)))
+	   (metadata (list 'metadata (cons 'group-function #'group)))
+	   (dynamic-fn (lambda (str pred flag)
+			 (pcase flag
+			   ('metadata metadata)
+			   (_ (complete-with-action flag alist str pred)))))
+	   (completion-extra-properties (list :annotation-function #'annotate
+					      :affixation-function affixation-fn))
+	   (selected (completing-read "Definition: " dynamic-fn nil t)))
+      (deffy-jump (alist-get selected alist nil nil #'equal)))))
+
 (cl-defun deffy--file-forms (file)
   "Return forms defined in FILE."
   (with-temp-buffer
@@ -276,7 +345,25 @@ Interactively, with prefix, display in dedicated side window."
 			  (read (current-buffer)))
 	     while form
 	     when (listp form)
-	     collect (make-deffy-def :file file :pos (point) :form form))))
+	     collect (make-deffy-def
+                      :file file :pos (point) :form form
+                      :name (pcase-exhaustive (cadr form)
+			      ((and (pred atom) it) it)
+			      (`(quote ,it) it)
+			      (`(,it . ,_) it))
+                      :type (car form)
+                      :docstring (replace-regexp-in-string
+                                  "\n" "  "
+                                  (pcase form
+		                    (`(,(or 'defun 'cl-defun 'defmacro 'cl-defmacro) ,_name ,_args
+		                       ,(and (pred stringp) docstring) . ,_)
+		                     docstring)
+		                    (`(,(or 'defvar 'defvar-local 'defcustom) ,_name ,_value
+		                       ,(and (pred stringp) docstring) . ,_)
+		                     docstring)
+		                    (_ ;; Use the first string found, if any.
+		                     (or (cl-find-if #'stringp form)
+                                         ""))))))))
 
 ;;;;; Bookmark support
 

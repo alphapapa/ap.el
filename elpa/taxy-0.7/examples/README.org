@@ -2,6 +2,18 @@
 
 Some example applcations using ~taxy~.
 
+* Bookmarky
+
+=bookmarky= shows Emacs bookmarks grouped in a customizeable way:
+
+[[../images/bookmarky.png]]
+
+* Deffy
+
+=deffy= shows definitions and top-level forms in an Elisp project or file.
+
+[[../images/deffy.png]]
+
 * Diredy
 
 [[file:diredy.el][Diredy]] rearranges a Dired buffer, grouping files and directories by their size and MIME type.  Use it like:
