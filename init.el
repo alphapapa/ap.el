@@ -297,6 +297,11 @@
 (use-package marginalia
   :init (marginalia-mode))
 
+(use-package magit
+  :custom
+  (magit-status-sections-hook
+   '(magit-insert-status-headers magit-insert-unpushed-to-upstream-or-recent magit-insert-unpushed-to-pushremote magit-insert-unpulled-from-pushremote magit-insert-unpulled-from-upstream magit-insert-staged-changes magit-insert-merge-log magit-insert-rebase-sequence magit-insert-am-sequence magit-insert-sequencer-sequence magit-insert-bisect-output magit-insert-bisect-rest magit-insert-bisect-log magit-insert-unstaged-changes magit-insert-untracked-files magit-insert-stashes)))
+
 (use-package magit-todos
   :after magit
   :config (magit-todos-mode 1))
