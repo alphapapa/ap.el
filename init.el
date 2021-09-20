@@ -520,7 +520,10 @@
   ;; frecency or recency itself, so `selectrum-prescient-mode' may not
   ;; be needed, or Vertico may be close enough.  Let's leave it on and
   ;; try it.
-  :init (vertico-mode))
+  :init (vertico-mode)
+  :bind (:map vertico-map
+	      ("TAB" . vertico-next)
+	      ("<backtab>" . vertico-previous)))
 
 (use-package window
   :config
