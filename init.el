@@ -132,6 +132,63 @@
 (use-package quelpa-use-package
   :demand t)
 
+(use-package faces
+  :config
+  (defvar ap/random-fonts
+    `(
+      ;; A list of lists or alists. Alists should be in (STRING
+      ;; . STRING) format, with the first string being the frame-font, and
+      ;; the second the variable-pitch font.  If an element is a list
+      ;; rather than an alist, it will be set as the frame-font, and the
+      ;; variable-pitch font will be set to a default.
+      ("Fantasque Sans Mono-10")
+      ("DejaVu Sans Mono-9" . "DejaVu Sans")
+      ("Ubuntu Mono-10" . "Ubuntu")
+      ("Droid Sans Mono-9" . "Droid Sans")
+      ("Input Mono Narrow-9" . "Input Sans Condensed")
+      ("Input Sans Condensed-9" . "Input Sans Condensed")
+      ("Consolas-10")
+      ("Inconsolata-10")
+      ("Anonymous Pro-10")
+      ("Liberation Mono-9")
+      ("Fira Mono-9" . "Fira Sans")
+      ("Fira Code-9" . "Fira Sans")
+      ("Hack-9")
+      ("NK57 Monospace-9:width=semi-condensed")
+      ("NK57 Monospace-9")
+      ))
+
+  (defun ap/set-random-frame-font ()
+    "Set random fonts from ap/random-fonts list."
+    (interactive)
+    (ap/set-custom-fonts (seq-random-elt ap/random-fonts)))
+
+  (defun ap/set-custom-fonts (font)
+    "Set frame-font and variable-pitch font using FONT.
+
+FONT should be either a single-element list containing the
+frame-font, or a cons cell in (FRAME-FONT . VARIABLE-PITCH-FONT)
+format."
+    (interactive
+     (list (let ((choice (completing-read "Font: " ap/random-fonts)))
+	     (assoc choice ap/random-fonts))))
+    (let ((frame-font (car font))
+          (variable-font (or (cdr font) "DejaVu Sans")))
+      (set-frame-font frame-font t)
+      (set-face-font 'default frame-font)
+      (set-face-font 'variable-pitch variable-font)
+      ;; Set org faces
+      (dolist (face '(org-block org-block-begin-line org-meta-line))
+	(when (facep face)
+          (set-face-attribute face nil :font frame-font)))
+      ;; Set buffer-face for org buffers
+      (when (symbol-function 'org-buffer-list)
+	(dolist (buffer (org-buffer-list))
+          (with-current-buffer buffer
+            (buffer-face-set :family (face-attribute 'variable-pitch :family)
+                             :height (face-attribute 'variable-pitch :height)))))
+      (message "%s" frame-font))))
+
 (use-package avy
   :bind* (("C-j" . avy-goto-char-timer)))
 
