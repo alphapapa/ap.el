@@ -132,6 +132,9 @@
 (use-package quelpa-use-package
   :demand t)
 
+(use-package avy
+  :bind* (("C-j" . avy-goto-char-timer)))
+
 (use-package aggressive-indent-mode
   :hook (emacs-lisp-mode . aggressive-indent-mode))
 
