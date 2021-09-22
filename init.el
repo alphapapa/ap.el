@@ -1,4 +1,31 @@
-;argh
+;;; ap.el --- A simple, Emacs Lisp-focused config   -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2021  Adam Porter
+
+;; Author:  Adam Porter <adam@alphapapa.net>
+;; Keywords:
+;; Package-Requires: ((emacs "28.0"))
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;; This is a simple Emacs configuration focused on editing Emacs Lisp.
+;; It's mostly intended as a sample from which others may borrow code
+;; or inspiration, but it may be used as-is.
+
+;;; Code:
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -8,7 +35,6 @@
  '(ansi-color-names-vector
    ["#1E1C31" "#FF8080" "#95FFA4" "#FFE9AA" "#91DDFF" "#C991E1" "#AAFFE4" "#CBE3E7"])
  '(bufler-columns '("Name" "Size" "Mode" "VC" "Path"))
- '(bufler-workspace-mode t nil nil "Customized with use-package bufler")
  '(burly-before-open-bookmark-hook '(tab-bar-new-tab))
  '(comint-input-ignoredups t)
  '(comp-deferred-compilation t t)
@@ -52,7 +78,8 @@
  '(rustic-ansi-faces
    ["#242730" "#ff665c" "#7bc275" "#FCCE7B" "#51afef" "#C57BDB" "#5cEfFF" "#bbc2cf"])
  '(safe-local-variable-values
-   '((eval when
+   '((magit-todos-exclude-globs "elpa/")
+     (eval when
 	   (string-suffix-p ".txt" buffer-file-name)
 	   (fundamental-mode)
 	   (prism-mode))
@@ -113,8 +140,7 @@
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
  '(tab-bar-tab-inactive ((t (:inherit tab-bar)))))
 
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/")))
+(push '("melpa" . "https://melpa.org/packages/") package-archives)
 
 (package-initialize)
 
@@ -123,8 +149,6 @@
 (use-package use-package
   :custom (use-package-enable-imenu-support t))
 
-(use-package general)
-
 (use-package quelpa
   :custom
   (quelpa-update-melpa-p nil))
@@ -132,71 +156,16 @@
 (use-package quelpa-use-package
   :demand t)
 
-(use-package faces
-  :config
-  (defvar ap/random-fonts
-    `(
-      ;; A list of lists or alists. Alists should be in (STRING
-      ;; . STRING) format, with the first string being the frame-font, and
-      ;; the second the variable-pitch font.  If an element is a list
-      ;; rather than an alist, it will be set as the frame-font, and the
-      ;; variable-pitch font will be set to a default.
-      ("Fantasque Sans Mono-10")
-      ("DejaVu Sans Mono-9" . "DejaVu Sans")
-      ("Ubuntu Mono-10" . "Ubuntu")
-      ("Droid Sans Mono-9" . "Droid Sans")
-      ("Input Mono Narrow-9" . "Input Sans Condensed")
-      ("Input Sans Condensed-9" . "Input Sans Condensed")
-      ("Consolas-10")
-      ("Inconsolata-10")
-      ("Anonymous Pro-10")
-      ("Liberation Mono-9")
-      ("Fira Mono-9" . "Fira Sans")
-      ("Fira Code-9" . "Fira Sans")
-      ("Hack-9")
-      ("NK57 Monospace-9:width=semi-condensed")
-      ("NK57 Monospace-9")
-      ))
-
-  (defun ap/set-random-frame-font ()
-    "Set random fonts from ap/random-fonts list."
-    (interactive)
-    (ap/set-custom-fonts (seq-random-elt ap/random-fonts)))
-
-  (defun ap/set-custom-fonts (font)
-    "Set frame-font and variable-pitch font using FONT.
-
-FONT should be either a single-element list containing the
-frame-font, or a cons cell in (FRAME-FONT . VARIABLE-PITCH-FONT)
-format."
-    (interactive
-     (list (let ((choice (completing-read "Font: " ap/random-fonts)))
-	     (assoc choice ap/random-fonts))))
-    (let ((frame-font (car font))
-          (variable-font (or (cdr font) "DejaVu Sans")))
-      (set-frame-font frame-font t)
-      (set-face-font 'default frame-font)
-      (set-face-font 'variable-pitch variable-font)
-      ;; Set org faces
-      (dolist (face '(org-block org-block-begin-line org-meta-line))
-	(when (facep face)
-          (set-face-attribute face nil :font frame-font)))
-      ;; Set buffer-face for org buffers
-      (when (symbol-function 'org-buffer-list)
-	(dolist (buffer (org-buffer-list))
-          (with-current-buffer buffer
-            (buffer-face-set :family (face-attribute 'variable-pitch :family)
-                             :height (face-attribute 'variable-pitch :height)))))
-      (message "%s" frame-font))))
-
-(use-package avy
-  :bind* (("C-j" . avy-goto-char-timer)))
+;;; Per-package configuration
 
 (use-package aggressive-indent-mode
   :hook (emacs-lisp-mode . aggressive-indent-mode))
 
 (use-package auto-revert
   :hook (prog-mode . auto-revert-mode))
+
+(use-package avy
+  :bind* (("C-j" . avy-goto-char-timer)))
 
 (use-package bufler
   :quelpa
@@ -281,6 +250,17 @@ format."
 	      ("M-g l" . consult-line)
 	      ("M-g M-l" . consult-line-multi)))
 
+(use-package custom
+  :config
+  (defun ap/switch-theme (theme)
+    "Disable active themes and load THEME."
+    (interactive
+     (list (intern (completing-read "Theme: "
+				    (->> (custom-available-themes)
+                                         (-map #'symbol-name))))))
+    (mapc #'disable-theme custom-enabled-themes)
+    (load-theme theme 'no-confirm)))
+
 (use-package deffy
   :bind (:map global-map
 	      ("C-x p d" . deffy-project)
@@ -304,6 +284,12 @@ format."
               ;; ("M-g M-D" . dogears-sidebar)
 	      ))
 
+(use-package doom-themes
+  :config
+  (unpackaged/customize-theme-faces 'doom-solarized-dark
+    `(mode-line ((t :box (:line-width 1 :color ,(face-foreground 'font-lock-builtin-face)))))
+    `(header-line ((t :box nil :background ,(face-background 'region))))))
+
 (use-package elec-pair
   :custom
   (electric-pair-mode t))
@@ -317,6 +303,65 @@ format."
   (:keymaps 'eww-mode-map
 	    [mouse-8] #'eww-back-url
 	    [mouse-9] #'eww-forward-url))
+
+(use-package faces
+  :config
+  (defvar ap/random-fonts
+    `(
+      ;; A list of lists or alists. Alists should be in (STRING
+      ;; . STRING) format, with the first string being the frame-font, and
+      ;; the second the variable-pitch font.  If an element is a list
+      ;; rather than an alist, it will be set as the frame-font, and the
+      ;; variable-pitch font will be set to a default.
+      ("Fantasque Sans Mono-10")
+      ("DejaVu Sans Mono-9" . "DejaVu Sans")
+      ("Ubuntu Mono-10" . "Ubuntu")
+      ("Droid Sans Mono-9" . "Droid Sans")
+      ("Input Mono Narrow-9" . "Input Sans Condensed")
+      ("Input Sans Condensed-9" . "Input Sans Condensed")
+      ("Consolas-10")
+      ("Inconsolata-10")
+      ("Anonymous Pro-10")
+      ("Liberation Mono-9")
+      ("Fira Mono-9" . "Fira Sans")
+      ("Fira Code-9" . "Fira Sans")
+      ("Hack-9")
+      ("NK57 Monospace-9:width=semi-condensed")
+      ("NK57 Monospace-9")
+      ))
+
+  (defun ap/set-random-frame-font ()
+    "Set random fonts from ap/random-fonts list."
+    (interactive)
+    (ap/set-custom-fonts (seq-random-elt ap/random-fonts)))
+
+  (defun ap/set-custom-fonts (font)
+    "Set frame-font and variable-pitch font using FONT.
+
+FONT should be either a single-element list containing the
+frame-font, or a cons cell in (FRAME-FONT . VARIABLE-PITCH-FONT)
+format."
+    (interactive
+     (list (let ((choice (completing-read "Font: " ap/random-fonts)))
+	     (assoc choice ap/random-fonts))))
+    (let ((frame-font (car font))
+          (variable-font (or (cdr font) "DejaVu Sans")))
+      (set-frame-font frame-font t)
+      (set-face-font 'default frame-font)
+      (set-face-font 'variable-pitch variable-font)
+      ;; Set org faces
+      (dolist (face '(org-block org-block-begin-line org-meta-line))
+	(when (facep face)
+          (set-face-attribute face nil :font frame-font)))
+      ;; Set buffer-face for org buffers
+      (when (symbol-function 'org-buffer-list)
+	(dolist (buffer (org-buffer-list))
+          (with-current-buffer buffer
+            (buffer-face-set :family (face-attribute 'variable-pitch :family)
+                             :height (face-attribute 'variable-pitch :height)))))
+      (message "%s" frame-font))))
+
+(use-package general)
 
 (use-package helm-bufler
   :quelpa
@@ -353,9 +398,6 @@ format."
   :hook
   (emacs-lisp-mode . lispy-mode))
 
-(use-package marginalia
-  :init (marginalia-mode))
-
 (use-package magit
   :custom
   (magit-status-sections-hook
@@ -365,11 +407,8 @@ format."
   :after magit
   :config (magit-todos-mode 1))
 
-(use-package doom-themes
-  :config
-  (unpackaged/customize-theme-faces 'doom-solarized-dark
-    `(mode-line ((t :box (:line-width 1 :color ,(face-foreground 'font-lock-builtin-face)))))
-    `(header-line ((t :box nil :background ,(face-background 'region))))))
+(use-package marginalia
+  :init (marginalia-mode))
 
 (use-package modus-themes
   ;; FIXME: These aren't being activated until I eval this form manually.  *sigh*
@@ -558,7 +597,7 @@ format."
   )
 
 (use-package selectrum-prescient
-    ;; Trying Vertico instead.  See comment below.
+  ;; Trying Vertico instead.  See comment below.
   :after selectrum
   ;; :init (selectrum-prescient-mode)
   )
@@ -603,20 +642,8 @@ Also set its `no-delete-other-windows' parameter to match."
       (set-window-parameter window 'no-delete-other-windows
 			    (window-dedicated-p window)))))
 
-(use-package custom
-  :config
-  (defun ap/switch-theme (theme)
-    "Disable active themes and load THEME."
-    (interactive
-     (list (intern (completing-read "Theme: "
-				    (->> (custom-available-themes)
-                                         (-map #'symbol-name))))))
-    (mapc #'disable-theme custom-enabled-themes)
-    (load-theme theme 'no-confirm)))
+;;; Footer
 
 (find-file user-init-file)
 
-;; (define-advice imenu-list-show (:override ())
-;;   (display-buffer-in-side-window
-;;    (get-buffer imenu-list-buffer-name)
-;;    '((side . right))))
+;;; ap.el ends here
