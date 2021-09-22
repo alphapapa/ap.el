@@ -1,0 +1,9 @@
+#+TITLE: ap.el
+
+This is a simple Emacs config focused on editing Emacs Lisp.  It's mostly intended as a sample from which others may borrow code or inspiration, but it may also be used as-is.  It's not intended to be a supported project, such as Spacemacs or DOOM.
+
+It requires Emacs 28 or later.
+
+No documentation is provided, as the code in =init.el= should be self-explanatory.  Take it or leave it, as-is.  :)
+
+Note that this is not the author's main, personal Emacs configuration.  But it might evolve into being part of it.
