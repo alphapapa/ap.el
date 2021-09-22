@@ -344,8 +344,9 @@ format."
   :general
   (:keymaps 'ivy-minibuffer-map
 	    "TAB" #'ivy-next-line)
-  :custom
-  (ivy-mode t))
+  ;; :custom
+  ;; (ivy-mode t)
+  )
 
 (use-package lispy
   :hook
