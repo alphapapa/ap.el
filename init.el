@@ -309,6 +309,7 @@ format."
   (electric-pair-mode t))
 
 (use-package embark
+  ;; TODO: Install `embark-consult'.
   :bind (("C-." . embark-act)))
 
 (use-package eww
