@@ -72,7 +72,7 @@
  '(org-superstar-remove-leading-stars t)
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(deffy embark taxy selectrum-prescient selectrum consult marginalia orderless vertico minions bufler helm-bufler unpackaged prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda burly doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(burly deffy embark taxy selectrum-prescient selectrum consult marginalia orderless vertico minions bufler helm-bufler unpackaged prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-checkout-melpa-p nil)
  '(quelpa-self-upgrade-p nil)
@@ -237,9 +237,12 @@
 
 (use-package burly
   :quelpa
-  (burly :fetcher github :repo "alphapapa/burly.el")
+  (burly :fetcher github :repo "alphapapa/burly.el"
+	 :branch "wip/tabs")
 
-  :bind (("C-x t R" . burly-reset-tab)))
+  :bind (("C-x t R" . burly-reset-tab))
+  :init
+  (burly-tabs-mode))
 
 (use-package company
   :hook (prog-mode . company-mode))
