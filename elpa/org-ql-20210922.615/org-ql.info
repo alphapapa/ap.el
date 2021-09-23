@@ -69,7 +69,7 @@ Functions / Macros
 
 Changelog
 
-* 0.6-pre: 06-pre. 
+* 0.6: 06. 
 * 0.5.2: 052. 
 * 0.5.1: 051. 
 * 0.5: 05. 
@@ -698,9 +698,9 @@ File: README.info,  Node: Listing / acting-on results,  Next: Custom predicates,
 
      ‘SORT’ is either nil, in which case items are not sorted; or one or
      a list of defined ‘org-ql’ sorting methods (‘date’, ‘deadline’,
-     ‘scheduled’, ‘todo’, ‘priority’, or ‘random’); or a user-defined
-     comparator function that accepts two items as arguments and returns
-     nil or non-nil.
+     ‘scheduled’, ‘closed’, ‘todo’, ‘priority’, or ‘random’); or a
+     user-defined comparator function that accepts two items as
+     arguments and returns nil or non-nil.
 
      Examples:
 
@@ -875,7 +875,7 @@ supported:
    • ‘:query’: An Org QL query expression in either sexp or non-sexp
      form.
    • ‘:columns’ A list of columns, including ‘heading’, ‘todo’,
-     ‘property’, ‘priority’, ‘deadline’, ‘scheduled’.
+     ‘property’, ‘priority’, ‘deadline’, ‘scheduled’, ‘closed’.
         • Each column may also be specified as a list with the second
           element being a header string.  For example, to abbreviate the
           priority column: ‘(priority "P")’.
@@ -957,7 +957,7 @@ releases.
 
 * Menu:
 
-* 0.6-pre: 06-pre. 
+* 0.6: 06. 
 * 0.5.2: 052. 
 * 0.5.1: 051. 
 * 0.5: 05. 
@@ -981,10 +981,10 @@ releases.
 * 0.1: 01. 
 
 
-File: README.info,  Node: 06-pre,  Next: 052,  Up: Changelog
+File: README.info,  Node: 06,  Next: 052,  Up: Changelog
 
-5.1 0.6-pre
-===========
+5.1 0.6
+=======
 
 *Added*
    • Macro org-ql-defpred, used to define search predicates.  (See
@@ -995,7 +995,13 @@ File: README.info,  Node: 06-pre,  Next: 052,  Up: Changelog
    • Timestamp-related predicates now accept an optional ‘:with-time’
      argument, which allows matching timestamps with or without times
      (i.e.  HH:MM).
-   • Sorting method ‘reverse’.
+   • Sorting methods:
+        • ‘reverse’
+        • ‘closed’ (Thanks to Ryan Ye (https://github.com/yejianye).)
+   • Dynamic block column ‘closed’.  (Thanks to Ryan Ye
+     (https://github.com/yejianye).)
+   • Abbreviate filenames in bookmarks.  (Thanks to Akira Komamura
+     (https://github.com/akirak).)
 
    *Changed*
    • The order in which sorting functions is applied has been reversed.
@@ -1019,6 +1025,10 @@ File: README.info,  Node: 06-pre,  Next: 052,  Up: Changelog
      (https://github.com/jmay), and Basil L. Contovounesios
      (https://github.com/basil-conto).)
 
+   *Removed*
+   • Obsolete macro ‘org-ql’ (obsolete since 0.5, replaced by functions
+     ‘org-ql-select’ and ‘org-ql-query’).
+
    *Fixed*
    • Timestamp-related predicates called with relative-date arguments
      did not properly invalidate the query cache.  (Fixes #223
@@ -1038,7 +1048,7 @@ File: README.info,  Node: 06-pre,  Next: 052,  Up: Changelog
      to avoid infinite loops.)
 
 
-File: README.info,  Node: 052,  Next: 051,  Prev: 06-pre,  Up: Changelog
+File: README.info,  Node: 052,  Next: 051,  Prev: 06,  Up: Changelog
 
 5.2 0.5.2
 =========
@@ -1548,58 +1558,58 @@ GPLv3
 
 Tag Table:
 Node: Top225
-Node: Contents1697
-Node: Screenshots1820
-Node: Installation1938
-Node: Quelpa2434
-Node: Helm support2962
-Node: Usage3353
-Node: Commands3751
-Node: org-ql-search4224
-Node: helm-org-ql5874
-Node: org-ql-view6234
-Node: org-ql-view-sidebar6734
-Node: org-ql-view-recent-items7090
-Node: org-ql-sparse-tree7574
-Node: Queries8374
-Node: Non-sexp query syntax9485
-Node: General predicates11209
-Node: Ancestor/descendant predicates17430
-Node: Date/time predicates18558
-Node: Functions / Macros21646
-Node: Agenda-like views21944
-Node: Listing / acting-on results23349
-Node: Custom predicates28971
-Node: Dynamic block32630
-Node: Links35328
-Node: Tips36015
-Node: Changelog36333
-Node: 06-pre37059
-Node: 05239636
-Node: 05139940
-Node: 0540357
-Node: 04941831
-Node: 04842105
-Node: 04742452
-Node: 04642847
-Node: 04543247
-Node: 04443606
-Node: 04343965
-Node: 04244162
-Node: 04144323
-Node: 0444564
-Node: 03248497
-Node: 03148876
-Node: 0349073
-Node: 02352048
-Node: 02252276
-Node: 02152544
-Node: 0252743
-Node: 0156778
-Node: Notes56879
-Node: Comparison with Org Agenda searches57041
-Node: org-sidebar57913
-Node: License58192
+Node: Contents1689
+Node: Screenshots1812
+Node: Installation1930
+Node: Quelpa2426
+Node: Helm support2954
+Node: Usage3345
+Node: Commands3743
+Node: org-ql-search4216
+Node: helm-org-ql5866
+Node: org-ql-view6226
+Node: org-ql-view-sidebar6726
+Node: org-ql-view-recent-items7082
+Node: org-ql-sparse-tree7566
+Node: Queries8366
+Node: Non-sexp query syntax9477
+Node: General predicates11201
+Node: Ancestor/descendant predicates17422
+Node: Date/time predicates18550
+Node: Functions / Macros21638
+Node: Agenda-like views21936
+Node: Listing / acting-on results23341
+Node: Custom predicates28977
+Node: Dynamic block32636
+Node: Links35348
+Node: Tips36035
+Node: Changelog36353
+Node: 0637071
+Node: 05240070
+Node: 05140370
+Node: 0540787
+Node: 04942261
+Node: 04842535
+Node: 04742882
+Node: 04643277
+Node: 04543677
+Node: 04444036
+Node: 04344395
+Node: 04244592
+Node: 04144753
+Node: 0444994
+Node: 03248927
+Node: 03149306
+Node: 0349503
+Node: 02352478
+Node: 02252706
+Node: 02152974
+Node: 0253173
+Node: 0157208
+Node: Notes57309
+Node: Comparison with Org Agenda searches57471
+Node: org-sidebar58343
+Node: License58622
 
 End Tag Table
 

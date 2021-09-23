@@ -9,16 +9,6 @@
 ;;;### (autoloads nil "org-ql" "org-ql.el" (0 0 0 0))
 ;;; Generated autoloads from org-ql.el
 
-(autoload 'org-ql "org-ql" "\
-Expands into a call to `org-ql-select' with the same arguments.
-For convenience, arguments should be unquoted.
-
-\(fn BUFFERS-OR-FILES QUERY &key SORT NARROW ACTION)" nil t)
-
-(function-put 'org-ql 'lisp-indent-function 'defun)
-
-(make-obsolete 'org-ql '"Please use functions `org-ql-select' or `org-ql-query' instead" '"org-ql 0.5")
-
 (autoload 'org-ql-select "org-ql" "\
 Return items matching QUERY in BUFFERS-OR-FILES.
 
@@ -48,7 +38,7 @@ widen and search the entire buffer).
 
 SORT is either nil, in which case items are not sorted; or one or
 a list of defined `org-ql' sorting methods (`date', `deadline',
-`scheduled', `todo', `priority', `reverse', or `random'); or a
+`scheduled', `closed', `todo', `priority', `reverse', or `random'); or a
 user-defined comparator function that accepts two items as
 arguments and returns nil or non-nil.  Sorting methods are
 applied in the order given (i.e. later methods override earlier

@@ -2,7 +2,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: https://github.com/alphapapa/org-ql
-;; Version: 0.6-pre
+;; Version: 0.6
 ;; Package-Requires: ((emacs "26.1") (dash "2.18.1") (f "0.17.2") (map "2.1") (org "9.0") (org-super-agenda "1.2") (ov "1.0.6") (peg "1.0") (s "1.12.0") (transient "0.1") (ts "0.2-pre"))
 ;; Keywords: hypermedia, outlines, Org, agenda
 
@@ -298,20 +298,6 @@ See Info node `(org-ql)Queries'."
   :type 'boolean
   :risky t)
 
-;;;; Macros
-
-;;;###autoload
-(cl-defmacro org-ql (buffers-or-files query &key sort narrow action)
-  "Expands into a call to `org-ql-select' with the same arguments.
-For convenience, arguments should be unquoted."
-  (declare (indent defun)
-           (obsolete "Please use functions `org-ql-select' or `org-ql-query' instead" "org-ql 0.5"))
-  `(org-ql-select ,buffers-or-files
-     ',query
-     :action ',action
-     :narrow ,narrow
-     :sort ',sort))
-
 ;;;; Functions
 
 ;;;;; Query execution
@@ -349,7 +335,7 @@ widen and search the entire buffer).
 
 SORT is either nil, in which case items are not sorted; or one or
 a list of defined `org-ql' sorting methods (`date', `deadline',
-`scheduled', `todo', `priority', `reverse', or `random'); or a
+`scheduled', `closed', `todo', `priority', `reverse', or `random'); or a
 user-defined comparator function that accepts two items as
 arguments and returns nil or non-nil.  Sorting methods are
 applied in the order given (i.e. later methods override earlier
@@ -426,7 +412,7 @@ each priority the newest items would appear first."
     ;; Sort items
     (pcase sort
       (`nil items)
-      ((guard (cl-subsetp (-list sort) '(date deadline scheduled todo priority random reverse)))
+      ((guard (cl-subsetp (-list sort) '(date deadline scheduled closed todo priority random reverse)))
        ;; Default sorting functions
        (org-ql--sort-by items (-list sort)))
       ;; Sort by user-given comparator.
@@ -1743,17 +1729,15 @@ Tests both inherited and local tags."
   "Return non-nil if current heading has all of TAGS (a list of strings).
 Tests both inherited and local tags."
   ;; MAYBE: -all versions for inherited and local.
-  :normalizers ((`(,predicate-names) `(tags))
-                (`(,predicate-names . ,tags) `(and ,@(--map `(tags ,it) tags))))
+  :normalizers ((`(,predicate-names . ,tags)
+                 `(and ,@(--map `(tags ,it) tags))))
   :body (apply #'org-ql--predicate-tags tags))
 
 (org-ql-defpred (tags-inherited inherited-tags tags-i itags) (&rest tags)
   "Return non-nil if current heading's inherited tags include one or more of TAGS (a list of strings).
 If TAGS is nil, return non-nil if heading has any inherited tags."
   :normalizers ((`(,predicate-names . ,tags)
-                 `(tags-inherited ,@tags))
-                (`(,predicate-names)
-                 `(tags-inherited)))
+                 `(tags-inherited ,@tags)))
   :body (cl-macrolet ((tags-p (tags)
                               `(and ,tags
                                     (not (eq 'org-ql-nil ,tags)))))
@@ -1766,8 +1750,8 @@ If TAGS is nil, return non-nil if heading has any inherited tags."
 (org-ql-defpred (tags-local local-tags tags-l ltags) (&rest tags)
   "Return non-nil if current heading's local tags include one or more of TAGS (a list of strings).
 If TAGS is nil, return non-nil if heading has any local tags."
-  :normalizers ((`(,predicate-names) `(tags-local))
-                (`(,predicate-names . ,tags) `(tags-local ,@tags)))
+  :normalizers ((`(,predicate-names . ,tags)
+                 `(tags-local ,@tags)))
   :preambles ((`(,predicate-names . ,(and tags (guard tags)))
                ;; When searching for local, non-inherited tags, we can
                ;; search directly to headings containing one of the tags.
@@ -2166,11 +2150,11 @@ any planning prefix); it defaults to 0 (i.e. the whole regexp)."
 (defun org-ql--sort-by (items predicates)
   "Return ITEMS sorted by PREDICATES.
 PREDICATES is a list of one or more sorting methods, including:
-`deadline', `scheduled', and `priority'."
+`deadline', `scheduled', `closed' and `priority'."
   ;; MAYBE: Use macrolet instead of flet.
   (cl-flet* ((sorter (symbol)
                      (pcase symbol
-                       ((or 'deadline 'scheduled)
+                       ((or 'deadline 'scheduled 'closed)
                         (apply-partially #'org-ql--date-type< (intern (concat ":" (symbol-name symbol)))))
                        ;; TODO: Rename `date' to `planning'.  `date' should be something else.
                        ('date #'org-ql--date<)
