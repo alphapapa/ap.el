@@ -35,6 +35,7 @@
  '(ansi-color-names-vector
    ["#1E1C31" "#FF8080" "#95FFA4" "#FFE9AA" "#91DDFF" "#C991E1" "#AAFFE4" "#CBE3E7"])
  '(bufler-columns '("Name" "Size" "Mode" "VC" "Path"))
+ '(bufler-workspace-mode t nil nil "Customized with use-package bufler")
  '(burly-before-open-bookmark-hook '(tab-bar-new-tab))
  '(comint-input-ignoredups t)
  '(comp-deferred-compilation t t)
