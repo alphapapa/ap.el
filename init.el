@@ -71,7 +71,7 @@
  '(org-superstar-remove-leading-stars t)
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(embark taxy selectrum-prescient selectrum consult marginalia orderless vertico minions bufler helm-bufler unpackaged prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda burly doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(deffy embark taxy selectrum-prescient selectrum consult marginalia orderless vertico minions bufler helm-bufler unpackaged prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda burly doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-checkout-melpa-p nil)
  '(quelpa-self-upgrade-p nil)
@@ -262,6 +262,8 @@
     (load-theme theme 'no-confirm)))
 
 (use-package deffy
+  :quelpa (deffy :fetcher github :repo "alphapapa/taxy.el"
+	    :files ("examples/deffy.el"))
   :bind (:map global-map
 	      ("C-x p d" . deffy-project)
 	      ("M-g d" . deffy-jump)))
