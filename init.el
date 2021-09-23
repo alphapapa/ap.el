@@ -141,7 +141,7 @@
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
  '(tab-bar-tab-inactive ((t (:inherit tab-bar)))))
 
-(push '("melpa" . "https://melpa.org/packages/") package-archives)
+(cl-pushnew '("melpa" . "https://melpa.org/packages/") package-archives :test #'equal)
 
 (package-initialize)
 
