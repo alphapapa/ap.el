@@ -22,12 +22,12 @@ Interactively, with prefix, display in dedicated side window.
 
 \(fn &optional (BUFFER (current-buffer)) &key DISPLAY-BUFFER-ACTION)" t nil)
 
-(autoload 'deffy--bookmark-handler "deffy" "\
+(autoload 'deffy-bookmark-handler "deffy" "\
 Show Deffy buffer for bookmark RECORD.
 
 \(fn RECORD)" nil nil)
 
-(register-definition-prefixes "deffy" '("deffy-" "file" "type"))
+(register-definition-prefixes "deffy" '("deffy-"))
 
 ;;;***
 
