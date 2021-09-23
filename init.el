@@ -157,6 +157,8 @@
 (use-package quelpa-use-package
   :demand t)
 
+(use-package general)
+
 ;;; Per-package configuration
 
 (use-package aggressive-indent-mode
@@ -366,8 +368,6 @@ format."
             (buffer-face-set :family (face-attribute 'variable-pitch :family)
                              :height (face-attribute 'variable-pitch :height)))))
       (message "%s" frame-font))))
-
-(use-package general)
 
 (use-package helm-bufler
   :quelpa
