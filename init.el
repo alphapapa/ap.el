@@ -72,7 +72,7 @@
  '(org-superstar-remove-leading-stars t)
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(burly deffy embark taxy selectrum-prescient selectrum consult marginalia orderless vertico minions bufler helm-bufler unpackaged prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(unpackaged burly deffy embark taxy selectrum-prescient selectrum consult marginalia orderless vertico minions bufler helm-bufler prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-checkout-melpa-p nil)
  '(quelpa-self-upgrade-p nil)
@@ -417,7 +417,6 @@ format."
   :init (marginalia-mode))
 
 (use-package modus-themes
-  ;; FIXME: These aren't being activated until I eval this form manually.  *sigh*
   :config
   (unpackaged/customize-theme-faces 'modus-operandi
     '(font-lock-keyword-face ((t :weight bold)))

@@ -1,4 +1,4 @@
-;;; unpackaged-autoloads.el --- automatically extracted autoloads
+;;; unpackaged-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -31,6 +31,16 @@ Move filter group at point down." t nil)
 
 (autoload 'unpackaged/ibuffer-filter-group-move-up "unpackaged" "\
 Move filter group at point up." t nil)
+
+(autoload 'unpackaged/customize-theme-faces "unpackaged" "\
+Customize THEME with FACES.
+Advises `enable-theme' with a function that customizes FACES when
+THEME is enabled.  If THEME is already enabled, also applies
+faces immediately.  Calls `custom-theme-set-faces', which see.
+
+\(fn THEME &rest FACES)" nil nil)
+
+(function-put 'unpackaged/customize-theme-faces 'lisp-indent-function 'defun)
 
 (autoload 'unpackaged/lorem-ipsum-overlay "unpackaged" "\
 Overlay all text in current buffer with \"lorem ipsum\" text.
@@ -121,13 +131,17 @@ Apply `org-table' face family to all text in Org tables.
 Useful for forcibly applying the face to portions of table data
 that might have a different face, which could affect alignment.
 
-If called interactively, toggle `Unpackaged/Org-Table-Face mode'.
-If the prefix argument is positive, enable the mode, and if it is
-zero or negative, disable the mode.
+This is a minor mode.  If called interactively, toggle the
+`Unpackaged/Org-Table-Face mode' mode.  If the prefix argument is
+positive, enable the mode, and if it is zero or negative, disable
+the mode.
 
 If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
 the mode if ARG is nil, omitted, or is a positive number.
 Disable the mode if ARG is a negative number.
+
+To check whether the minor mode is enabled in the current buffer,
+evaluate `unpackaged/org-table-face-mode'.
 
 The mode's hook is called both when the mode is enabled and when
 it is disabled.

@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Keywords: convenience
-;; Package-Version: 20201221.638
+;; Package-Version: 20210923.208
 ;; URL: https://github.com/alphapapa/unpackaged.el
 ;; Package-Requires: ((emacs "25.1") (dash "2.13") (s "1.10.0") (org "9.0") (use-package "2.4"))
 
@@ -133,6 +133,14 @@ With prefix, toggle `ibuffer-show-empty-filter-groups'."
 
 ;;; Customization
 
+(defun unpackaged/custom-toggle-all-more-hide ()
+  "Toggle all \"More/Hide\" widgets in current buffer."
+  (interactive)
+  (widget-map-buttons (lambda (widget _)
+                        (pcase (widget-get widget :off)
+                          ("More" (widget-apply-action widget)))
+                        nil)))
+
 (use-package cus-edit
   :general
   (:keymaps 'custom-field-keymap
@@ -147,6 +155,7 @@ With prefix, toggle `ibuffer-show-empty-filter-groups'."
                             (when (eq (widget-get widget :custom-state) 'modified)
                               (widget-apply widget :custom-set)))))))
 
+;;;###autoload
 (defun unpackaged/customize-theme-faces (theme &rest faces)
   "Customize THEME with FACES.
 Advises `enable-theme' with a function that customizes FACES when
