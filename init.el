@@ -280,7 +280,11 @@
 	      ([mouse-2]
 	       ;; I don't understand how or why mouse-1 is translated
 	       ;; into mouse-2 in Dired, but it is, and this works.
-	       . dired-mouse-find-file)))
+	       . dired-mouse-find-file))
+  :hook
+  (dired-mode . auto-revert-mode)
+  (dired-mode . (lambda ()
+		  (toggle-truncate-lines 1))))
 
 (use-package dogears
   :init (dogears-mode)
