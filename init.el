@@ -250,6 +250,28 @@
 (use-package company
   :hook (prog-mode . company-mode))
 
+(use-package compile
+  :config
+  (progn
+    ;; Apply ANSI terminal color escape codes. <http://endlessparentheses.com/ansi-colors-in-the-compilation-buffer-output.html>
+    (require 'ansi-color)
+    (defun endless/colorize-compilation ()
+      "Colorize from `compilation-filter-start' to `point'."
+      (let ((inhibit-read-only t))
+        (ansi-color-apply-on-region compilation-filter-start (point))))
+    (add-hook 'compilation-filter-hook #'endless/colorize-compilation))
+
+  (setf compilation-save-buffers-predicate
+        ;; NOTE: For some reason setting this in :custom doesn't seem to work.
+        ;; HACK: The docstring says that `compilation-directory' can't "generally" be used,
+        ;; apparently because it's only set *after* `compile' calls `save-some-buffers'.  If that
+        ;; line of code wre moved up one line, it would solve the problem (probably without causing
+        ;; any others).  Anyway, using `default-directory' when `compilation-directory' isn't set
+        ;; should work.
+        (lambda ()
+          (string-prefix-p (or compilation-directory default-directory)
+			   (file-truename (buffer-file-name))))))
+
 (use-package consult
   :bind (:map global-map
 	      ("M-g i" . consult-imenu)
