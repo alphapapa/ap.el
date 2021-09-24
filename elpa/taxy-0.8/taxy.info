@@ -76,6 +76,7 @@ Reference
 
 Changelog
 
+* 0.8: 08.
 * 0.7: 07.
 * 0.6: 06.
 * 0.5: 05.
@@ -84,29 +85,34 @@ Changelog
 * 0.2: 02.
 * 0.1: 01.
 
-0.7
+0.8
 
 * Additions::
+* Fixes::
 
-0.6
+0.7
 
 * Additions: Additions (1).
 
-0.5
+0.6
 
 * Additions: Additions (2).
-* Fixes::
+
+0.5
+
+* Additions: Additions (3).
+* Fixes: Fixes (1).
 
 0.3
 
 * Changes::
-* Fixes: Fixes (1).
+* Fixes: Fixes (2).
 
 0.2
 
 * Changes: Changes (1).
-* Additions: Additions (3).
-* Fixes: Fixes (2).
+* Additions: Additions (4).
+* Fixes: Fixes (3).
 
 Development
 
@@ -1037,6 +1043,8 @@ File: README.info,  Node: Reference,  Prev: Magit section,  Up: Usage
 3.6 Reference
 =============
 
+In Emacs 28+, see also ‘M-x shortdoc-display-group RET taxy RET’.
+
 * Menu:
 
 * Functions::
@@ -1122,6 +1130,7 @@ File: README.info,  Node: Changelog,  Next: Development,  Prev: Usage,  Up: Top
 
 * Menu:
 
+* 0.8: 08.
 * 0.7: 07.
 * 0.6: 06.
 * 0.5: 05.
@@ -1131,19 +1140,46 @@ File: README.info,  Node: Changelog,  Next: Development,  Prev: Usage,  Up: Top
 * 0.1: 01.
 
 
-File: README.info,  Node: 07,  Next: 06,  Up: Changelog
+File: README.info,  Node: 08,  Next: 07,  Up: Changelog
 
-4.1 0.7
+4.1 0.8
 =======
 
 * Menu:
 
 * Additions::
+* Fixes::
 
 
-File: README.info,  Node: Additions,  Up: 07
+File: README.info,  Node: Additions,  Next: Fixes,  Up: 08
 
 4.1.1 Additions
+---------------
+
+   • Short documentation group for Emacs 28+.
+
+
+File: README.info,  Node: Fixes,  Prev: Additions,  Up: 08
+
+4.1.2 Fixes
+-----------
+
+   • Require ‘map’ for ‘pcase’ pattern.
+
+
+File: README.info,  Node: 07,  Next: 06,  Prev: 08,  Up: Changelog
+
+4.2 0.7
+=======
+
+* Menu:
+
+* Additions: Additions (1).
+
+
+File: README.info,  Node: Additions (1),  Up: 07
+
+4.2.1 Additions
 ---------------
 
    • Function ‘taxy-flatten’ returns a list of the items in a taxy and
@@ -1155,17 +1191,17 @@ File: README.info,  Node: Additions,  Up: 07
 
 File: README.info,  Node: 06,  Next: 05,  Prev: 07,  Up: Changelog
 
-4.2 0.6
+4.3 0.6
 =======
 
 * Menu:
 
-* Additions: Additions (1).
+* Additions: Additions (2).
 
 
-File: README.info,  Node: Additions (1),  Up: 06
+File: README.info,  Node: Additions (2),  Up: 06
 
-4.2.1 Additions
+4.3.1 Additions
 ---------------
 
    • Sorting functions:
@@ -1195,18 +1231,18 @@ File: README.info,  Node: Additions (1),  Up: 06
 
 File: README.info,  Node: 05,  Next: 04,  Prev: 06,  Up: Changelog
 
-4.3 0.5
+4.4 0.5
 =======
 
 * Menu:
 
-* Additions: Additions (2).
-* Fixes::
+* Additions: Additions (3).
+* Fixes: Fixes (1).
 
 
-File: README.info,  Node: Additions (2),  Next: Fixes,  Up: 05
+File: README.info,  Node: Additions (3),  Next: Fixes (1),  Up: 05
 
-4.3.1 Additions
+4.4.1 Additions
 ---------------
 
    • Function ‘taxy-magit-section-insert’ takes new arguments:
@@ -1226,9 +1262,9 @@ File: README.info,  Node: Additions (2),  Next: Fixes,  Up: 05
    • New example ‘taxy-package-report’.
 
 
-File: README.info,  Node: Fixes,  Prev: Additions (2),  Up: 05
+File: README.info,  Node: Fixes (1),  Prev: Additions (3),  Up: 05
 
-4.3.2 Fixes
+4.4.2 Fixes
 -----------
 
    • Example ‘diredy’ referred to an old function name.
@@ -1236,7 +1272,7 @@ File: README.info,  Node: Fixes,  Prev: Additions (2),  Up: 05
 
 File: README.info,  Node: 04,  Next: 03,  Prev: 05,  Up: Changelog
 
-4.4 0.4
+4.5 0.4
 =======
 
    • Incremented version to cause a new ELPA release (since removing a
@@ -1245,18 +1281,18 @@ File: README.info,  Node: 04,  Next: 03,  Prev: 05,  Up: Changelog
 
 File: README.info,  Node: 03,  Next: 02,  Prev: 04,  Up: Changelog
 
-4.5 0.3
+4.6 0.3
 =======
 
 * Menu:
 
 * Changes::
-* Fixes: Fixes (1).
+* Fixes: Fixes (2).
 
 
-File: README.info,  Node: Changes,  Next: Fixes (1),  Up: 03
+File: README.info,  Node: Changes,  Next: Fixes (2),  Up: 03
 
-4.5.1 Changes
+4.6.1 Changes
 -------------
 
    • Within the ‘taxy’ struct and related functions, the term ‘objects’
@@ -1265,9 +1301,9 @@ File: README.info,  Node: Changes,  Next: Fixes (1),  Up: 03
      becomes ‘(taxy-items taxy)’).
 
 
-File: README.info,  Node: Fixes (1),  Prev: Changes,  Up: 03
+File: README.info,  Node: Fixes (2),  Prev: Changes,  Up: 03
 
-4.5.2 Fixes
+4.6.2 Fixes
 -----------
 
    • Function ‘taxy-fill’ always calls a taxy’s ‘:take’ function if
@@ -1279,19 +1315,19 @@ File: README.info,  Node: Fixes (1),  Prev: Changes,  Up: 03
 
 File: README.info,  Node: 02,  Next: 01,  Prev: 03,  Up: Changelog
 
-4.6 0.2
+4.7 0.2
 =======
 
 * Menu:
 
 * Changes: Changes (1).
-* Additions: Additions (3).
-* Fixes: Fixes (2).
+* Additions: Additions (4).
+* Fixes: Fixes (3).
 
 
-File: README.info,  Node: Changes (1),  Next: Additions (3),  Up: 02
+File: README.info,  Node: Changes (1),  Next: Additions (4),  Up: 02
 
-4.6.1 Changes
+4.7.1 Changes
 -------------
 
    • Function ‘taxy-take-keyed*’ is renamed to ‘taxy-take-keyed’,
@@ -1299,9 +1335,9 @@ File: README.info,  Node: Changes (1),  Next: Additions (3),  Up: 02
      reason to maintain two versions.
 
 
-File: README.info,  Node: Additions (3),  Next: Fixes (2),  Prev: Changes (1),  Up: 02
+File: README.info,  Node: Additions (4),  Next: Fixes (3),  Prev: Changes (1),  Up: 02
 
-4.6.2 Additions
+4.7.2 Additions
 ---------------
 
    • Struct ‘taxy’ now has a ‘:make’ slot, a function called to make new
@@ -1317,9 +1353,9 @@ File: README.info,  Node: Additions (3),  Next: Fixes (2),  Prev: Changes (1),  
      .
 
 
-File: README.info,  Node: Fixes (2),  Prev: Additions (3),  Up: 02
+File: README.info,  Node: Fixes (3),  Prev: Additions (4),  Up: 02
 
-4.6.3 Fixes
+4.7.3 Fixes
 -----------
 
    • ‘taxy-magit-section’’s ‘insert-object’ function.
@@ -1329,7 +1365,7 @@ File: README.info,  Node: Fixes (2),  Prev: Additions (3),  Up: 02
 
 File: README.info,  Node: 01,  Prev: 02,  Up: Changelog
 
-4.7 0.1
+4.8 0.1
 =======
 
 First tagged version.
@@ -1381,45 +1417,48 @@ GPLv3
 
 Tag Table:
 Node: Top218
-Node: Examples2162
-Node: Numbery (starting basically)2481
-Node: Lettery (filling incrementally)8242
-Node: Sporty (understanding completely)10756
-Node: Applications16743
-Node: Installation17218
-Node: Usage17531
-Node: Reusable taxys19686
-Node: Threading macros23839
-Node: Modifying filled taxys24378
-Node: Dynamic taxys25196
-Node: Multi-level dynamic taxys27845
-Node: "Chains" of independent multi-level dynamic taxys30038
-Node: Defining a classification domain-specific language32969
-Node: Magit section37132
-Node: Reference37829
-Node: Functions37966
-Node: Macros39944
-Node: Changelog40594
-Node: 0740789
-Node: Additions40889
-Node: 0641204
-Node: Additions (1)41329
-Node: 0542679
-Node: Additions (2)42814
-Node: Fixes43920
-Node: 0444074
-Node: 0344296
-Node: Changes44425
-Node: Fixes (1)44788
-Node: 0245223
-Node: Changes (1)45392
-Node: Additions (3)45684
-Node: Fixes (2)46543
-Node: 0146797
-Node: Development46896
-Node: Copyright assignment47102
-Node: Credits47690
-Node: License47880
+Node: Examples2227
+Node: Numbery (starting basically)2546
+Node: Lettery (filling incrementally)8307
+Node: Sporty (understanding completely)10821
+Node: Applications16808
+Node: Installation17283
+Node: Usage17596
+Node: Reusable taxys19751
+Node: Threading macros23904
+Node: Modifying filled taxys24443
+Node: Dynamic taxys25261
+Node: Multi-level dynamic taxys27910
+Node: "Chains" of independent multi-level dynamic taxys30103
+Node: Defining a classification domain-specific language33034
+Node: Magit section37197
+Node: Reference37894
+Node: Functions38102
+Node: Macros40080
+Node: Changelog40730
+Node: 0840936
+Node: Additions41046
+Node: Fixes41190
+Node: 0741328
+Node: Additions (1)41453
+Node: 0641772
+Node: Additions (2)41897
+Node: 0543247
+Node: Additions (3)43392
+Node: Fixes (1)44502
+Node: 0444660
+Node: 0344882
+Node: Changes45011
+Node: Fixes (2)45374
+Node: 0245809
+Node: Changes (1)45978
+Node: Additions (4)46270
+Node: Fixes (3)47129
+Node: 0147383
+Node: Development47482
+Node: Copyright assignment47688
+Node: Credits48276
+Node: License48466
 
 End Tag Table
 

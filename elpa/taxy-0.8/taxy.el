@@ -5,7 +5,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/taxy.el
-;; Version: 0.7
+;; Version: 0.8
 ;; Package-Requires: ((emacs "26.3"))
 ;; Keywords: lisp
 
@@ -49,6 +49,7 @@
 ;;;; Requirements
 
 (require 'cl-lib)
+(require 'map)
 (require 'subr-x)
 
 ;;;; Structs
@@ -74,19 +75,19 @@
   "Fill TAXY with ITEMS according to its definition."
   (cl-labels ((apply-item (item taxy)
                           (or (if (taxy-take taxy)
-				  (funcall (taxy-take taxy) item taxy)
-				(cl-loop for taxy in (taxy-taxys taxy)
-					 when (funcall (taxy-predicate taxy) item)
-					 do (progn
-					      (if (taxy-take taxy)
-						  (funcall (taxy-take taxy) item taxy)
-						(if (taxy-taxys taxy)
-						    (or (apply-item item taxy)
-							(push item (taxy-items taxy)))
-						  (push item (taxy-items taxy))))
-					      (setf item (funcall (taxy-then taxy) item)))
-					 unless item return t
-					 finally return nil))
+                                  (funcall (taxy-take taxy) item taxy)
+                                (cl-loop for taxy in (taxy-taxys taxy)
+                                         when (funcall (taxy-predicate taxy) item)
+                                         do (progn
+                                              (if (taxy-take taxy)
+                                                  (funcall (taxy-take taxy) item taxy)
+                                                (if (taxy-taxys taxy)
+                                                    (or (apply-item item taxy)
+                                                        (push item (taxy-items taxy)))
+                                                  (push item (taxy-items taxy))))
+                                              (setf item (funcall (taxy-then taxy) item)))
+                                         unless item return t
+                                         finally return nil))
                               ;; No sub-taxys took the item: add it to this taxy.
                               (when (funcall (taxy-predicate taxy) item)
                                 (if (taxy-take taxy)
@@ -251,9 +252,9 @@ Sorts items in TAXY and its sub-taxys.  KEY is passed to
 `cl-sort', which see."
   (declare (indent defun))
   (taxy-mapc* (lambda (taxy)
-		(setf (taxy-items taxy)
-		      (cl-sort (taxy-items taxy)
-			       pred :key key)))
+                (setf (taxy-items taxy)
+                      (cl-sort (taxy-items taxy)
+                               pred :key key)))
     taxy))
 
 (defalias 'taxy-sort #'taxy-sort-items)
@@ -263,9 +264,9 @@ Sorts items in TAXY and its sub-taxys.  KEY is passed to
 KEY is passed to `cl-sort', which see."
   (declare (indent defun))
   (taxy-mapc* (lambda (taxy)
-		(setf (taxy-taxys taxy)
-		      (cl-sort (taxy-taxys taxy)
-			       pred :key key)))
+                (setf (taxy-taxys taxy)
+                      (cl-sort (taxy-taxys taxy)
+                               pred :key key)))
     taxy))
 
 (defalias 'taxy-sort* #'taxy-sort-taxys)
@@ -299,18 +300,18 @@ item being tested, bound within the function to `item'."
   `(let ((variable ',variable))
      (defvar ,variable nil
        ,(format "Alist mapping key aliases to key functions defined with `%s'."
-		name))
+                name))
      (defmacro ,name (name args &rest body)
        ,docstring
        (declare (indent defun)
-		(debug (&define symbolp listp &rest def-form)))
+                (debug (&define symbolp listp &rest def-form)))
        (let* ((fn-symbol (intern (format "%s-%s" ,prefix name)))
-	      (fn `(cl-function
-		    (lambda (item ,@args)
-		      ,@body))))
-	 `(progn
-	    (fset ',fn-symbol ,fn)
-	    (setf (map-elt ,variable ',name) ',fn-symbol))))))
+              (fn `(cl-function
+                    (lambda (item ,@args)
+                      ,@body))))
+         `(progn
+            (fset ',fn-symbol ,fn)
+            (setf (map-elt ,variable ',name) ',fn-symbol))))))
 
 (defun taxy-make-take-function (keys aliases)
   "Return a `taxy' \"take\" function for KEYS.
@@ -347,7 +348,7 @@ defined with a definer defined by `taxy-define-key-definer')."
                                                       (and (pred atom)
                                                            ;; SOMEDAY: Use (not symbolp) when depending on Emacs 28.1.
                                                            (pred (lambda (it) (not (symbolp it)))))
-						      `(quote ,_))
+                                                      `(quote ,_))
                                                   t)))))
                          ;; Key with args: replace with a lambda that
                          ;; calls that key's function with given args.
@@ -357,6 +358,82 @@ defined with a definer defined by `taxy-define-key-definer')."
       (setf keys (mapcar #'quote-fn keys))
       `(lambda (item taxy)
          (taxy-take-keyed ',keys item taxy)))))
+
+;;;; Documentation group
+
+;; Available in Emacs 28.  NOTE: In earlier Emacs versions,
+;; byte-compiling this section will produce warnings due to the
+;; shortdoc forms that appear to be function calls.
+
+(eval-when-compile
+  (require 'shortdoc nil t))
+
+(when (require 'shortdoc nil t)
+  (with-no-warnings
+    ;; TODO: Remove `with-no-warnings' when requiring Emacs 28+.
+    (define-short-documentation-group taxy
+      (taxy-flatten
+       :eval (taxy-flatten
+              (make-taxy
+               :items '(a b c)
+               :taxys (list (make-taxy
+                             :items '(d e f))))))
+      (taxy-emptied
+       :eval (taxy-emptied
+              (make-taxy
+               :items '(a b c)
+               :taxys (list (make-taxy
+                             :items '(d e f))))))
+      (taxy-fill
+       :eval (taxy-fill '(0 1 2 3)
+                        (make-taxy
+                         :name "Numbers"
+                         :taxys (list (make-taxy
+                                       :name "Odd"
+                                       :predicate #'cl-oddp)
+                                      (make-taxy
+                                       :name "Even"
+                                       :predicate #'cl-evenp)))))
+      (taxy-make-take-function
+       :eval (taxy-make-take-function
+              '(first-char second-char)
+              '((first-char (lambda (s) (substring s nil 1)))
+                (second-char (lambda (s) (substring s 1 2))))))
+      (taxy-mapc-taxys
+        :eval (taxy-mapc-taxys
+                (lambda (taxy)
+                  (setf (taxy-name taxy) (upcase (taxy-name taxy))))
+                (make-taxy :name "a" :taxys (list (make-taxy :name "b")))))
+      (taxy-mapcar-items
+        :eval (taxy-mapcar-items #'upcase
+                (make-taxy :items (list "a" "b" "c")
+                           :taxys (list (make-taxy :items (list "d" "e" "f"))))))
+      (taxy-plain
+       :eval (taxy-plain
+              (taxy-fill '(0 1 2 3)
+                         (make-taxy
+                          :name "Numbers"
+                          :taxys (list (make-taxy
+                                        :name "Odd"
+                                        :predicate #'cl-oddp)
+                                       (make-taxy
+                                        :name "Even"
+                                        :predicate #'cl-evenp))))))
+      (taxy-size
+       :eval (taxy-size
+              (make-taxy
+               :items '(a b c)
+               :taxys (list (make-taxy
+                             :items '(d e f))))))
+      (taxy-sort-items
+        :eval (taxy-sort-items #'string< #'identity
+                (make-taxy :items (list "c" "b" "a")
+                           :taxys (list (make-taxy :items (list "f" "e" "d"))))))
+      (taxy-sort-taxys
+        :eval (taxy-sort-taxys #'string< #'taxy-name
+                (make-taxy :name "Taxy"
+                           :taxys (list (make-taxy :name "Beta")
+                                        (make-taxy :name "Alpha"))))))))
 
 ;;;; Footer
 

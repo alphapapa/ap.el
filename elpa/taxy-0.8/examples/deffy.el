@@ -115,6 +115,7 @@
   '(display-buffer-in-side-window
     (side . right)
     (window-parameters
+     (dedicated . t)
      (window-side . right)
      (no-delete-other-windows . t)))
   "`display-buffer' action used when displaying Deffy buffer in a side window.
@@ -124,16 +125,17 @@ See Info node `(elisp)Displaying Buffers in Side Windows'."
 ;;;; Commands
 
 ;;;###autoload
-(cl-defun deffy (&key (project (or (project-current)
-				   (cons 'transient default-directory)))
-		      (keys deffy-taxy-default-keys)
-		      (files deffy-files)
-		      (buffer-name (format "*Deffy: %s*"
-					   (if files
-					       (string-join (mapcar #'file-relative-name files) ", ")
-					     (file-name-nondirectory
-					      (directory-file-name (project-root project))))))
-		      visibility-fn display-buffer-action)
+(cl-defun deffy
+    (&key (project (or (project-current)
+		       (cons 'transient default-directory)))
+	  (keys deffy-taxy-default-keys)
+	  (files deffy-files)
+	  (buffer-name (format "*Deffy: %s*"
+			       (if files
+				   (string-join (mapcar #'file-relative-name files) ", ")
+				 (file-name-nondirectory
+				  (directory-file-name (project-root project))))))
+	  visibility-fn display-buffer-action)
   "Show definitions defined in PROJECT or FILES.
 Interactively, with PREFIX, show only definitions in current
 buffer."
@@ -160,6 +162,11 @@ buffer."
 		(def-name (def) (format "%s" (cl-second (deffy-def-form def)))))
       ;; (when (get-buffer buffer-name)
       ;;   (kill-buffer buffer-name))
+      (setf files (cl-reduce #'cl-remove-if-not (list #'elisp-file-p #'file-visible-p)
+			     :initial-value (or files (project-files project))
+			     :from-end t))
+      (unless files
+        (user-error "No files to show"))
       (with-current-buffer (get-buffer-create buffer-name)
 	(deffy-mode)
 	(setq-local deffy-taxy-default-keys keys
@@ -167,19 +174,16 @@ buffer."
 		    deffy-files files
 		    deffy-display-buffer-action display-buffer-action
 		    default-directory deffy-directory)
-	(setf files (cl-reduce #'cl-remove-if-not (list #'elisp-file-p #'file-visible-p)
-			       :initial-value (or files (project-files project))
-			       :from-end t))
-	(cl-assert files nil "No files to show")
 	(let* ((forms (apply #'append (mapcar #'deffy--file-forms files)))
 	       (taxy (thread-last
 			 (make-fn
 			  :name "Deffy"
-			  :description (format "Definitions in %s:"
-					       (if files
-						   (string-join (mapcar #'file-relative-name files) ", ")
-						 (file-name-nondirectory
-						  (directory-file-name (project-root project)))))
+			  :description
+                          (format "Definitions in %s:"
+				  (if files
+				      (string-join (mapcar #'file-relative-name files) ", ")
+				    (file-name-nondirectory
+				     (directory-file-name (project-root project)))))
 			  :take (taxy-make-take-function keys deffy-keys))
 		       (taxy-fill forms)
 		       (taxy-sort* #'string< #'taxy-name)
@@ -236,24 +240,36 @@ Interactively, with prefix, display in dedicated side window."
 
 (defun deffy-jump (def)
   "Jump to definition DEF.
-Interactively, read DEF from visible Deffy window with
-completion; with prefix, from all Deffy buffers."
+Interactively, read DEF from current buffer with completion; with
+prefix, from all `deffy-mode' buffers."
   (interactive
    (list (deffy--read-def
-           (if current-prefix-arg
+	   (if current-prefix-arg
 	       (cl-loop for buffer in (buffer-list)
-		        when (eq 'deffy-mode (buffer-local-value 'major-mode buffer))
-		        collect buffer)
-	     (cl-loop for window in (window-list)
-		      when (eq 'deffy-mode
-			       (buffer-local-value 'major-mode (window-buffer window)))
-		      return (list (window-buffer window)))))))
-  (pcase-let (((cl-struct deffy-def file pos) def))
+			when (eq 'deffy-mode (buffer-local-value 'major-mode buffer))
+			collect buffer)
+	     (or (cl-loop for buffer in (buffer-list)
+			  when (and (eq 'deffy-mode (buffer-local-value 'major-mode buffer))
+				    (member (buffer-file-name)
+                                            (buffer-local-value 'deffy-files buffer)))
+			  return (list buffer))
+		 (condition-case nil
+		     (save-window-excursion
+		       (deffy-buffer)
+		       (list (current-buffer)))
+		   (error (cl-loop for window in (window-list)
+                                   when (eq 'deffy-mode
+                                            (buffer-local-value 'major-mode (window-buffer window)))
+                                   return (list (window-buffer window))))))))))
+  (pcase-let (((cl-struct deffy-def file pos) def)
+              (action (if (eq 'deffy-mode major-mode)
+                          `(display-buffer-in-previous-window
+                            (previous-window . ,(get-mru-window nil nil 'not-selected)))
+                        '(display-buffer-same-window))))
     (pop-to-buffer
      (or (find-buffer-visiting file)
 	 (find-file-noselect file))
-     `(display-buffer-in-previous-window
-       (previous-window . ,(get-mru-window))))
+     action)
     (goto-char pos)
     (backward-sexp 1)))
 
@@ -312,11 +328,14 @@ completion; with prefix, from all Deffy buffers."
 		     (cl-loop for candidate in candidates collect
 		              (list (propertize candidate
 					        'face 'font-lock-function-name-face)
-			            (concat (propertize (deffy-type
-						          (get-text-property 0 :def candidate))
-						        'face 'font-lock-type-face)
+			            (concat (propertize
+                                             (symbol-name
+                                              (deffy-def-type
+					        (get-text-property 0 :def candidate)))
+					     'face 'font-lock-type-face)
 				            "  ")
-			            (concat (propertize " " 'display '(space :align-to center))
+			            (concat (propertize " "
+                                                        'display '(space :align-to center))
 				            (get-text-property 0 :annotation candidate))))))
     (pcase (length deffy-buffers)
       (1 (setf annotate-fn #'deffy-def-docstring
@@ -334,7 +353,7 @@ completion; with prefix, from all Deffy buffers."
 	   (completion-extra-properties (list :annotation-function #'annotate
 					      :affixation-function affixation-fn))
 	   (selected (completing-read "Definition: " dynamic-fn nil t)))
-      (deffy-jump (alist-get selected alist nil nil #'equal)))))
+      (alist-get selected alist nil nil #'equal))))
 
 (cl-defun deffy--file-forms (file)
   "Return forms defined in FILE."
@@ -352,18 +371,19 @@ completion; with prefix, from all Deffy buffers."
 			      (`(quote ,it) it)
 			      (`(,it . ,_) it))
                       :type (car form)
-                      :docstring (replace-regexp-in-string
-                                  "\n" "  "
-                                  (pcase form
-		                    (`(,(or 'defun 'cl-defun 'defmacro 'cl-defmacro) ,_name ,_args
-		                       ,(and (pred stringp) docstring) . ,_)
-		                     docstring)
-		                    (`(,(or 'defvar 'defvar-local 'defcustom) ,_name ,_value
-		                       ,(and (pred stringp) docstring) . ,_)
-		                     docstring)
-		                    (_ ;; Use the first string found, if any.
-		                     (or (cl-find-if #'stringp form)
-                                         ""))))))))
+                      :docstring
+                      (replace-regexp-in-string
+                       "\n" "  "
+                       (pcase form
+		         (`(,(or 'defun 'cl-defun 'defmacro 'cl-defmacro) ,_name ,_args
+		            ,(and (pred stringp) docstring) . ,_)
+		          docstring)
+		         (`(,(or 'defvar 'defvar-local 'defcustom) ,_name ,_value
+		            ,(and (pred stringp) docstring) . ,_)
+		          docstring)
+		         (_ ;; Use the first string found, if any.
+		          (or (cl-find-if #'stringp form)
+                              ""))))))))
 
 ;;;;; Bookmark support
 
@@ -376,6 +396,7 @@ completion; with prefix, from all Deffy buffers."
 	(cons 'files deffy-files)
 	(cons 'handler #'deffy--bookmark-handler)))
 
+;;;###autoload
 (defun deffy--bookmark-handler (record)
   "Show Deffy buffer for bookmark RECORD."
   (pcase-let* ((`(,_ . ,(map directory files)) record))
