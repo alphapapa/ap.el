@@ -136,6 +136,7 @@
  '(font-lock-comment-face ((t (:slant italic))))
  '(italic ((t (:slant italic))))
  '(org-meta-line ((t (:inherit font-lock-comment-face))))
+ '(scrollkeeper-guideline-highlight ((t (:extend t :background "#2aa198"))))
  '(tab-bar ((t (:inherit (header-line default) :weight bold))))
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
  '(tab-bar-tab-inactive ((t (:inherit tab-bar)))))
