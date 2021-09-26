@@ -270,8 +270,9 @@
         ;; any others).  Anyway, using `default-directory' when `compilation-directory' isn't set
         ;; should work.
         (lambda ()
-          (string-prefix-p (or compilation-directory default-directory)
-			   (file-truename (buffer-file-name))))))
+          (when (buffer-file-name)
+	    (string-prefix-p (or compilation-directory default-directory)
+			     (file-truename (buffer-file-name)))))))
 
 (use-package consult
   :bind (:map global-map
