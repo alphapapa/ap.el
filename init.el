@@ -47,6 +47,7 @@
  '(delete-by-moving-to-trash t)
  '(doom-outrun-electric-brighter-modeline t)
  '(doom-outrun-electric-comment-bg t)
+ '(ement-save-sessions t)
  '(fci-rule-color "#62686E")
  '(frame-resize-pixelwise t)
  '(global-tab-line-mode t)
