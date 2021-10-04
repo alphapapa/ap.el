@@ -308,6 +308,7 @@
 	       . dired-mouse-find-file))
   :hook
   (dired-mode . auto-revert-mode)
+  (dired-mode . dired-omit-mode)
   (dired-mode . (lambda ()
 		  (toggle-truncate-lines 1))))
 
