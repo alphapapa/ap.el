@@ -13,14 +13,6 @@
 
 ;;;***
 
-;;;### (autoloads nil "taxy-magit-section" "taxy-magit-section.el"
-;;;;;;  (0 0 0 0))
-;;; Generated autoloads from taxy-magit-section.el
-
-(register-definition-prefixes "taxy-magit-section" '("taxy-magit-section-"))
-
-;;;***
-
 ;;;### (autoloads nil nil ("taxy-pkg.el") (0 0 0 0))
 
 ;;;***
