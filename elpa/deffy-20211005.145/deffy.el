@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Keywords: convenience, lisp
-;; Package-Version: 20210923.308
+;; Package-Version: 20211005.145
 ;; Package-Requires: ((emacs "27.2") (taxy "0.7"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -157,14 +157,14 @@ buffer."
 			 (apply #'make-taxy-magit-section
 				:make #'make-fn
 				:format-fn #'format-item
-				:heading-indent deffy-level-indent
+				:level-indent deffy-level-indent
 				:visibility-fn visibility-fn
 				;; :heading-face-fn #'heading-face
 				args))
 		(def-name (def) (format "%s" (cl-second (deffy-def-form def)))))
       ;; (when (get-buffer buffer-name)
       ;;   (kill-buffer buffer-name))
-      (setf files (cl-reduce #'cl-remove-if-not (list #'elisp-file-p #'file-visible-p)
+      (setf files (cl-reduce #'cl-remove-if-not (list #'file-exists-p #'elisp-file-p #'file-visible-p)
 			     :initial-value (or files (project-files project))
 			     :from-end t))
       (unless files
