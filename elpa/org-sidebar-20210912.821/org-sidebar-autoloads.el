@@ -1,4 +1,4 @@
-;;; org-sidebar-autoloads.el --- automatically extracted autoloads
+;;; org-sidebar-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
