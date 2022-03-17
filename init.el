@@ -138,7 +138,8 @@
  '(font-lock-comment-face ((t (:slant italic))))
  '(italic ((t (:slant italic))))
  '(org-meta-line ((t (:inherit font-lock-comment-face))))
- '(scrollkeeper-guideline-highlight ((t (:extend t :background "#2aa198"))))
+ '(org-todo ((t (:foreground "#859900" :inverse-video t :box (:line-width (2 . 2) :color "dark red" :style flat-button) :weight bold))))
+ '(scrollkeeper-guideline-highlight ((t (:extend t :background "#2aa198"))) t)
  '(tab-bar ((t (:inherit (header-line default) :weight bold))))
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
  '(tab-bar-tab-inactive ((t (:inherit tab-bar)))))
@@ -327,6 +328,8 @@
 (use-package doom-themes
   :config
   (unpackaged/customize-theme-faces 'doom-solarized-dark
+    `(ement-room-self  ((t :foreground ,(face-foreground 'warning))))
+    `(ement-room-self-message ((t :foreground ,(face-foreground 'warning))))
     `(mode-line ((t :box (:line-width 1 :color ,(face-foreground 'font-lock-builtin-face)))))
     `(header-line ((t :box nil :background ,(face-background 'region))))))
 
