@@ -52,11 +52,11 @@ as when they are declared in the `:config' phase)." nil nil)
 
 (autoload 'modus-themes-load-operandi "modus-themes" "\
 Load `modus-operandi' and disable `modus-vivendi'.
-Also run `modus-themes-after-load-theme-hook'." nil nil)
+Also run `modus-themes-after-load-theme-hook'." t nil)
 
 (autoload 'modus-themes-load-vivendi "modus-themes" "\
 Load `modus-vivendi' and disable `modus-operandi'.
-Also run `modus-themes-after-load-theme-hook'." nil nil)
+Also run `modus-themes-after-load-theme-hook'." t nil)
 
 (autoload 'modus-themes-toggle "modus-themes" "\
 Toggle between `modus-operandi' and `modus-vivendi' themes.
