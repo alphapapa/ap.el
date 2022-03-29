@@ -1,6 +1,5 @@
-(define-package "taxy-magit-section" "20211005.111" "View Taxy structs in a Magit Section buffer"
-  '((emacs "26.3")
-    (magit-section "3.2.1"))
+(define-package "taxy" "20220329.16" "Programmable taxonomical grouping for arbitrary objects"
+  '((emacs "26.3"))
   :authors
   '(("Adam Porter" . "adam@alphapapa.net"))
   :maintainer

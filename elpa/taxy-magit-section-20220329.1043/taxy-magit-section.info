@@ -31,7 +31,8 @@ structs with magit-section (https://melpa.org/#/magit-section).
 
 Changelog
 
-* 0.9-pre: 09-pre. 
+* 0.9.1: 091. 
+* 0.9: 09. 
 
 
 
@@ -65,15 +66,30 @@ File: README.info,  Node: Changelog,  Next: Development,  Prev: COMMENT Usage,  
 
 * Menu:
 
-* 0.9-pre: 09-pre. 
+* 0.9.1: 091. 
+* 0.9: 09. 
 
 
-File: README.info,  Node: 09-pre,  Up: Changelog
+File: README.info,  Node: 091,  Next: 09,  Up: Changelog
 
-4.1 0.9-pre
-===========
+4.1 0.9.1
+=========
+
+*Fixes*
+   • ‘taxy-magit-section-insert’ appends heading faces, so users can
+     override (or merge with) the default.
+   • ‘taxy-magit-section-format-items’ uses columns’ headers as their
+     minimum width, which preserves each column’s width regardless of
+     items’ values.
+
+
+File: README.info,  Node: 09,  Prev: 091,  Up: Changelog
+
+4.2 0.9
+=======
 
    • ‘taxy-magit-section’ moved to separate package.
+   • Better align columns whose values are images.
 
 
 File: README.info,  Node: Development,  Next: Credits,  Prev: Changelog,  Up: Top
@@ -105,14 +121,15 @@ GPLv3
 
 Tag Table:
 Node: Top221
-Node: COMMENT Examples767
-Node: Installation895
-Node: COMMENT Usage1266
-Node: Changelog1391
-Node: 09-pre1537
-Node: Development1674
-Node: Credits1901
-Node: License2091
+Node: COMMENT Examples774
+Node: Installation902
+Node: COMMENT Usage1273
+Node: Changelog1398
+Node: 0911551
+Node: 091931
+Node: Development2121
+Node: Credits2348
+Node: License2538
 
 End Tag Table
 

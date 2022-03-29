@@ -642,6 +642,15 @@ format."
   ;; :init (selectrum-prescient-mode)
   )
 
+(use-package taxy
+  :quelpa
+  (taxy :fetcher github :repo "alphapapa/taxy.el"))
+
+(use-package taxy-magit-section
+  :quelpa
+  (taxy-magit-section :fetcher github :repo "alphapapa/taxy.el"
+		      :branch "package/taxy-magit-section"))
+
 (use-package topsy
   :hook (prog-mode . topsy-mode))
 
