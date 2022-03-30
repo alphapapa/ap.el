@@ -27,6 +27,10 @@
 
 ;;; Code:
 
+;; Set print-circle to avoid infinite loops and out-of-memory when
+;; printing circular data structures.
+(setf print-circle t)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -690,6 +694,49 @@ Also set its `no-delete-other-windows' parameter to match."
       (set-window-dedicated-p window (not (window-dedicated-p window)))
       (set-window-parameter window 'no-delete-other-windows
 			    (window-dedicated-p window)))))
+
+
+;; Install `plz' HTTP library (not on MELPA yet).
+(use-package plz
+  :quelpa (plz :fetcher github :repo "alphapapa/plz.el"))
+
+;; Install Ement.
+(use-package ement
+  :quelpa (ement :fetcher github :repo "alphapapa/ement.el")
+  :custom
+  (ement-auto-view-rooms '(("@alphapapa:matrix.org"
+			    "#ement.el:matrix.org" "#org-mode:matrix.org"
+			    "#emacs:matrix.org"
+			    ;; #systemcrafters:libera.chat (which doesn't seem to have a canonical alias through the bridge)
+			    "!EoRhMvNpnWxCMTMPeP:libera.chat")))
+  (ement-taxy-default-keys
+   '((membership :status 'leave)
+     (people-p)
+     ((or :name "Emacs"
+          :keys ((name :regexp (rx (or "Emacs" "ement.el" "org-mode" "magit" "spacemacs" "systemcrafters")))
+                 (space :id "!gLamGIXTWBaDFfhEeO:matrix.org"))))
+     (space)
+     ((name :name "Matrix"
+            :regexp (rx (or (seq bos "Matrix") "#matrix" "TWIM")))))))
+
+(use-package derpit
+  :load-path ("~/src/emacs/misc/derpit.el")
+  :custom ((derpit-fonts '("Comic-Sans-MS-Regular"
+                           "DejaVu-Sans-Book"
+                           "Hamish-Regular"
+                           "edenshappell-Medium"
+                           "KBTrueBeliever-Medium"
+                           "KBGoogleyEyes-Medium"
+                           "KBPancakeParty-Medium"
+                           "KBGobbleDay-Medium"
+                           "KBwhenpigsfly-Medium"
+                           "Bookmark-Regular"
+                           "Just-Alphabetty-Thing!-Thing!"))
+           (derpit-avatar-dirs '("~/Dropbox/Images/Icons/twitch"
+                                 "~/Dropbox/Images/Icons/avatars"))))
+
+(use-package ement-derpit
+  :load-path ("~/src/emacs/misc/derpit.el"))
 
 ;;; Footer
 
