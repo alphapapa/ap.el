@@ -55,6 +55,7 @@
  '(fci-rule-color "#62686E")
  '(frame-resize-pixelwise t)
  '(global-tab-line-mode t)
+ '(indent-tabs-mode nil)
  '(inhibit-startup-screen t)
  '(ivy-sort-matches-functions-alist
    '((t . ivy--shorter-matches-first)
