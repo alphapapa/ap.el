@@ -75,6 +75,7 @@
  '(org-ctrl-k-protect-subtree t)
  '(org-hide-emphasis-markers t)
  '(org-log-into-drawer t)
+ '(org-startup-folded t)
  '(org-superstar-remove-leading-stars t)
  '(org-use-speed-commands t)
  '(package-selected-packages
