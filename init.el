@@ -82,6 +82,7 @@
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-checkout-melpa-p nil)
  '(quelpa-self-upgrade-p nil)
+ '(recentf-mode t)
  '(rustic-ansi-faces
    ["#242730" "#ff665c" "#7bc275" "#FCCE7B" "#51afef" "#C57BDB" "#5cEfFF" "#bbc2cf"])
  '(safe-local-variable-values
