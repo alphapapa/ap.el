@@ -145,7 +145,7 @@
  '(org-meta-line ((t (:inherit font-lock-comment-face))))
  '(org-todo ((t (:foreground "#859900" :inverse-video t :box (:line-width (2 . 2) :color "dark red" :style flat-button) :weight bold))))
  '(scrollkeeper-guideline-highlight ((t (:extend t :background "#2aa198"))) t)
- '(tab-bar ((t (:inherit (header-line default) :weight bold))))
+ '(tab-bar ((t (:inherit (header-line default) :weight bold :height 1.2))))
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
  '(tab-bar-tab-inactive ((t (:inherit tab-bar)))))
 
