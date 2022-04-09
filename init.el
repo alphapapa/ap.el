@@ -716,14 +716,15 @@ Also set its `no-delete-other-windows' parameter to match."
 			    ;; #systemcrafters:libera.chat (which doesn't seem to have a canonical alias through the bridge)
 			    "!EoRhMvNpnWxCMTMPeP:libera.chat")))
   (ement-taxy-default-keys
-   '((membership :status 'leave)
+   '((low-priority)
+     (favourite)
+     (membership :status 'leave)
      (people-p)
      ((or :name "Emacs"
-          :keys ((name :regexp (rx (or "Emacs" "ement.el" "org-mode" "magit" "spacemacs" "systemcrafters")))
-                 (space :id "!gLamGIXTWBaDFfhEeO:matrix.org"))))
-     (space)
-     ((name :name "Matrix"
-            :regexp (rx (or (seq bos "Matrix") "#matrix" "TWIM")))))))
+          :keys (;; (name :regexp (rx (or "Emacs" "ement.el" "org-mode" "magit" "spacemacs" "systemcrafters")))
+                 (space :id "!gLamGIXTWBaDFfhEeO:matrix.org")
+                 (space :id "!IiCJGriYKViIFJKjVV:matrix.org"))))
+     (space))))
 
 (use-package derpit
   :load-path ("~/src/emacs/misc/derpit.el")
