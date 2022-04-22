@@ -292,7 +292,12 @@
 	      ("M-g i" . consult-imenu)
 	      ("M-g M-i" . consult-imenu-multi)
 	      ("M-g l" . consult-line)
-	      ("M-g M-l" . consult-line-multi)))
+	      ("M-g M-l" . consult-line-multi))
+  :config
+  (cl-pushnew
+   ;; Elisp Imenu section headings.
+   '(115 "Sections" font-lock-comment-face)
+   (plist-get (alist-get 'emacs-lisp-mode consult-imenu-config) :types)))
 
 (use-package custom
   :config
@@ -436,6 +441,18 @@ format."
 
 (use-package hl-todo
   :hook (prog-mode . hl-todo-mode))
+
+(use-package imenu
+  :config
+  (defun ap/emacs-lisp-imenu-hook ()
+    "Add entry to `imenu-generic-expression' for Emacs Lisp buffers."
+    ;; TODO: Upstream this.
+    (cl-pushnew '("Sections"
+                  ;; (rx bol (0+ blank) (>= 3 ";") (0+ blank) (group (1+ nonl)))
+                  "^[[:blank:]]*;\\{3,\\}[[:blank:]]*\\(.+\\)"
+                  1)
+                imenu-generic-expression))
+  (add-hook 'emacs-lisp-mode-hook #'ap/emacs-lisp-imenu-hook))
 
 (use-package ivy
   :general
