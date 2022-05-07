@@ -294,10 +294,12 @@
 	      ("M-g l" . consult-line)
 	      ("M-g M-l" . consult-line-multi))
   :config
-  (cl-pushnew
-   ;; Elisp Imenu section headings.
-   '(115 "Sections" font-lock-comment-face)
-   (plist-get (alist-get 'emacs-lisp-mode consult-imenu-config) :types)))
+  (add-hook 'emacs-lisp-mode-hook
+            (lambda ()
+              (cl-pushnew
+               ;; Elisp Imenu section headings.
+               '(115 "Sections" font-lock-comment-face)
+               (plist-get (alist-get 'emacs-lisp-mode consult-imenu-config) :types)))))
 
 (use-package custom
   :config
