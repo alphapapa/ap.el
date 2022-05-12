@@ -482,12 +482,12 @@ format."
 
 (use-package modus-themes
   :config
-  (unpackaged/customize-theme-faces 'modus-operandi
-    '(font-lock-keyword-face ((t :weight bold)))
-    '(font-lock-warning-face ((t :weight bold))))
-  (unpackaged/customize-theme-faces 'modus-vivendi
-    '(font-lock-keyword-face ((t :weight bold)))
-    '(font-lock-warning-face ((t :weight bold)))))
+  (dolist (theme '(modus-operandi modus-vivendi))
+    (unpackaged/customize-theme-faces theme
+      '(ement-room-membership ((t :height 0.8)))
+      `(ement-room-timestamp-header ((t :inherit header-line :weight bold :extend t)))
+      '(font-lock-keyword-face ((t :weight bold)))
+      '(font-lock-warning-face ((t :weight bold))))))
 
 (use-package orderless
   :custom
