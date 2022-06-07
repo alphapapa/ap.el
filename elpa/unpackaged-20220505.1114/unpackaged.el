@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Keywords: convenience
-;; Package-Version: 20210923.208
+;; Package-Version: 20220505.1114
 ;; URL: https://github.com/alphapapa/unpackaged.el
 ;; Package-Requires: ((emacs "25.1") (dash "2.13") (s "1.10.0") (org "9.0") (use-package "2.4"))
 
@@ -1326,6 +1326,13 @@ prefix), leave old features loaded."
 
 ;;; Programming
 
+(defun unpackaged/compile-defun-debug ()
+  "Compile and evaluate the current top-level form, displaying compilation warnings.
+Calls `compile-defun' with `byte-compile-debug' non-nil."
+  (interactive)
+  (let ((byte-compile-debug t))
+    (call-interactively #'compile-defun)))
+
 (defvar unpackaged/flex-fill-paragraph-column nil
   "Last fill column used in command `unpackaged/flex-fill-paragraph'.")
 
@@ -1609,6 +1616,28 @@ _p_rev       _u_pper              _=_: upper/lower       _r_esolve
                                      (unpackaged/smerge-hydra/body)))))
 
 ;;; Web
+
+(defun unpackaged/imenu-eww-headings ()
+  "Return alist of HTML headings in current EWW buffer for Imenu.
+Suitable for `imenu-create-index-function'."
+  (let ((faces '(shr-h1 shr-h2 shr-h3 shr-h4 shr-h5 shr-h6 shr-heading)))
+    (save-excursion
+      (save-restriction
+        (widen)
+        (goto-char (point-min))
+        (cl-loop for next-pos = (next-single-property-change (point) 'face)
+                 while next-pos
+                 do (goto-char next-pos)
+                 for face = (get-text-property (point) 'face)
+                 when (cl-typecase face
+                        (list (cl-intersection face faces))
+                        (symbol (member face faces)))
+                 collect (cons (buffer-substring (point-at-bol) (point-at-eol)) (point))
+                 and do (forward-line 1))))))
+
+(add-hook 'eww-mode-hook
+          (lambda ()
+            (setq-local imenu-create-index-function #'unpackaged/imenu-eww-headings)))
 
 (eval-when-compile
   (require 'esxml-query))
