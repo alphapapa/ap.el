@@ -218,6 +218,16 @@ a project."
           (t (or (with-current-buffer buffer
                    (when-let* ((record (ignore-errors
                                          (bookmark-make-record))))
+		     (cl-labels ((encode (element)
+					 (cl-typecase element
+					   (string (encode-coding-string element 'utf-8-unix))
+					   (proper-list (mapcar #'encode element))
+					   (cons (cons (encode (car element))
+						       (encode (cdr element))))
+					   (t element))))
+		       ;; Encode all strings in record with UTF-8.
+		       ;; NOTE: If we stop using URLs in the future, maybe this won't be needed.
+		       (setf record (encode record)))
                      (burly--bookmark-record-url record)))
                  ;; Buffer can't seem to be bookmarked, so record it as
                  ;; a name-only buffer.  For some reason, it works
@@ -256,6 +266,7 @@ FRAMES defaults to all live frames."
                                                window-persistent-parameters))
          (frameset-filter-alist (append burly-frameset-filter-alist frameset-filter-alist))
          (query (frameset-save frames))
+         (print-length nil)             ; Important!
          (filename (concat "?" (url-hexify-string (prin1-to-string query))))
          (url (url-recreate-url (url-parse-make-urlobj "emacs+burly+frames" nil nil nil nil
                                                        filename))))
@@ -282,6 +293,7 @@ FRAMES defaults to all live frames."
   "Return URL for window configuration on FRAME."
   (with-selected-frame frame
     (let* ((query (burly--window-state frame))
+           (print-length nil)             ; Important!
            (filename (concat "?" (url-hexify-string (prin1-to-string query)))))
       (url-recreate-url (url-parse-make-urlobj "emacs+burly+windows" nil nil nil nil
                                                filename)))))
@@ -383,6 +395,7 @@ from the hook."
   "Return a URL for bookmark RECORD."
   (cl-assert record)
   (pcase-let* ((`(,name . ,props) record)
+               (print-length nil)             ; Important!
                (query (cl-loop for prop in props
                                ;; HACK: Remove unreadable values from props.
                                do (cl-loop for value in-ref (cdr prop)
@@ -410,6 +423,17 @@ URLOBJ should be a URL object as returned by
                                              (_ (read (cadr prop))))
                                collect (cons key value)))
                (record (cons path props)))
+    (cl-labels ((decode (element)
+			(cl-typecase element
+			  (string (decode-coding-string element 'utf-8-unix))
+			  (proper-list (mapcar #'decode element))
+			  (cons (cons
+				 (decode (car element))
+				 (decode (cdr element))))
+			  (t element))))
+      ;; Decode all strings in record with UTF-8.
+      ;; NOTE: If we stop using URLs in the future, maybe this won't be needed.
+      (setf record (decode record)))
     (save-window-excursion
       (condition-case err
           (bookmark-jump record)
@@ -469,6 +493,7 @@ URLOBJ should be a URL object as returned by
                            (- (point) (save-excursion
                                         (org-back-to-heading)
                                         (point)))))
+                    (print-length nil)             ; Important!
            (query (list (list "pos" pos)
                         (when top-olp
                           (list "top-olp" (prin1-to-string top-olp)))
