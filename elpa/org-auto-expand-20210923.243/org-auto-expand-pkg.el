@@ -1,0 +1,2 @@
+;;; Generated package description from org-auto-expand.el  -*- no-byte-compile: t -*-
+(define-package #("org-auto-expand" 0 15 (face nil)) "20210923.243" "Automatically expand certain headings" '((emacs "26.1")) :commit "edc27b155befab5626dcf6ceec7938126f7e31d4" :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("convenience" "outlines" "org") :url "https://github.com/alphapapa/org-auto-expand")
