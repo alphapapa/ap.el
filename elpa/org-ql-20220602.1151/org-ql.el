@@ -765,12 +765,12 @@ respectively."
                       "#+end_src")
                 t))
 
-(defun org-ql--byte-compile-warning (_string _pos _fill level)
+(defun org-ql--byte-compile-warning (string _pos _fill level)
   "Signal an `org-ql-invalid-query' error.
 Arguments STRING, POS, FILL, and LEVEL are according to
 `byte-compile-log-warning-function'."
   ;; Used as the `byte-compile-log-warning-function' in `org-ql--query-preamble'.
-  (signal 'org-ql-invalid-query level))
+  (signal 'org-ql-invalid-query (list string level)))
 
 (defun org-ql--query-predicate (query)
   "Return predicate function for QUERY."
@@ -1461,7 +1461,8 @@ any link is found."
               (setf description (regexp-quote description)))
             (when target
               (setf target (regexp-quote target))))
-          (when (re-search-forward org-ql-link-regexp (org-entry-end-position) t)
+          (when (save-excursion
+                  (re-search-forward org-ql-link-regexp (org-entry-end-position) t))
             (pcase description-or-target
               ('nil (and (or (null target)
                              (string-match-p target (match-string 1)))
