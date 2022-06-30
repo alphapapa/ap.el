@@ -303,6 +303,7 @@
   :config
   (add-hook 'emacs-lisp-mode-hook
             (lambda ()
+              (require 'consult-imenu)
               (cl-pushnew
                ;; Elisp Imenu section headings.
                '(115 "Sections" font-lock-comment-face)
