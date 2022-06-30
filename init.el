@@ -702,6 +702,7 @@ format."
 	      ("<backtab>" . vertico-previous)))
 
 (use-package window
+  :general ("C-x s" #'window-toggle-side-windows)
   :config
   (cl-defun ap/display-buffer-in-side-window (&optional (buffer (current-buffer)))
     "Display BUFFER in dedicated side window."
