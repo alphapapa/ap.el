@@ -518,6 +518,10 @@ format."
      (type "NOW(N!)" "|")
      (type "IMPORTANT(i!)" "|")
      (sequence "PROJECT(p!)" "|" "COMPLETED(c!)"))))
+  (org-todo-keyword-faces
+   `(("WAITING" :inherit org-todo
+      ;; This doesn't work properly, maybe a bug in Org or...?
+      :background ,(face-attribute 'org-scheduled-previously :foreground))))
 
   :config
   (defun ap/org-agenda-goto-heading-in-indirect-buffer (&optional switch-to)
