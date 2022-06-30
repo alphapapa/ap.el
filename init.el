@@ -27,10 +27,6 @@
 
 ;;; Code:
 
-;; Set print-circle to avoid infinite loops and out-of-memory when
-;; printing circular data structures.
-(setf print-circle t)
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
