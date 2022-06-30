@@ -721,10 +721,6 @@ Also set its `no-delete-other-windows' parameter to match."
 			    (window-dedicated-p window)))))
 
 
-;; Install `plz' HTTP library (not on MELPA yet).
-(use-package plz
-  :quelpa (plz :fetcher github :repo "alphapapa/plz.el"))
-
 ;; Install Ement.
 (use-package ement
   :quelpa (ement :fetcher github :repo "alphapapa/ement.el")
