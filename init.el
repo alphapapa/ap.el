@@ -465,6 +465,8 @@ format."
   )
 
 (use-package lispy
+  :general (:map 'lispy-mode-map
+                 [remap lispy-fill] #'unpackaged/flex-fill-paragraph)
   :hook
   (emacs-lisp-mode . lispy-mode))
 
