@@ -734,16 +734,8 @@ Also set its `no-delete-other-windows' parameter to match."
 			    "#emacs:matrix.org"
 			    ;; #systemcrafters:libera.chat (which doesn't seem to have a canonical alias through the bridge)
 			    "!EoRhMvNpnWxCMTMPeP:libera.chat")))
-  (ement-taxy-default-keys
-   '((low-priority)
-     (favourite)
-     (membership :status 'leave)
-     (people-p)
-     ((or :name "Emacs"
-          :keys (;; (name :regexp (rx (or "Emacs" "ement.el" "org-mode" "magit" "spacemacs" "systemcrafters")))
-                 (space :id "!gLamGIXTWBaDFfhEeO:matrix.org")
-                 (space :id "!IiCJGriYKViIFJKjVV:matrix.org"))))
-     (space))))
+  (ement-room-prism 'both)
+  (ement-room-send-message-filter #'ement-room-send-org-filter))
 
 (use-package derpit
   :load-path ("~/src/emacs/misc/derpit.el")
