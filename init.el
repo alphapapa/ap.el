@@ -85,7 +85,7 @@
  '(org-superstar-remove-leading-stars t)
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(htmlize burly peg modus-themes unpackaged embark taxy consult marginalia orderless vertico minions bufler helm-bufler prism snow which-key sr-speedbar helm-org-ql org-ql org-sticky-header org-web-tools org-sidebar org-super-agenda doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(plz burly prism ement deffy org-ql embark geiser with-simulated-input buttercup inspector dtache macrostep unpackaged queue svg-lib taxy-magit-section taxy org-auto-expand org-sidebar helm-org-ql try htmlize modus-themes consult marginalia orderless vertico minions bufler helm-bufler snow which-key sr-speedbar org-sticky-header org-web-tools org-super-agenda doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
  '(quelpa-checkout-melpa-p nil)
  '(quelpa-self-upgrade-p nil)
