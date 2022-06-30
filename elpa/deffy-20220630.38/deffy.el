@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Keywords: convenience, lisp
-;; Package-Version: 20211005.145
+;; Package-Version: 20220630.38
 ;; Package-Requires: ((emacs "27.2") (taxy "0.7"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@
   (deffy-define-key type ()
     (pcase-let* (((cl-struct deffy-def form) item)
 	         (type (pcase form
-		         (`(,(or 'defun 'cl-defun) . ,_)
+		         (`(,(or 'defun 'cl-defun 'defalias) . ,_)
 			  (if (cl-find-if (lambda (form)
 					    (pcase form
 					      (`(interactive . ,_) t)))
@@ -83,7 +83,42 @@
 			    'function))
 		         (`(,(or 'defmacro 'cl-defmacro) . ,_)
 			  'macro)
-		         (`(,car . ,_) car))))
+                         (`(,(or 'cl-defstruct) . ,_)
+			  'struct)
+                         (`(,(or 'defclass) . ,_)
+			  'class)
+                         (`(,(or 'cl-defmethod 'defmethod) . ,_)
+			  'method)
+                         (`(,(or 'define-error) . ,_)
+			  'error)
+                         (`(,(or 'defconst 'defcustom 'defgroup 'defvar 'defvar-local) . ,_)
+                          'variable)
+                         (`(,(or 'define-hash-table-test) . ,_)
+                          'hash-table-test)
+                         (`(,(or 'defface) . ,_)
+                          'face)
+                         (`(,(or 'provide 'require) . ,_)
+                          'feature)
+                         ;; Top-level forms that don't usually correspond to definitions,
+                         ;; so we ignore them.
+                         (`(,(or 'cl-eval-when 'eval-and-compile 'eval-when-compile 'with-eval-after-load) . ,_)
+                          nil)
+                         (`(,(or 'declare-function) . ,_)
+                          nil)
+                         (`(,(or 'unless 'when 'if-let 'if-let* 'when-let 'when-let* '-if-let '-if-let* '-when-let '-when-let* 'setf 'setq) . ,_)
+                          nil)
+                         ;; Top-level forms that are macro calls (e.g. custom defining macros).
+                         ((and `(,car . ,_) (guard (macrop car))) car)
+                         ;; Anything else: ignored.
+		         (`(,car . ,_) nil))))
+      ;; FIXME: Returning nil for these ignored types only works when the form is in the
+      ;; top-level file, i.e. when the file's relative name is nil, so these ignored types
+      ;; still show up when they're in other files.  This isn't really the right way to
+      ;; discard uninteresting items.
+
+      ;; FIXME: Also, when a project Lisp file is not loaded into Emacs, some symbols may
+      ;; not be correctly classified, e.g. defining macros.  It's probably not feasible to
+      ;; solve that completely correctly, so some options or workarounds may be needed.
       (when type
         (format "%s" type)))))
 
@@ -243,26 +278,16 @@ Interactively, with prefix, display in dedicated side window."
 (defun deffy-jump (def)
   "Jump to definition DEF.
 Interactively, read DEF from current buffer with completion; with
-prefix, from all `deffy-mode' buffers."
+universal prefix, from project buffers; with two universal
+prefixes, from all `deffy-mode' buffers."
   (interactive
    (list (deffy--read-def
-	   (if current-prefix-arg
-	       (cl-loop for buffer in (buffer-list)
-			when (eq 'deffy-mode (buffer-local-value 'major-mode buffer))
-			collect buffer)
-	     (or (cl-loop for buffer in (buffer-list)
-			  when (and (eq 'deffy-mode (buffer-local-value 'major-mode buffer))
-				    (member (buffer-file-name)
-                                            (buffer-local-value 'deffy-files buffer)))
-			  return (list buffer))
-		 (condition-case nil
-		     (save-window-excursion
-		       (deffy-buffer)
-		       (list (current-buffer)))
-		   (error (cl-loop for window in (window-list)
-                                   when (eq 'deffy-mode
-                                            (buffer-local-value 'major-mode (window-buffer window)))
-                                   return (list (window-buffer window))))))))))
+           (pcase current-prefix-arg
+             (`nil (deffy--buffer-for (current-buffer)))
+             ('(4) (save-window-excursion
+	             (deffy-project)
+	             (list (current-buffer))))
+             (_ (deffy--all-buffers))))))
   (pcase-let (((cl-struct deffy-def file pos) def)
               (action (if (eq 'deffy-mode major-mode)
                           `(display-buffer-in-previous-window
@@ -305,7 +330,10 @@ prefix, from all `deffy-mode' buffers."
   "Read form selected from Deffy BUFFERS with completion."
   (unless deffy-buffers
     (user-error "No Deffy buffers to find in"))
-  (cl-labels ((def-cons
+  (cl-labels ((disambiguate (string)
+                            (format "%s (%s)"
+                                    string (deffy-def-type (get-text-property 0 :def string))))
+              (def-cons
 		(def) (cons (propertize
 			     (format "%s" (deffy-def-name def))
 			     :annotation (funcall annotate-fn def)
@@ -346,7 +374,20 @@ prefix, from all `deffy-mode' buffers."
                affixation-fn #'affix)))
     (let* ((taxys (mapcar #'buffer-taxy deffy-buffers))
 	   (items (mapcan #'taxy-flatten taxys))
-	   (alist (setf items (mapcar #'def-cons items)))
+	   (alist (mapcar #'def-cons items))
+           ;; Unfortunately, `completing-read' always discards text properties, which
+           ;; means that they can't be used to disambiguate items with the same name
+           ;; (e.g. `(defthis foo)' in one form and `(defthat foo)' in another).  So we
+           ;; have to check for items with duplicate names, then replace the string with
+           ;; one that disambiguates them.
+           (duplicates (cl-loop for item in alist
+                                when (> (cl-count (car item) alist :key #'car :test #'equal) 1)
+                                collect item))
+           (_ (when duplicates
+                (dolist (dupe duplicates)
+                  (setf alist (remove dupe alist)
+                        dupe (cons (disambiguate (car dupe)) (cdr dupe)))
+                  (push dupe alist))))
 	   (metadata (list 'metadata (cons 'group-function #'group)))
 	   (dynamic-fn (lambda (str pred flag)
 			 (pcase flag
@@ -386,6 +427,30 @@ prefix, from all `deffy-mode' buffers."
 		         (_ ;; Use the first string found, if any.
 		          (or (cl-find-if #'stringp form)
                               ""))))))))
+
+(defun deffy--all-buffers ()
+  "Return list of all `deffy-mode' buffers."
+  (cl-loop for buffer in (buffer-list)
+	   when (eq 'deffy-mode (buffer-local-value 'major-mode buffer))
+	   collect buffer))
+
+(defun deffy--buffer-for (buffer)
+  "Return `deffy-mode' buffer having definitions for BUFFER.
+Return value is actually a one-element list."
+  (or (cl-loop for other-buffer in (buffer-list)
+	       when (and (eq 'deffy-mode (buffer-local-value 'major-mode other-buffer))
+		         (member (buffer-file-name buffer)
+                                 (buffer-local-value 'deffy-files other-buffer)))
+	       return (list other-buffer))
+      ;; Make a new deffy buffer for BUFFER.
+      (condition-case nil
+	  (save-window-excursion
+	    (deffy-buffer)
+	    (list (current-buffer)))
+	(error (cl-loop for window in (window-list)
+                        when (eq 'deffy-mode
+                                 (buffer-local-value 'major-mode (window-buffer window)))
+                        return (list (window-buffer window)))))))
 
 ;;;;; Bookmark support
 
