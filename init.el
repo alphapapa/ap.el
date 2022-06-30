@@ -704,23 +704,48 @@ format."
 (use-package window
   :general ("C-x s" #'window-toggle-side-windows)
   :config
-  (cl-defun ap/display-buffer-in-side-window (&optional (buffer (current-buffer)))
-    "Display BUFFER in dedicated side window."
-    (interactive)
+  (cl-defun ap/display-buffer-in-side-window (&optional (buffer (current-buffer))
+                                                        &key (side 'right) (slot 0))
+    "Display BUFFER in dedicated side window.
+With universal prefix, use left SIDE instead of right.  With two
+universal prefixes, prompt for side and slot (which allows
+setting up an IDE-like layout)."
+    (interactive (list (current-buffer)
+                       :side (pcase current-prefix-arg
+                               ('nil 'right)
+                               ('(0) left)
+                               (_ (intern (completing-read "Side: " '(left right top bottom) nil t))))
+                       :slot (pcase current-prefix-arg
+                               ('nil 0)
+                               ('(0) 0)
+                               (_ (read-number "Slot: ")))))
     (let ((display-buffer-mark-dedicated t))
       (display-buffer-in-side-window buffer
-                                     '((side . right)
+                                     `((side . ,side)
+                                       (slot . ,slot)
                                        (window-parameters
-					(no-delete-other-windows . t))))))
-  (defalias 'toggle-window-dedicated-p
-    (defun ap/toggle-window-dedicated-p (&optional window)
-      "Toggle WINDOW's dedicated flag.
-Also set its `no-delete-other-windows' parameter to match."
-      (interactive)
-      (set-window-dedicated-p window (not (window-dedicated-p window)))
-      (set-window-parameter window 'no-delete-other-windows
-			    (window-dedicated-p window)))))
+				        (no-delete-other-windows . t))))))
 
+  (defun ap/toggle-window-dedicated-p (&optional window)
+    "Toggle WINDOW's dedicated flag.
+Also set its `no-delete-other-windows' parameter to match."
+    (interactive)
+    (set-window-dedicated-p window (not (window-dedicated-p window)))
+    (set-window-parameter window 'no-delete-other-windows
+			  (window-dedicated-p window))
+    (message "Dedicated: %s" (window-dedicated-p window)))
+
+  (defun ap/set-window-parameter (window parameter value)
+    "Set WINDOW's PARAMETER to VALUE.
+Interactively (the whole point of this function), select from a
+few common parameters with completion."
+    (interactive (list (selected-window)
+                       (intern
+                        (completing-read
+                         "Set window parameter: " '(no-delete-other-windows no-other-window side slot preserve-size)
+                         nil t))
+                       (read (read-string "Value: "))))
+    (set-window-parameter window parameter value)))
 
 ;; Install Ement.
 (use-package ement
