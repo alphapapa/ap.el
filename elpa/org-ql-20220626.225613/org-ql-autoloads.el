@@ -112,21 +112,11 @@ single predicate).
 
 \(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (PROMPT \"Find entry: \"))" t nil)
 
-(autoload 'org-ql-find-heading "org-ql-find" "\
-Go to an Org entry in BUFFERS-FILES selected by searching with `org-ql'.
-Only headings are searched (using the \"heading:\" predicate).
-Interactively, with universal prefix, select multiple buffers to
-search with completion.
+(autoload 'org-ql-find-in-agenda "org-ql-find" "\
+Call `org-ql-find' on `org-agenda-files'." t nil)
 
-\(fn BUFFERS-FILES)" t nil)
-
-(autoload 'org-ql-find-path "org-ql-find" "\
-Go to an Org entry in BUFFERS-FILES selected by searching with `org-ql'.
-Only outline paths are searched (using the \"outline-path:\"
-predicate).  Interactively, with universal prefix, select
-multiple buffers to search with completion.
-
-\(fn BUFFERS-FILES)" t nil)
+(autoload 'org-ql-find-in-org-directory "org-ql-find" "\
+Call `org-ql-find' on files in `org-directory'." t nil)
 
 (register-definition-prefixes "org-ql-find" '("org-ql-find-"))
 

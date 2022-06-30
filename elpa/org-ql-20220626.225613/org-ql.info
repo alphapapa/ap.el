@@ -194,16 +194,10 @@ File: README.info,  Node: Commands,  Next: Queries,  Up: Usage
 ============
 
    • *Jumping to an entry:*
-        • (command)
-        • (command)
-   • *Showing an agenda-like view:*
-        • (command)
-        • (command)
-        • (command)
-        • (command)
-   • *Showing a tree in a buffer:*
-        • (command)
-
+        • and related commands
+        • • *Showing an agenda-like view:*
+        • • • • • *Showing a tree in a buffer:*
+        • 
 * Menu:
 
 * org-ql-find::
@@ -225,11 +219,9 @@ _Note: These commands use ._
    These commands jump to a heading selected using Emacs’s built-in
 completion facilities with an Org QL query:
 
-   • ‘org-ql-find’ searches all entry content.
-   • ‘org-ql-find-path’ searches only headings (using the
-     ‘outline-path:’ predicate).
-   • ‘org-ql-find-heading’ searches only headings (using the ‘heading:’
-     predicate).
+   • ‘org-ql-find’ searches in the current buffer.
+   • ‘org-ql-find-in-agenda’ searches in ‘(org-agenda-files)’.
+   • ‘org-ql-find-in-org-directory’ searches in ‘org-directory’.
 
 
 File: README.info,  Node: org-ql-search,  Next: helm-org-ql,  Prev: org-ql-find,  Up: Commands
@@ -483,6 +475,15 @@ Arguments are listed next to predicate names, where applicable.
      strings).  Matches against entire entry, from beginning of its
      heading to the next heading.
         • Aliases: ‘r’.
+‘rifle (&rest strings)’
+     Return non-nil if each string is found in either the entry or its
+     outline path.  Works like ‘org-rifle’.  This is probably the most
+     useful, intuitive, general-purpose predicate.
+        • Aliases: ‘smart’.
+        • *Note:* By default, this is the default predicate used for
+          plain-string query tokens (i.e.  given without a specified
+          predicate).  This can be customized with the option
+          ‘org-ql-default-predicate’.
 ‘src (&key lang regexps)’
      Return non-nil if current entry contains an Org Babel source block.
      If ‘LANG’ is non-nil, match blocks of that language.  If ‘REGEXPS’
@@ -1008,9 +1009,25 @@ File: README.info,  Node: 07-pre,  Next: 062,  Up: Changelog
      ‘org-ql-find-path’, which jump to entries selected using Emacs’s
      built-in completion facilities and Org QL queries (like
      ‘helm-org-ql’, but doesn’t require Helm.).
+   • Predicate ‘rifle’, which matches an entry if each of the given
+     arguments is found in either the entry’s contents or its outline
+     path.  This provides very intuitive results, mimicing the behavior
+     of ‘org-rifle’ (https://github.com/alphapapa/org-rifle).  In fact,
+     the results are so useful that it’s now the default predicate for
+     plain-string query tokens.  (It is also aliased to ‘smart’, since
+     it’s so "smart," and not all users have used ‘org-rifle’.)
+   • Option ‘org-ql-default-predicate’, applied to plain-string query
+     tokens (before, the ‘regexp’ predicate was always used, but now it
+     may be customized).
 
    *Changed*
    • Give more useful error message for invalid queries.
+
+   *Internal*
+   • Certain query predicates, when called multiple times in an ‘and’
+     sub-expression, are optimized to a single call.
+   • Use ‘buffer-chars-modified-tick’ instead of ‘buffer-modified-tick’.
+     (Thanks to Ihor Radchenko (https://github.com/yantar92).)
 
 
 File: README.info,  Node: 062,  Next: 061,  Prev: 07-pre,  Up: Changelog
@@ -1629,61 +1646,61 @@ Node: Quelpa2519
 Node: Helm support3047
 Node: Usage3450
 Node: Commands3848
-Node: org-ql-find4353
-Node: org-ql-search4867
-Node: helm-org-ql6561
-Node: org-ql-view6939
-Node: org-ql-view-sidebar7469
-Node: org-ql-view-recent-items7849
-Node: org-ql-sparse-tree8345
-Node: Queries9145
-Node: Non-sexp query syntax10262
-Node: General predicates12021
-Node: Ancestor/descendant predicates18260
-Node: Date/time predicates19388
-Node: Functions / Macros22512
-Node: Agenda-like views22810
-Ref: Function ‘org-ql-block’22972
-Node: Listing / acting-on results24233
-Ref: Caching24441
-Ref: Function ‘org-ql-select’25354
-Ref: Function ‘org-ql-query’27780
-Ref: Macro ‘org-ql’ (deprecated)29554
-Node: Custom predicates29869
-Ref: Macro ‘org-ql-defpred’30093
-Node: Dynamic block33534
-Node: Links36258
-Node: Tips36945
-Node: Changelog37269
-Node: 07-pre38037
-Node: 06238465
-Node: 06138773
-Node: 0639341
-Node: 05242395
-Node: 05142695
-Node: 0543118
-Node: 04944647
-Node: 04844927
-Node: 04745274
-Node: 04645683
-Node: 04546091
-Node: 04446452
-Node: 04346811
-Node: 04247014
-Node: 04147175
-Node: 0447422
-Node: 03251523
-Node: 03151926
-Node: 0352123
-Node: 02355423
-Node: 02255657
-Node: 02155937
-Node: 0256142
-Node: 0160220
-Node: Notes60321
-Node: Comparison with Org Agenda searches60483
-Node: org-sidebar61372
-Node: License61651
+Node: org-ql-find4274
+Node: org-ql-search4740
+Node: helm-org-ql6434
+Node: org-ql-view6812
+Node: org-ql-view-sidebar7342
+Node: org-ql-view-recent-items7722
+Node: org-ql-sparse-tree8218
+Node: Queries9018
+Node: Non-sexp query syntax10135
+Node: General predicates11894
+Node: Ancestor/descendant predicates18636
+Node: Date/time predicates19764
+Node: Functions / Macros22888
+Node: Agenda-like views23186
+Ref: Function ‘org-ql-block’23348
+Node: Listing / acting-on results24609
+Ref: Caching24817
+Ref: Function ‘org-ql-select’25730
+Ref: Function ‘org-ql-query’28156
+Ref: Macro ‘org-ql’ (deprecated)29930
+Node: Custom predicates30245
+Ref: Macro ‘org-ql-defpred’30469
+Node: Dynamic block33910
+Node: Links36634
+Node: Tips37321
+Node: Changelog37645
+Node: 07-pre38413
+Node: 06239820
+Node: 06140128
+Node: 0640696
+Node: 05243750
+Node: 05144050
+Node: 0544473
+Node: 04946002
+Node: 04846282
+Node: 04746629
+Node: 04647038
+Node: 04547446
+Node: 04447807
+Node: 04348166
+Node: 04248369
+Node: 04148530
+Node: 0448777
+Node: 03252878
+Node: 03153281
+Node: 0353478
+Node: 02356778
+Node: 02257012
+Node: 02157292
+Node: 0257497
+Node: 0161575
+Node: Notes61676
+Node: Comparison with Org Agenda searches61838
+Node: org-sidebar62727
+Node: License63006
 
 End Tag Table
 
