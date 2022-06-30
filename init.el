@@ -164,7 +164,10 @@
 ;; Early package config (required by later config).
 
 (use-package use-package
-  :custom (use-package-enable-imenu-support t))
+  :init
+  ;; Doesn't work with :custom because it must be set before loading
+  ;; `use-package'.
+  (setf use-package-enable-imenu-support t))
 
 (use-package quelpa
   :custom
