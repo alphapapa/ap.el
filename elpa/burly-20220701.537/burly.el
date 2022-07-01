@@ -4,8 +4,8 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/burly.el
-;; Version: 0.2-pre
-;; Package-Requires: ((emacs "26.3") (map "2.1"))
+;; Version: 0.3-pre
+;; Package-Requires: ((emacs "28.1") (map "2.1"))
 ;; Keywords: convenience
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -76,7 +76,7 @@
   :link '(custom-manual "(Burly)Usage"))
 
 (defcustom burly-bookmark-prefix "Burly: "
-  "Prefix string prepended to the name of new Burly bookmarks."
+  "Prefix string for the name of new Burly bookmarks."
   :type 'string)
 
 (defcustom burly-major-mode-alist
@@ -114,7 +114,7 @@ See Info node `(elisp)Window Parameters'.  See also option
                                     (const :tag "Saved" writable))))
 
 (defcustom burly-set-window-persistent-parameters t
-  "Sync `window-persistent-parameters' with Burly's option.
+  "Sync `window-persistent-parameters' with `burly' option.
 When this option is non-nil, `window-persistent-parameters' is
 set to the value of `burly-window-persistent-parameters' when
 Burly restores a window configuration.
@@ -228,8 +228,14 @@ a project."
     (pcase-exhaustive subtype
       ("bookmark" (burly--bookmark-url-buffer urlobj))
       ("file" (burly--file-url-buffer urlobj))
-      ("name" (get-buffer (decode-coding-string (cdr (url-path-and-query urlobj))
-						'utf-8-unix))))))
+      ("name" (let ((buffer-name (decode-coding-string (cdr (url-path-and-query urlobj))
+						       'utf-8-unix)))
+                (or (get-buffer buffer-name)
+                    (with-current-buffer (get-buffer-create (concat "*Burly (error): " buffer-name "*"))
+                      (insert "Burly was unable to get a buffer named: " buffer-name "\n"
+                              "URL: " url "\n"
+                              "Please report this error to the developer\n\n")
+                      (current-buffer))))))))
 
 (defun burly-buffer-url (buffer)
   "Return URL for BUFFER."
@@ -405,8 +411,14 @@ from the hook."
 ;;;###autoload
 (defun burly-bookmark-handler (bookmark)
   "Handler function for Burly BOOKMARK."
-  (burly-open-url (alist-get 'url (bookmark-get-bookmark-record bookmark)))
-  (setf burly-opened-bookmark-name (car bookmark)))
+  (let ((previous-name burly-opened-bookmark-name))
+    ;; Set opened bookmark name before actually opening it so that the
+    ;; tabs-mode advice functions can use it beforehand.
+    (setf burly-opened-bookmark-name (car bookmark))
+    (condition-case err
+	(burly-open-url (alist-get 'url (bookmark-get-bookmark-record bookmark)))
+      (error (setf burly-opened-bookmark-name previous-name)
+	     (signal (car err) (cdr err))))))
 
 (defun burly--bookmark-record-url (record)
   "Return a URL for bookmark RECORD."
@@ -510,7 +522,7 @@ URLOBJ should be a URL object as returned by
                            (- (point) (save-excursion
                                         (org-back-to-heading)
                                         (point)))))
-                    (print-length nil)             ; Important!
+           (print-length nil)             ; Important!
            (query (list (list "pos" pos)
                         (when top-olp
                           (list "top-olp" (prin1-to-string top-olp)))
@@ -562,7 +574,6 @@ indirect buffer is returned.  Otherwise BUFFER is returned."
         (when (and heading-pos relative-pos)
           (forward-char (string-to-number relative-pos)))
         (current-buffer)))))
-
 
 ;;;; Footer
 

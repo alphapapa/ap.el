@@ -1,5 +1,5 @@
-(define-package "burly" "20220630.248" "Save and restore frame/window configurations with buffers"
-  '((emacs "26.3")
+(define-package "burly" "20220701.537" "Save and restore frame/window configurations with buffers"
+  '((emacs "28.1")
     (map "2.1"))
   :authors
   '(("Adam Porter" . "adam@alphapapa.net"))

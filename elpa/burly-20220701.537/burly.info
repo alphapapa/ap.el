@@ -65,11 +65,13 @@ Usage
 
 * Bookmark commands::
 * URL commands::
+* Tab bar::
 * Tips::
 
 Changelog
 
-* 0.2-pre: 02-pre. 
+* 0.3-pre: 03-pre. 
+* 0.2: 02. 
 * 0.1: 01. 
 
 
@@ -126,6 +128,7 @@ File: README.info,  Node: Usage,  Next: Changelog,  Prev: Installation,  Up: Top
 
 * Bookmark commands::
 * URL commands::
+* Tab bar::
 * Tips::
 
 
@@ -151,7 +154,7 @@ they can be managed by Emacs’s built-in bookmark commands, e.g.
 ‘list-bookmarks’, ‘bookmark-delete’, etc.
 
 
-File: README.info,  Node: URL commands,  Next: Tips,  Prev: Bookmark commands,  Up: Usage
+File: README.info,  Node: URL commands,  Next: Tab bar,  Prev: Bookmark commands,  Up: Usage
 
 2.2 URL commands
 ================
@@ -168,9 +171,22 @@ these, they may be useful for building custom tooling.
      configuration URL to the kill ring.
 
 
-File: README.info,  Node: Tips,  Prev: URL commands,  Up: Usage
+File: README.info,  Node: Tab bar,  Next: Tips,  Prev: URL commands,  Up: Usage
 
-2.3 Tips
+2.3 Tab bar
+===========
+
+Burly supports Emacs’s ‘tab-bar-mode’ with ‘burly-tabs-mode’.  When
+active, Burly bookmarks are opened in new tabs, and the tabs are named
+according to the bookmarks.  Reopening a Burly bookmark uses the
+designated tab, if it already exists, and tabs may be reset to their
+bookmarked state with the command ‘burly-reset-tab’ (which you might
+bind to ‘C-x t R’).
+
+
+File: README.info,  Node: Tips,  Prev: Tab bar,  Up: Usage
+
+2.4 Tips
 ========
 
    • You can customize settings in the ‘burly’ group.
@@ -184,14 +200,35 @@ File: README.info,  Node: Changelog,  Next: Development,  Prev: Usage,  Up: Top
 
 * Menu:
 
-* 0.2-pre: 02-pre. 
+* 0.3-pre: 03-pre. 
+* 0.2: 02. 
 * 0.1: 01. 
 
 
-File: README.info,  Node: 02-pre,  Next: 01,  Up: Changelog
+File: README.info,  Node: 03-pre,  Next: 02,  Up: Changelog
 
-3.1 0.2-pre
+3.1 0.3-pre
 ===========
+
+*Added*
+   • Command ‘burly-tabs-mode’, which integrates Burly with
+     ‘tab-bar-mode’.  When active, Burly bookmarks are opened in new
+     tabs, and the tabs are named according to the bookmark.
+   • Command ‘burly-reset-tab’, which resets a tab to the state of the
+     bookmark which opened it.
+
+   *Changed*
+   • Emacs version 28.1 or later is required.
+
+   *Fixed*
+   • Buffers that can’t be restored by name no longer cause an error
+     which aborts restoration of the rest of the bookmark’s buffers.
+
+
+File: README.info,  Node: 02,  Next: 01,  Prev: 03-pre,  Up: Changelog
+
+3.2 0.2
+=======
 
 *Added*
    • Bookmark commands use ‘completing-read’ and offer existing Burly
@@ -209,6 +246,7 @@ File: README.info,  Node: 02-pre,  Next: 01,  Up: Changelog
      includes more window parameters, like header/mode line, side, slot,
      etc, making it easier to restore an overview of a project or
      "workspace."
+   • Emacs version 27.1 or later is required.
 
    *Fixed*
    • Narrow Org buffers to correct heading (at the top of the buffer
@@ -221,9 +259,9 @@ File: README.info,  Node: 02-pre,  Next: 01,  Up: Changelog
      truncated values).
 
 
-File: README.info,  Node: 01,  Prev: 02-pre,  Up: Changelog
+File: README.info,  Node: 01,  Prev: 02,  Up: Changelog
 
-3.2 0.1
+3.3 0.1
 =======
 
 Initial release.
@@ -259,20 +297,22 @@ GPLv3
 
 Tag Table:
 Node: Top219
-Node: Installation2354
-Node: MELPA2505
-Node: Quelpa2677
-Node: Manual2990
-Node: Usage3259
-Node: Bookmark commands3418
-Node: URL commands4284
-Node: Tips4962
-Node: Changelog5162
-Node: 02-pre5312
-Node: 016682
-Node: Development6780
-Node: Credits6951
-Node: License7311
+Node: Installation2378
+Node: MELPA2529
+Node: Quelpa2701
+Node: Manual3014
+Node: Usage3283
+Node: Bookmark commands3454
+Node: URL commands4320
+Node: Tab bar5001
+Node: Tips5490
+Node: Changelog5685
+Node: 03-pre5847
+Node: 026470
+Node: 017891
+Node: Development7985
+Node: Credits8156
+Node: License8516
 
 End Tag Table
 
