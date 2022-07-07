@@ -153,10 +153,10 @@
  '(org-meta-line ((t (:inherit font-lock-comment-face))))
  '(org-todo ((t (:foreground "#859900" :inverse-video t :box (:line-width (2 . 2) :color "dark red" :style flat-button) :weight bold))))
  '(scrollkeeper-guideline-highlight ((t (:extend t :background "#2aa198"))) t)
- '(tab-bar ((t (:inherit (header-line default) :background "#00212B" :foreground "#00212B" :box nil :weight bold :height 1.2))))
+ '(tab-bar ((t (:inherit (header-line default) :box nil :weight bold :height 1.2))))
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
  '(tab-bar-tab-inactive ((t (:inherit tab-bar))))
- '(tab-line ((t (:background "#00212B" :foreground "#00212B" :box nil :height 1.05)))))
+ '(tab-line ((t (:box nil :height 1.05)))))
 
 (cl-pushnew '("melpa" . "https://melpa.org/packages/") package-archives :test #'equal)
 
