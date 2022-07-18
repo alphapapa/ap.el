@@ -69,7 +69,7 @@
  '(magit-wip-after-save-mode t)
  '(magit-wip-before-change-mode t)
  '(menu-bar-mode nil)
- '(minions-direct '(auto-revert-mode aggressive-indent-mode))
+ '(minions-direct '(auto-revert-mode aggressive-indent-mode salv-mode))
  '(minions-mode t)
  '(objed-cursor-color "#ff665c")
  '(org-agenda-files '("~/org/inbox.org"))
@@ -670,6 +670,17 @@ format."
        :colors (list 'font-lock-type-face 'custom-face-tag
                      'font-lock-builtin-face
                      'font-lock-variable-name-face)))))
+
+(use-package salv
+  :quelpa
+  (salv :fetcher github :repo "alphapapa/salv.el")
+
+  :init
+  (defun ap/salv-mode-org-init-hook ()
+    (when (and (buffer-file-name)
+               (file-in-directory-p (buffer-file-name) org-directory))
+      (salv-mode 1)))
+  (add-hook 'org-mode-hook #'ap/salv-mode-org-init-hook))
 
 (use-package scrollkeeper
   :general
