@@ -10,17 +10,21 @@
 ;;;;;;  (0 0 0 0))
 ;;; Generated autoloads from org-bookmark-heading.el
 
-(autoload 'org-bookmark-make-record "org-bookmark-heading" "\
+(autoload 'org-bookmark-heading-make-record "org-bookmark-heading" "\
 Return alist for `bookmark-set' for current `org-mode'
 heading.  Set org-id for heading if necessary." nil nil)
 
-(autoload 'org-bookmark-jump "org-bookmark-heading" "\
-Jump to BOOKMARK, where BOOKMARK is one whose
-`front-context-string' is an org-id.
+(autoload 'org-bookmark-heading-jump "org-bookmark-heading" "\
+Jump to `org-bookmark-heading' BOOKMARK.
+BOOKMARK record should have fields `map', `outline-path', and
+`id', (and, for compatibility, `front-context-string' is also
+supported, in which case it should be an entry ID).
 
 \(fn BOOKMARK)" nil nil)
 
-(register-definition-prefixes "org-bookmark-heading" '("org-bookmark-"))
+(define-obsolete-function-alias 'org-bookmark-jump 'org-bookmark-heading-jump "1.2")
+
+(register-definition-prefixes "org-bookmark-heading" '("org-bookmark-heading-"))
 
 ;;;***
 

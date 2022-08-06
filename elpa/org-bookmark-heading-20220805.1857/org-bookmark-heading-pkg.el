@@ -1,0 +1,2 @@
+;;; Generated package description from org-bookmark-heading.el  -*- no-byte-compile: t -*-
+(define-package #("org-bookmark-heading" 0 20 (face nil)) "20220805.1857" "Emacs bookmark support for org-mode" '((emacs "24.4")) :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("hypermedia" "outlines") :url "http://github.com/alphapapa/org-bookmark-heading")

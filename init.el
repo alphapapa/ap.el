@@ -545,7 +545,8 @@ format."
     (interactive)
     (ap/org-agenda-goto-heading-in-indirect-buffer t)))
 
-(use-package org-bookmark-heading)
+(use-package org-bookmark-heading
+  :quelpa (org-bookmark-heading :fetcher github :repo "alphapapa/org-bookmark-heading"))
 
 (use-package org-make-toc
   :quelpa (org-make-toc :fetcher github :repo "alphapapa/org-make-toc"
