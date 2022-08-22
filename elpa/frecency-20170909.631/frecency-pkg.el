@@ -1,0 +1,2 @@
+;;; Generated package description from frecency.el  -*- no-byte-compile: t -*-
+(define-package "frecency" "20170909.631" "Library for sorting items by frequency and recency of access" '((emacs "25.1") (a "0.1") (dash "2.13.0")) :commit "6d57aee131d96315aedf6cb7d6e5d6d09bf71503" :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("libraries" "recency" "recent" "frequency" "frequent") :url "http://github.com/alphapapa/frecency.el")
