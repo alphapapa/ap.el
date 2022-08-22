@@ -11,3 +11,6 @@ elpa/archives/
 /url/
 /eln-cache/
 /dtache.db
+/org-recent-headings
+/session.*
+/dirvish/
