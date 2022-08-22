@@ -32,10 +32,9 @@ These configuration options are supported:
 \(fn START END COLLECTION &optional PREDICATE)" nil nil)
 
 (autoload 'consult-completing-read-multiple "consult" "\
-Enhanced replacement for `completing-read-multiple'.
-See `completing-read-multiple' for the documentation of the arguments.
+Deprecated function; call `completing-read-multiple' with ARGS.
 
-\(fn PROMPT TABLE &optional PRED REQUIRE-MATCH INITIAL-INPUT HIST DEF INHERIT-INPUT-METHOD)" nil nil)
+\(fn &rest ARGS)" nil nil)
 
 (autoload 'consult-multi-occur "consult" "\
 Improved version of `multi-occur' based on `completing-read-multiple'.
@@ -184,7 +183,9 @@ variable `consult-bookmark-narrow' for the narrowing configuration.
 (autoload 'consult-apropos "consult" "\
 Select pattern and call `apropos'.
 
-The default value of the completion is the symbol at point." t nil)
+The default value of the completion is the symbol at point. As a better
+alternative, you can run `embark-export' from commands like `M-x' and
+`describe-symbol'." t nil)
 
 (autoload 'consult-complex-command "consult" "\
 Select and evaluate command from the command history.
@@ -193,13 +194,13 @@ This command can act as a drop-in replacement for `repeat-complex-command'." t n
 
 (autoload 'consult-history "consult" "\
 Insert string from HISTORY of current buffer.
-
-In order to select from a specific HISTORY, pass the history variable as argument.
+In order to select from a specific HISTORY, pass the history variable
+as argument. See also `cape-history' from the Cape package.
 
 \(fn &optional HISTORY)" t nil)
 
-(autoload 'consult-isearch "consult" "\
-Read a search string with completion from history.
+(autoload 'consult-isearch-history "consult" "\
+Read a search string with completion from the Isearch history.
 
 This replaces the current search string if Isearch is active, and
 starts a new Isearch session otherwise." t nil)
@@ -219,12 +220,20 @@ The command supports previewing the currently selected theme.
 (autoload 'consult-buffer "consult" "\
 Enhanced `switch-to-buffer' command with support for virtual buffers.
 
-The command supports recent files, bookmarks, views and project files as virtual
-buffers. Buffers are previewed. Furthermore narrowing to buffers (b), files (f),
-bookmarks (m) and project files (p) is supported via the corresponding keys. In
-order to determine the project-specific files and buffers, the
-`consult-project-root-function' is used. See `consult-buffer-sources' and
-`consult--multi' for the configuration of the virtual buffer sources." t nil)
+The command supports recent files, bookmarks, views and project files as
+virtual buffers. Buffers are previewed. Narrowing to buffers (b), files (f),
+bookmarks (m) and project files (p) is supported via the corresponding
+keys. In order to determine the project-specific files and buffers, the
+`consult-project-function' is used. The virtual buffer SOURCES
+default to `consult-buffer-sources'. See `consult--multi' for the
+configuration of the virtual buffer sources.
+
+\(fn &optional SOURCES)" t nil)
+
+(autoload 'consult-project-buffer "consult" "\
+Enhanced `project-switch-to-buffer' command with support for virtual buffers.
+The command may prompt you for a project directory if it is invoked from
+outside a project. See `consult-buffer' for more details." t nil)
 
 (autoload 'consult-buffer-other-window "consult" "\
 Variant of `consult-buffer' which opens in other window." t nil)
@@ -241,42 +250,61 @@ Macros containing mouse clicks are omitted.
 \(fn ARG)" t nil)
 
 (autoload 'consult-grep "consult" "\
-Search for regexp with grep in DIR with INITIAL input.
+Search with `grep' for files in DIR where the content matches a regexp.
 
-The input string is split, the first part of the string is passed to
-the asynchronous grep process and the second part of the string is
-passed to the completion-style filtering. The input string is split at
-a punctuation character, which is given as the first character of the
-input string. The format is similar to Perl-style regular expressions,
-e.g., /regexp/. Furthermore command line options can be passed to
-grep, specified behind --.
+The initial input is given by the INITIAL argument.
 
-Example: #async-regexp -- grep-opts#filter-string
+The input string is split, the first part of the string (grep input) is
+passed to the asynchronous grep process and the second part of the string is
+passed to the completion-style filtering.
+
+The input string is split at a punctuation character, which is given as the
+first character of the input string. The format is similar to Perl-style
+regular expressions, e.g., /regexp/. Furthermore command line options can be
+passed to grep, specified behind --. The overall prompt input has the form
+`#async-input -- grep-opts#filter-string'.
+
+Note that the grep input string is transformed from Emacs regular expressions
+to Posix regular expressions. Always enter Emacs regular expressions at the
+prompt. `consult-grep' behaves like builtin Emacs search commands, e.g.,
+Isearch, which take Emacs regular expressions. Furthermore the asynchronous
+input split into words, each word must match separately and in any order. See
+`consult--regexp-compiler' for the inner workings. In order to disable
+transformations of the grep input, adjust `consult--regexp-compiler'
+accordingly.
+
+Here we give a few example inputs:
+
+#alpha beta         : Search for alpha and beta in any order.
+#alpha.*beta        : Search for alpha before beta.
+#\\(alpha\\|beta\\) : Search for alpha or beta (Note Emacs syntax!)
+#word -- -C3        : Search for word, include 3 lines as context
+#first#second       : Search for first, quick filter for second.
 
 The symbol at point is added to the future history. If `consult-grep'
 is called interactively with a prefix argument, the user can specify
 the directory to search in. By default the project directory is used
-if `consult-project-root-function' is defined and returns non-nil.
+if `consult-project-function' is defined and returns non-nil.
 Otherwise the `default-directory' is searched.
 
 \(fn &optional DIR INITIAL)" t nil)
 
 (autoload 'consult-git-grep "consult" "\
-Search for regexp with grep in DIR with INITIAL input.
-
-See `consult-grep' for more details.
+Search with `git grep' for files in DIR where the content matches a regexp.
+The initial input is given by the INITIAL argument. See `consult-grep'
+for more details.
 
 \(fn &optional DIR INITIAL)" t nil)
 
 (autoload 'consult-ripgrep "consult" "\
-Search for regexp with rg in DIR with INITIAL input.
-
-See `consult-grep' for more details.
+Search with `rg' for files in DIR where the content matches a regexp.
+The initial input is given by the INITIAL argument. See `consult-grep'
+for more details.
 
 \(fn &optional DIR INITIAL)" t nil)
 
 (autoload 'consult-find "consult" "\
-Search for regexp with find in DIR with INITIAL input.
+Search for files in DIR matching input regexp given INITIAL input.
 
 The find process is started asynchronously, similar to `consult-grep'.
 See `consult-grep' for more details regarding the asynchronous search.
@@ -284,18 +312,23 @@ See `consult-grep' for more details regarding the asynchronous search.
 \(fn &optional DIR INITIAL)" t nil)
 
 (autoload 'consult-locate "consult" "\
-Search for regexp with locate with INITIAL input.
+Search with `locate' for files which match input given INITIAL input.
 
-The locate process is started asynchronously, similar to `consult-grep'.
-See `consult-grep' for more details regarding the asynchronous search.
+The input is treated literally such that locate can take advantage of
+the locate database index. Regular expressions would often force a slow
+linear search through the entire database. The locate process is started
+asynchronously, similar to `consult-grep'. See `consult-grep' for more
+details regarding the asynchronous search.
 
 \(fn &optional INITIAL)" t nil)
 
 (autoload 'consult-man "consult" "\
-Search for regexp with man with INITIAL input.
+Search for man page given INITIAL input.
 
-The man process is started asynchronously, similar to `consult-grep'.
-See `consult-grep' for more details regarding the asynchronous search.
+The input string is not preprocessed and passed literally to the
+underlying man commands. The man process is started asynchronously,
+similar to `consult-grep'. See `consult-grep' for more details regarding
+the asynchronous search.
 
 \(fn &optional INITIAL)" t nil)
 
@@ -353,7 +386,7 @@ See also `consult-imenu-multi'." t nil)
 Select item from the imenus of all buffers from the same project.
 
 In order to determine the buffers belonging to the same project, the
-`consult-project-root-function' is used. Only the buffers with the
+`consult-project-function' is used. Only the buffers with the
 same major mode as the current buffer are used. See also
 `consult-imenu' for more details. In order to search a subset of buffers,
 QUERY can be set to a plist according to `consult--buffer-query'.
@@ -402,19 +435,19 @@ SHOW-EMPTY must be t if the window should be shown for an empty register list.
 
 (autoload 'consult-register-format "consult-register" "\
 Enhanced preview of register REG.
-
 This function can be used as `register-preview-function'.
+If COMPLETION is non-nil format the register for completion.
 
-\(fn REG)" nil nil)
+\(fn REG &optional COMPLETION)" nil nil)
 
 (autoload 'consult-register "consult-register" "\
 Load register and either jump to location or insert the stored text.
 
-This command is useful to search the register contents. For quick access to
-registers it is still recommended to use the register functions
-`consult-register-load' and `consult-register-store' or the built-in built-in
-register access functions. The command supports narrowing, see
-`consult-register-narrow'. Marker positions are previewed. See
+This command is useful to search the register contents. For quick access
+to registers it is still recommended to use the register functions
+`consult-register-load' and `consult-register-store' or the built-in
+built-in register access functions. The command supports narrowing, see
+`consult-register--narrow'. Marker positions are previewed. See
 `jump-to-register' and `insert-register' for the meaning of prefix ARG.
 
 \(fn &optional ARG)" t nil)
@@ -422,18 +455,19 @@ register access functions. The command supports narrowing, see
 (autoload 'consult-register-load "consult-register" "\
 Do what I mean with a REG.
 
-For a window configuration, restore it. For a number or text, insert it. For a
-location, jump to it. See `jump-to-register' and `insert-register' for the
-meaning of prefix ARG.
+For a window configuration, restore it. For a number or text, insert it.
+For a location, jump to it. See `jump-to-register' and `insert-register'
+for the meaning of prefix ARG.
 
 \(fn REG &optional ARG)" t nil)
 
 (autoload 'consult-register-store "consult-register" "\
 Store register dependent on current context, showing an action menu.
 
-With an active region, store/append/prepend the contents, optionally deleting
-the region when a prefix ARG is given. With a numeric prefix ARG, store/add the
-number. Otherwise store point, frameset, window or kmacro.
+With an active region, store/append/prepend the contents, optionally
+deleting the region when a prefix ARG is given. With a numeric prefix
+ARG, store or add the number. Otherwise store point, frameset, window or
+kmacro.
 
 \(fn ARG)" t nil)
 

@@ -1,6 +1,6 @@
 ;;; consult-imenu.el --- Consult commands for imenu -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021  Free Software Foundation, Inc.
+;; Copyright (C) 2021, 2022  Free Software Foundation, Inc.
 
 ;; This file is part of GNU Emacs.
 
@@ -107,10 +107,10 @@ TYPES is the mode-specific types configuration."
   (let* ((imenu-use-markers t)
          ;; Generate imenu, see `imenu--make-index-alist'.
          (items (imenu--truncate-items
-	         (save-excursion
-		   (save-restriction
-		     (widen)
-		     (funcall imenu-create-index-function)))))
+                 (save-excursion
+                   (save-restriction
+                     (widen)
+                     (funcall imenu-create-index-function)))))
          (config (cdr (seq-find (lambda (x) (derived-mode-p (car x))) consult-imenu-config))))
     ;; Fix toplevel items, e.g., emacs-lisp-mode toplevel items are functions
     (when-let (toplevel (plist-get config :toplevel))
@@ -153,7 +153,6 @@ TYPES is the mode-specific types configuration."
 
 (defun consult-imenu--jump (item)
   "Jump to imenu ITEM via `consult--jump'.
-
 In contrast to the builtin `imenu' jump function,
 this function can jump across buffers."
   (pcase item
@@ -161,43 +160,50 @@ this function can jump across buffers."
     (`(,_ . ,pos) (consult--jump pos))
     (_ (error "Unknown imenu item: %S" item))))
 
+(defun consult-imenu--narrow ()
+  "Return narrowing configuration for the current buffer."
+  (mapcar (lambda (x) (cons (car x) (cadr x)))
+          (plist-get (cdr (seq-find (lambda (x) (derived-mode-p (car x)))
+                                    consult-imenu-config))
+                     :types)))
+
+(defun consult-imenu--group ()
+  "Create a imenu group function for the current buffer."
+  (when-let (narrow (consult-imenu--narrow))
+    (lambda (cand transform)
+      (let ((type (get-text-property 0 'consult--type cand)))
+        (cond
+         ((and transform type)
+          (substring cand (1+ (next-single-property-change 0 'consult--type cand))))
+         (transform cand)
+         (type (alist-get type narrow)))))))
+
 (defun consult-imenu--select (prompt items)
   "Select from imenu ITEMS given PROMPT string."
-  (let ((narrow
-         (mapcar (lambda (x) (cons (car x) (cadr x)))
-                 (plist-get (cdr (seq-find (lambda (x) (derived-mode-p (car x)))
-                                           consult-imenu-config))
-                            :types))))
-    (consult-imenu--deduplicate items)
-    (consult-imenu--jump
-     (consult--read
-      (or items (user-error "Imenu is empty"))
-      :prompt prompt
-      :state
-      (let ((preview (consult--jump-preview)))
-        (lambda (cand restore)
-          ;; Only preview simple menu items which are markers,
-          ;; in order to avoid any bad side effects.
-          (funcall preview (and (markerp (cdr cand)) (cdr cand)) restore)))
-      :require-match t
-      :group
-      (when narrow
-        (lambda (cand transform)
-          (when-let (type (get-text-property 0 'consult--type cand))
-            (if transform
-                (substring cand (1+ (next-single-property-change 0 'consult--type cand)))
-              (alist-get type narrow)))))
-      :narrow
-      (when narrow
-        (list :predicate
-              (lambda (cand)
-                (eq (get-text-property 0 'consult--type (car cand)) consult--narrow))
-              :keys narrow))
-      :category 'imenu
-      :lookup #'consult--lookup-cons
-      :history 'consult-imenu--history
-      :add-history (thing-at-point 'symbol)
-      :sort nil))))
+  (consult-imenu--deduplicate items)
+  (consult-imenu--jump
+   (consult--read
+    (or items (user-error "Imenu is empty"))
+    :state
+    (let ((preview (consult--jump-preview)))
+      (lambda (action cand)
+        ;; Only preview simple menu items which are markers,
+        ;; in order to avoid any bad side effects.
+        (funcall preview action (and (markerp (cdr cand)) (cdr cand)))))
+    :narrow
+    (when-let (narrow (consult-imenu--narrow))
+      (list :predicate
+            (lambda (cand)
+              (eq (get-text-property 0 'consult--type (car cand)) consult--narrow))
+            :keys narrow))
+    :group (consult-imenu--group)
+    :prompt prompt
+    :require-match t
+    :category 'imenu
+    :lookup #'consult--lookup-cons
+    :history 'consult-imenu--history
+    :add-history (thing-at-point 'symbol)
+    :sort nil)))
 
 ;;;###autoload
 (defun consult-imenu ()
@@ -216,7 +222,7 @@ See also `consult-imenu-multi'."
   "Select item from the imenus of all buffers from the same project.
 
 In order to determine the buffers belonging to the same project, the
-`consult-project-root-function' is used. Only the buffers with the
+`consult-project-function' is used. Only the buffers with the
 same major mode as the current buffer are used. See also
 `consult-imenu' for more details. In order to search a subset of buffers,
 QUERY can be set to a plist according to `consult--buffer-query'."
@@ -227,11 +233,6 @@ QUERY can be set to a plist according to `consult--buffer-query'."
   (let ((buffers (consult--buffer-query-prompt "Go to item" query)))
     (consult-imenu--select (car buffers)
                            (consult-imenu--multi-items (cdr buffers)))))
-
-(define-obsolete-function-alias
-  'consult-project-imenu
-  'consult-imenu-multi
-  "0.9")
 
 (provide 'consult-imenu)
 ;;; consult-imenu.el ends here
