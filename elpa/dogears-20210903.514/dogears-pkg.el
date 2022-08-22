@@ -1,2 +1,0 @@
-;;; Generated package description from dogears.el  -*- no-byte-compile: t -*-
-(define-package "dogears" "20210903.514" "Never lose your place again" '((emacs "26.3") (map "2.1")) :commit "00dd88cc53d3a7d6ddeb3c6eea2c2a37d9b610d6" :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("convenience") :url "https://github.com/alphapapa/dogears.el")
