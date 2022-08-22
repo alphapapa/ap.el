@@ -8,7 +8,7 @@
 @end direntry
 
 @copying
-Copyright @copyright{} 2015-2021 Free Software Foundation, Inc.
+Copyright @copyright{} 2015-2022 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -300,8 +300,9 @@ modified.
 Word(s) contained in the subject of the bug report.
 
 @item status
-The status of the bug report.  Valid values are "open", "forwarded"
-and "done".
+The status of the bug report.  Valid values are "pending",
+"forwarded", "fixed" and "done".
+@c This is queried with the attribute "pending".
 @end table
 
 It is also possible to apply these commands with an empty search
@@ -310,6 +311,11 @@ bugs which match the given attributes.  The attributes to be applied
 are the same as already described, plus
 
 @table @samp
+@item status
+The status of the bug report.  Valid values are "open", "forwarded"
+and "done".  These values are different to the ones when there is a
+search phrase.
+
 @item archive
 Whether archived bugs shall be searched (no value to be entered).
 
@@ -821,7 +827,7 @@ arrange for the bug to be closed when the message is sent.
 
 
 @node Customizing debbugs-gnu-pick-commits
-@subsection Customizing debbugs-gnu-pick-commits
+@subsection Customizing @code{debbugs-gnu-pick-commits}
 
 @vindex debbugs-gnu-commit-description-format
 @vindex debbugs-gnu-git-remote-info-alist
@@ -865,6 +871,14 @@ your @file{~/.emacs}:
 @smallexample
 (add-hook 'bug-reference-mode-hook 'debbugs-browse-mode)
 (add-hook 'bug-reference-prog-mode-hook 'debbugs-browse-mode)
+@end smallexample
+
+If you want to enable this in GNUS summary and GNUS article buffers,
+you might set:
+
+@smallexample
+(add-hook 'gnus-summary-mode-hook 'bug-reference-mode)
+(add-hook 'gnus-article-mode-hook 'bug-reference-mode)
 @end smallexample
 
 

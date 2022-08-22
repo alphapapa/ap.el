@@ -8,7 +8,7 @@
 @end direntry
 
 @copying
-Copyright @copyright{} 2011-2021 Free Software Foundation, Inc.
+Copyright @copyright{} 2011-2022 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -344,6 +344,7 @@ bug numbers}).
 @item pending
 The string @code{"pending"}, @code{"forwarded"}, @code{"fixed"} or
 @code{"done"}.
+@c Also the strings "pending-fixed" and "absent" exist, we don't use them.
 
 @item subject
 Subject/Title of the bugreport.

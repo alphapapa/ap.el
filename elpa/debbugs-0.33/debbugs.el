@@ -1,12 +1,12 @@
 ;;; debbugs.el --- SOAP library to access debbugs servers  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2011-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 ;; Author: Michael Albinus <michael.albinus@gmx.de>
 ;; Keywords: comm, hypermedia
 ;; Package: debbugs
-;; Version: 0.29
-;; Package-Requires: ((emacs "25.1") (soap-client "3.1.5"))
+;; Version: 0.33
+;; Package-Requires: ((emacs "26.1") (soap-client "3.1.5"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -38,6 +38,7 @@
 
 ;;; Code:
 
+(require 'subr-x)
 ;(setq soap-debug t url-debug t message-log-max t)
 (require 'soap-client)
 (eval-when-compile (require 'cl-lib))

@@ -1,6 +1,6 @@
 ;;; debbugs-gnu.el --- interface for the GNU bug tracker  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2011-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
 ;; Author: Lars Magne Ingebrigtsen <larsi@gnus.org>
 ;;         Michael Albinus <michael.albinus@gmx.de>
@@ -174,6 +174,7 @@
 ;;; Code:
 
 (require 'debbugs)
+(require 'debbugs-compat)
 (require 'tabulated-list)
 (require 'add-log)
 (eval-when-compile (require 'subr-x))
@@ -288,7 +289,9 @@ If nil, the value of `send-mail-function' is used instead."
 	      (const "adns")
 	      (const "anubis")
 	      (const "auctex")
+	      ;(const "autoconf")
 	      (const "automake")
+	      (const "automake-patches")
 	      (const "cc-mode")
 	      (const "coreutils")
 	      (const "cppi")
@@ -313,6 +316,7 @@ If nil, the value of `send-mail-function' is used instead."
 	      (const "org-mode")
 	      (const "parted")
 	      (const "sed")
+	      (const "skribilo")
 	      (const ,(propertize
 		      "spam"
 		      'face 'debbugs-gnu-done
@@ -323,7 +327,7 @@ If nil, the value of `send-mail-function' is used instead."
 		      'help-echo "This is a pseudo package for test."))
 	      (const "vc-dwim")
 	      (const "woodchuck"))
-  :version "27.2")
+  :version "28.1")
 
 (defconst debbugs-gnu-all-packages
   (mapcar #'cadr (cdr (get 'debbugs-gnu-default-packages 'custom-type)))
@@ -570,7 +574,10 @@ depend on PHRASE being a string, or nil.  See Info node
 	    (completing-read
 	     (format "Enter status%s: "
 		     (if (null phrase) "" " (client-side filter)"))
-	     '("open" "forwarded" "done") nil t))
+             (if (null phrase)
+	         '("open" "forwarded" "done")
+               '("pending" "forwarded" "fixed" "done"))
+             nil t))
 	   (when (not (zerop (length val1)))
 	     (push (cons (if (null phrase) (intern key) 'pending) val1) query)))
 
@@ -636,7 +643,8 @@ depend on PHRASE being a string, or nil.  See Info node
 
   ;; Set phrase, query and filter.
   (when phrase
-    (setq debbugs-gnu-current-query (list (cons 'phrase phrase))))
+    (setq archivedp nil
+          debbugs-gnu-current-query (list (cons 'phrase phrase))))
   (dolist (elt query)
     (add-to-list
      (if (memq
@@ -900,16 +908,21 @@ are taken from the cache instead."
 
     ;; Print bug reports.
     (dolist (status
-	     (let ((debbugs-cache-expiry (if offline nil debbugs-cache-expiry))
-		   ids)
-	       (apply #'debbugs-get-status
-		      (if offline
-			  (progn
-			    (maphash (lambda (key _elem)
-				       (push key ids))
-				     debbugs-cache-data)
-			    (sort ids #'<))
-			(debbugs-gnu-get-bugs debbugs-gnu-local-query)))))
+	     (sort
+	      (let ((debbugs-cache-expiry (if offline nil debbugs-cache-expiry))
+		    ids)
+		(apply #'debbugs-get-status
+		       (if offline
+			   (progn
+			     (maphash (lambda (key _elem)
+					(push key ids))
+				      debbugs-cache-data)
+			     ids)
+			 (debbugs-gnu-get-bugs debbugs-gnu-local-query))))
+	      ;; Sort so that if a new report gets merged with an old
+	      ;; report, it shows up under the new report.
+	      (lambda (s1 s2)
+		(> (alist-get 'id s1) (alist-get 'id s2)))))
       (let* ((id (alist-get 'id status))
 	     (words (cons (alist-get 'severity status)
 			  (alist-get 'keywords status)))
@@ -938,6 +951,7 @@ are taken from the cache instead."
 	  (setq words (append words packages)))
 	(when (setq merged (alist-get 'mergedwith status))
 	  (setq words (append (mapcar #'number-to-string merged) words)))
+	(setq merged (sort merged #'>))
 	;; `words' could contain the same word twice, for example
 	;; "fixed" from `keywords' and `pending'.
 	(setq words
@@ -1083,7 +1097,9 @@ Used instead of `tabulated-list-print-entry'."
       ;; Add properties.
       (add-text-properties
        beg (point)
-       `(tabulated-list-id ,list-id mouse-face highlight))
+       `(tabulated-list-id ,list-id
+	 tabulated-list-entry ,cols
+	 mouse-face highlight))
       (insert ?\n))))
 
 (defun debbugs-gnu-menu-map-emacs-enabled ()
@@ -1201,7 +1217,7 @@ If NOCACHE is non-nil, bug information is retrieved from the debbugs server.
 Interactively, it is non-nil with the prefix argument."
   (interactive
    (list current-prefix-arg))
-  (let ((id (debbugs-gnu-current-id))
+  (let ((id (debbugs-gnu-current-id t))
 	(debbugs-gnu-current-query debbugs-gnu-local-query)
 	(debbugs-gnu-current-filter debbugs-gnu-local-filter)
 	(debbugs-gnu-current-suppress debbugs-gnu-local-suppress)
@@ -2468,10 +2484,10 @@ or bug ranges, with default to `debbugs-gnu-default-bug-number-list'."
   :type 'directory
   :version "25.2")
 
-(defcustom debbugs-gnu-branch-directory "~/src/emacs/emacs-27/"
+(defcustom debbugs-gnu-branch-directory "~/src/emacs/emacs-28/"
   "The directory where the previous source tree lives."
   :type 'directory
-  :version "28.1")
+  :version "29.1")
 
 (defvar debbugs-gnu-current-directory nil
   "The current source tree directory.")
@@ -2697,7 +2713,7 @@ If SELECTIVELY, query the user before applying the patch."
 	(delete-region (line-beginning-position) (point-max))
 	(save-restriction
 	  (narrow-to-region (point) (point))
-	  (insert (string-replace "\r" "" changelog))
+	  (insert (debbugs-compat-string-replace "\r" "" changelog))
 	  (indent-region (point-min) (point-max))))
       (let ((point (point)))
 	(when (string-match "\\(bug#[0-9]+\\)" subject)

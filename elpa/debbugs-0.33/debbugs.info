@@ -1,7 +1,7 @@
-This is debbugs.info, produced by makeinfo version 6.5 from
+This is debbugs.info, produced by makeinfo version 6.7 from
 debbugs.texi.
 
-Copyright (C) 2011-2021 Free Software Foundation, Inc.
+Copyright (C) 2011-2022 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -729,3 +729,8 @@ Node: Requesting messages23263
 Node: Requesting user tags26274
 
 End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:

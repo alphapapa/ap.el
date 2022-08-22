@@ -1,6 +1,6 @@
 ;; debbugs-browse.el --- browse bug URLs with debbugs-gnu or debbugs-org
 
-;; Copyright (C) 2015-2021 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
 ;; Author: Michael Albinus <michael.albinus@gmx.de>
 ;; Keywords: comm, hypermedia, maint

@@ -41,6 +41,14 @@ the two packages is used for showing bugs.
 
 ;;;***
 
+;;;### (autoloads nil "debbugs-compat" "debbugs-compat.el" (0 0 0
+;;;;;;  0))
+;;; Generated autoloads from debbugs-compat.el
+
+(register-definition-prefixes "debbugs-compat" '("debbugs-compat-string-replace"))
+
+;;;***
+
 ;;;### (autoloads nil "debbugs-gnu" "debbugs-gnu.el" (0 0 0 0))
 ;;; Generated autoloads from debbugs-gnu.el
 

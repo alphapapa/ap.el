@@ -1,7 +1,7 @@
-This is debbugs-ug.info, produced by makeinfo version 6.5 from
+This is debbugs-ug.info, produced by makeinfo version 6.7 from
 debbugs-ug.texi.
 
-Copyright (C) 2015-2021 Free Software Foundation, Inc.
+Copyright (C) 2015-2022 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -262,13 +262,18 @@ same day.
           Word(s) contained in the subject of the bug report.
 
      'status'
-          The status of the bug report.  Valid values are "open",
-          "forwarded" and "done".
+          The status of the bug report.  Valid values are "pending",
+          "forwarded", "fixed" and "done".
 
      It is also possible to apply these commands with an empty search
      phrase.  In this case, the GNU Debbugs server is searched only for
      bugs which match the given attributes.  The attributes to be
      applied are the same as already described, plus
+
+     'status'
+          The status of the bug report.  Valid values are "open",
+          "forwarded" and "done".  These values are different to the
+          ones when there is a search phrase.
 
      'archive'
           Whether archived bugs shall be searched (no value to be
@@ -718,8 +723,8 @@ to be closed when the message is sent.
 
 File: debbugs-ug.info,  Node: Customizing debbugs-gnu-pick-commits,  Up: Posting Patches
 
-3.5.1 Customizing debbugs-gnu-pick-commits
-------------------------------------------
+3.5.1 Customizing 'debbugs-gnu-pick-commits'
+--------------------------------------------
 
 The string inserted to describe an announced commit is controlled by the
 user option 'debbugs-gnu-commit-description-format', it is a format
@@ -759,6 +764,12 @@ your '~/.emacs':
 
      (add-hook 'bug-reference-mode-hook 'debbugs-browse-mode)
      (add-hook 'bug-reference-prog-mode-hook 'debbugs-browse-mode)
+
+   If you want to enable this in GNUS summary and GNUS article buffers,
+you might set:
+
+     (add-hook 'gnus-summary-mode-hook 'bug-reference-mode)
+     (add-hook 'gnus-article-mode-hook 'bug-reference-mode)
 
 
 File: debbugs-ug.info,  Node: Command Index,  Next: Variable Index,  Prev: Minor Mode,  Up: Top
@@ -1195,51 +1206,56 @@ Tag Table:
 Node: Top1092
 Node: Retrieving Bugs2700
 Node: Searching Bugs8689
-Ref: Searching Bugs-Footnote-113195
-Ref: Searching Bugs-Footnote-213283
-Node: Presenting Bugs13374
-Node: Tabulated Lists14040
-Node: TODO Items18801
-Node: Control Messages20209
-Node: Applying Patches23835
-Node: Posting Patches25218
-Node: Customizing debbugs-gnu-pick-commits27703
-Node: Minor Mode28404
-Node: Command Index29677
-Node: Variable Index31048
-Node: Key Index32671
-Node: Mail Command Index34642
-Ref: Mail Command Index: reassign34795
-Ref: Mail Command Index: reopen35556
-Ref: Mail Command Index: found36710
-Ref: Mail Command Index: notfound37791
-Ref: Mail Command Index: fixed38200
-Ref: Mail Command Index: notfixed38641
-Ref: Mail Command Index: submitter39259
-Ref: Mail Command Index: forwarded39653
-Ref: Mail Command Index: notforwarded40266
-Ref: Mail Command Index: retitle40467
-Ref: Mail Command Index: severity40851
-Ref: Mail Command Index: clone41182
-Ref: Mail Command Index: merge41947
-Ref: Mail Command Index: forcemerge43334
-Ref: Mail Command Index: unmerge43778
-Ref: Mail Command Index: tags44481
-Ref: Mail Command Index: block45547
-Ref: Mail Command Index: unblock45584
-Ref: Mail Command Index: close46070
-Ref: Mail Command Index: package46720
-Ref: Mail Command Index: owner47327
-Ref: Mail Command Index: noowner47690
-Ref: Mail Command Index: archive47863
-Ref: Mail Command Index: unarchive48004
-Ref: Mail Command Index: #48297
-Ref: Mail Command Index: quit48557
-Ref: Mail Command Index: stop48564
-Ref: Mail Command Index: thank48571
-Ref: Mail Command Index: thanks48579
-Ref: Mail Command Index: thankyou48588
-Ref: Mail Command Index: thank you48599
-Ref: Mail Command Index: --48611
+Ref: Searching Bugs-Footnote-113403
+Ref: Searching Bugs-Footnote-213491
+Node: Presenting Bugs13582
+Node: Tabulated Lists14248
+Node: TODO Items19009
+Node: Control Messages20417
+Node: Applying Patches24043
+Node: Posting Patches25426
+Node: Customizing debbugs-gnu-pick-commits27911
+Node: Minor Mode28616
+Node: Command Index30098
+Node: Variable Index31469
+Node: Key Index33092
+Node: Mail Command Index35063
+Ref: Mail Command Index: reassign35216
+Ref: Mail Command Index: reopen35977
+Ref: Mail Command Index: found37131
+Ref: Mail Command Index: notfound38212
+Ref: Mail Command Index: fixed38621
+Ref: Mail Command Index: notfixed39062
+Ref: Mail Command Index: submitter39680
+Ref: Mail Command Index: forwarded40074
+Ref: Mail Command Index: notforwarded40687
+Ref: Mail Command Index: retitle40888
+Ref: Mail Command Index: severity41272
+Ref: Mail Command Index: clone41603
+Ref: Mail Command Index: merge42368
+Ref: Mail Command Index: forcemerge43755
+Ref: Mail Command Index: unmerge44199
+Ref: Mail Command Index: tags44902
+Ref: Mail Command Index: block45968
+Ref: Mail Command Index: unblock46005
+Ref: Mail Command Index: close46491
+Ref: Mail Command Index: package47141
+Ref: Mail Command Index: owner47748
+Ref: Mail Command Index: noowner48111
+Ref: Mail Command Index: archive48284
+Ref: Mail Command Index: unarchive48425
+Ref: Mail Command Index: #48718
+Ref: Mail Command Index: quit48978
+Ref: Mail Command Index: stop48985
+Ref: Mail Command Index: thank48992
+Ref: Mail Command Index: thanks49000
+Ref: Mail Command Index: thankyou49009
+Ref: Mail Command Index: thank you49020
+Ref: Mail Command Index: --49032
 
 End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:
