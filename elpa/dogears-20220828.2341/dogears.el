@@ -4,8 +4,6 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/dogears.el
-;; Package-Version: 20210913.1259
-;; Package-Commit: c05b69e504a538c9e00fbb0ea86934fafe191d0c
 ;; Version: 0.1-pre
 ;; Package-Requires: ((emacs "26.3") (map "2.1"))
 ;; Keywords: convenience
@@ -139,6 +137,10 @@ The buffer is updated when commands like `dogears-remember',
 `dogears-go', and `dogears-back' are called."
   :type 'boolean)
 
+(defcustom dogears-message t
+  "Echo a message when moving back/forward."
+  :type 'boolean)
+
 ;;;; Commands
 
 ;;;###autoload
@@ -249,7 +251,10 @@ bookmark record."
   "Go to previous dogeared place."
   (interactive)
   (if-let ((place (nth (cl-incf dogears-index) dogears-list)))
-      (dogears-go place)
+      (progn
+        (dogears-go place)
+        (when dogears-message
+          (message "Dogears: Back to %s/%s" dogears-index (length dogears-list))))
     (cl-decf dogears-index)
     (user-error "Already at oldest dogeared place")))
 
@@ -257,7 +262,10 @@ bookmark record."
   "Go to next dogeared place."
   (interactive)
   (if-let ((place (nth (cl-decf dogears-index) dogears-list)))
-      (dogears-go place)
+      (progn
+        (dogears-go place)
+        (when dogears-message
+          (message "Dogears: Forward to %s/%s" dogears-index (length dogears-list))))
     (cl-incf dogears-index)
     (user-error "Already at latest dogeared place")))
 

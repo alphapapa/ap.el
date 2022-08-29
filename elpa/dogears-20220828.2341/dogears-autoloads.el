@@ -62,6 +62,20 @@ Show the Dogears list in a side window." t nil)
 
 ;;;***
 
+;;;### (autoloads nil "helm-dogears" "helm-dogears.el" (0 0 0 0))
+;;; Generated autoloads from helm-dogears.el
+
+(defvar helm-dogears-source (helm-make-source "Dogears" 'helm-source-sync :candidates (lambda nil (cl-loop for place in dogears-list collect (cons (dogears--format-record place) place))) :action (list (cons "Go to place" #'dogears-go))))
+
+(autoload 'helm-dogears "helm-dogears" "\
+Show `helm-dogears-source' with Helm." t nil)
+
+;;;***
+
+;;;### (autoloads nil nil ("dogears-pkg.el") (0 0 0 0))
+
+;;;***
+
 ;; Local Variables:
 ;; version-control: never
 ;; no-byte-compile: t
