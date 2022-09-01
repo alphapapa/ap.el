@@ -429,6 +429,19 @@ format."
                              :height (face-attribute 'variable-pitch :height)))))
       (message "%s" frame-font))))
 
+(use-package flymake
+  :config
+  (advice-add #'elisp-flymake-byte-compile :around
+              (defun ap/elisp-flymake-byte-compile-around (oldfun &rest args)
+                "Call `elisp-flymake-byte-compile' having added directories of `load-path' to `elisp-flymake-byte-compile-load-path'.
+Otherwise, `elisp-flymake-byte-compile' is practically useless,
+because it will always fail to find third-party libraries,
+causing an error that prevents it from even linting the rest of
+the file!"
+                (let ((elisp-flymake-byte-compile-load-path
+                       (cons "./" load-path)))
+                  (apply oldfun args)))))
+
 (use-package helm-bufler
   :quelpa
   (helm-bufler :fetcher github :repo "alphapapa/bufler.el"
