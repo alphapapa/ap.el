@@ -808,11 +808,12 @@ setting up an IDE-like layout)."
                                ('(0) 0)
                                (_ (read-number "Slot: ")))))
     (let ((display-buffer-mark-dedicated t))
-      (display-buffer-in-side-window buffer
-                                     `((side . ,side)
-                                       (slot . ,slot)
-                                       (window-parameters
-				        (no-delete-other-windows . t))))))
+      (display-buffer buffer
+                      `(display-buffer-in-side-window
+                        (side . ,side)
+                        (slot . ,slot)
+                        (window-parameters
+			 (no-delete-other-windows . t))))))
 
   (defun ap/toggle-window-dedicated-p (&optional window)
     "Toggle WINDOW's dedicated flag.
