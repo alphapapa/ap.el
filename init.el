@@ -34,23 +34,32 @@
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector
    ["#1E1C31" "#FF8080" "#95FFA4" "#FFE9AA" "#91DDFF" "#C991E1" "#AAFFE4" "#CBE3E7"])
+ '(async-bytecomp-package-mode t)
+ '(async-shell-command-buffer 'new-buffer)
  '(avy-timeout-seconds 0.25)
  '(browse-url-browser-function 'eww-browse-url)
  '(bufler-columns '("Name" "Size" "Mode" "VC" "Path"))
+ '(bufler-filter-buffer-modes
+   '(bufler-list-mode calendar-mode fundamental-mode helm-major-mode magit-diff-mode magit-process-mode magit-revision-mode magit-section-mode special-mode timer-list-mode deffy-mode))
  '(burly-before-open-bookmark-hook '(tab-bar-new-tab))
  '(comint-input-ignoredups t)
  '(comp-deferred-compilation t t)
+ '(compilation-scroll-output 'first-error)
  '(completion-cycle-threshold 5)
  '(completions-format 'vertical)
+ '(corfu-auto t)
  '(custom-enabled-themes '(doom-solarized-dark))
  '(custom-safe-themes
    '("a7b20039f50e839626f8d6aa96df62afebb56a5bbd1192f557cb2efb5fcfb662" "246a9596178bb806c5f41e5b571546bb6e0f4bd41a9da0df5dfbca7ec6e2250c" "cf922a7a5c514fad79c483048257c5d8f242b21987af0db813d3f0b138dfaf53" "01cf34eca93938925143f402c2e6141f03abb341f27d1c2dba3d50af9357ce70" "8d7684de9abb5a770fbfd72a14506d6b4add9a7d30942c6285f020d41d76e0fa" "f7216d3573e1bd2a2b47a2331f368b45e7b5182ddbe396d02b964b1ea5c5dc27" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "37144b437478e4c235824f0e94afa740ee2c7d16952e69ac3c5ed4352209eefb" "5d09b4ad5649fea40249dd937eaaa8f8a229db1cec9a1a0ef0de3ccf63523014" "229c5cf9c9bd4012be621d271320036c69a14758f70e60385e87880b46d60780" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "fa3bdd59ea708164e7821574822ab82a3c51e262d419df941f26d64d015c90ee" "d5f8099d98174116cba9912fe2a0c3196a7cd405d12fa6b9375c55fc510988b5" "7f791f743870983b9bb90c8285e1e0ba1bf1ea6e9c9a02c60335899ba20f3c94" "615123f602c56139c8170c153208406bf467804785007cdc11ba73d18c3a248b" "730a87ed3dc2bf318f3ea3626ce21fb054cd3a1471dcd59c81a4071df02cb601" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "a83f05e5e2f2538376ea2bfdf9e3cd8b7f7593b16299238c1134c1529503fa88" "3e3a1caddeee4a73789ff10ba90b8394f4cd3f3788892577d7ded188e05d78f4" default))
  '(delete-by-moving-to-trash t)
+ '(dired-create-destination-dirs 'ask)
+ '(dired-listing-switches "-alh")
  '(dired-omit-verbose nil)
  '(doom-outrun-electric-brighter-modeline t)
  '(doom-outrun-electric-comment-bg t)
  '(ement-save-sessions t)
  '(fci-rule-color "#62686E")
+ '(forge-topic-list-limit '(60 . -5))
  '(frame-resize-pixelwise t)
  '(global-tab-line-mode t)
  '(indent-tabs-mode nil)
@@ -63,41 +72,166 @@
  '(jdee-db-active-breakpoint-face-colors (cons "#1c1f24" "#51afef"))
  '(jdee-db-requested-breakpoint-face-colors (cons "#1c1f24" "#7bc275"))
  '(jdee-db-spec-breakpoint-face-colors (cons "#1c1f24" "#484854"))
+ '(list-directory-brief-switches "-CFh")
+ '(list-directory-verbose-switches "-lh")
  '(load-prefer-newer t)
  '(magit-diff-refine-hunk 'all)
  '(magit-wip-after-apply-mode t)
  '(magit-wip-after-save-mode t)
  '(magit-wip-before-change-mode t)
  '(menu-bar-mode nil)
- '(minions-direct '(auto-revert-mode aggressive-indent-mode salv-mode))
+ '(minions-direct
+   '(auto-revert-mode aggressive-indent-mode salv-mode obvious-mode hammy-mode))
  '(minions-mode t)
+ '(modus-themes-hl-line '(accented))
+ '(modus-themes-org-blocks 'gray-background)
+ '(modus-themes-tabs-accented t)
  '(objed-cursor-color "#ff665c")
  '(org-agenda-files '("~/org/inbox.org"))
+ '(org-bookmark-heading-make-ids
+   '(lambda nil
+      (and
+       (buffer-file-name)
+       (file-in-directory-p
+        (buffer-file-name)
+        org-directory))))
  '(org-catch-invisible-edits 'smart)
  '(org-ctrl-k-protect-subtree t)
+ '(org-ellipsis "↵")
+ '(org-fontify-quote-and-verse-blocks t)
  '(org-hide-emphasis-markers t)
  '(org-id-link-to-org-use-id t)
  '(org-id-locations-file-relative t)
  '(org-imenu-depth 8)
+ '(org-indirect-buffer-display 'current-window)
+ '(org-list-allow-alphabetical t)
+ '(org-list-two-spaces-after-bullet-regexp nil)
  '(org-log-into-drawer t)
+ '(org-log-refile 'note)
+ '(org-now-location '("~/org/now.org"))
+ '(org-ql-find-goto-hook '(org-show-entry org-tree-to-indirect-buffer))
+ '(org-ql-views
+   '(("Watching / To-Watch" :buffers-files
+      ("/home/me/org/articles.org" "/home/me/org/bible.org" "/home/me/org/books.org" "/home/me/org/calendar.org" "/home/me/org/cpb.org" "/home/me/org/inbox.org" "/home/me/org/job.org" "/home/me/org/links.org" "/home/me/org/log.org" "/home/me/org/main.org" "/home/me/org/misc.org" "/home/me/org/music.org" "/home/me/org/now.org" "/home/me/org/onyx-upgrade.org" "/home/me/org/op.org" "/home/me/org/people.org" "/home/me/org/posts.org" "/home/me/org/prayers.org" "/home/me/org/quotes.org" "/home/me/org/reference.org" "/home/me/org/research.org" "/home/me/org/scratch.org" "/home/me/org/sparky.org" "/home/me/org/temp.org")
+      :query
+      (todo "WATCHING" "TO-WATCH")
+      :sort
+      (todo date)
+      :narrow nil :super-groups
+      ((:tag "games")
+       (:tag "DIY")
+       (:tag "Emacs")
+       (:tag
+        ("software" "programming" "Lisp"))
+       (:tag "music")
+       (:auto-category))
+      :title "Watching / To-Watch")
+     ("Overview: Agenda-like" :buffers-files org-agenda-files :query
+      (and
+       (not
+        (done))
+       (or
+        (habit)
+        (deadline auto)
+        (scheduled :to today)
+        (ts-active :on today)))
+      :sort
+      (todo priority date)
+      :super-groups org-super-agenda-groups :title "Agenda-like")
+     ("Overview: NEXT tasks" :buffers-files org-agenda-files :query
+      (todo "NEXT")
+      :sort
+      (date priority)
+      :super-groups org-super-agenda-groups :title "Overview: NEXT tasks")
+     ("Calendar: Today" :buffers-files org-agenda-files :query
+      (ts-active :on today)
+      :title "Today" :super-groups org-super-agenda-groups :sort
+      (priority))
+     ("Review: Recently timestamped" . org-ql-view-recent-items)
+     (#("Review: Dangling tasks" 0 22
+        (help-echo "Tasks whose ancestor is done"))
+      :buffers-files org-agenda-files :query
+      (and
+       (todo)
+       (ancestors
+        (done)))
+      :title
+      #("Review: Dangling tasks" 0 22
+        (help-echo "Tasks whose ancestor is done"))
+      :sort
+      (todo priority date)
+      :super-groups
+      ((:auto-parent t)))
+     (#("Review: Stale tasks" 0 19
+        (help-echo "Tasks without a timestamp in the past 2 weeks"))
+      :buffers-files org-agenda-files :query
+      (and
+       (todo)
+       (not
+        (ts :from -14)))
+      :title
+      #("Review: Stale tasks" 0 19
+        (help-echo "Tasks without a timestamp in the past 2 weeks"))
+      :sort
+      (todo priority date)
+      :super-groups
+      ((:auto-parent t)))
+     (#("Review: Stuck projects" 0 22
+        (help-echo "Tasks with sub-tasks but no NEXT sub-tasks"))
+      :buffers-files org-agenda-files :query
+      (and
+       (todo)
+       (descendants
+        (todo))
+       (not
+        (descendants
+         (todo "NEXT"))))
+      :title
+      #("Review: Stuck projects" 0 22
+        (help-echo "Tasks with sub-tasks but no NEXT sub-tasks"))
+      :sort
+      (date priority)
+      :super-groups org-super-agenda-groups)))
+ '(org-recent-headings-mode t)
+ '(org-recent-headings-reject-any-fns
+   '((lambda
+       (entry)
+       (not
+        (file-in-directory-p
+         (org-recent-headings-entry-file entry)
+         org-directory)))))
+ '(org-recent-headings-reverse-paths t)
+ '(org-refile-targets '((org-ql-search-directories-files :tag . "")))
+ '(org-refile-use-outline-path t)
  '(org-startup-folded t)
  '(org-sticky-header-full-path 'reversed)
- '(org-superstar-remove-leading-stars t)
+ '(org-superstar-remove-leading-stars nil)
+ '(org-use-property-inheritance t)
  '(org-use-speed-commands t)
  '(package-selected-packages
-   '(plz burly prism ement deffy org-ql embark geiser with-simulated-input buttercup inspector dtache macrostep unpackaged queue svg-lib taxy-magit-section taxy org-auto-expand org-sidebar helm-org-ql try htmlize modus-themes consult marginalia orderless vertico minions bufler helm-bufler snow which-key sr-speedbar org-sticky-header org-web-tools org-super-agenda doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
+   '(pocket-reader org-ql ement typescript-mode emms ampc cape iscroll helpful hammy dogears company topsy ef-themes org-notely consult org-bookmark-heading hy-mode xr corfu dirvish salv org-recent-headings plz burly prism deffy embark geiser with-simulated-input buttercup inspector dtache macrostep unpackaged queue svg-lib taxy-magit-section taxy org-auto-expand org-sidebar helm-org-ql try htmlize modus-themes marginalia orderless vertico minions bufler helm-bufler snow which-key sr-speedbar org-sticky-header org-web-tools org-super-agenda doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
+ '(prism-parens t)
  '(quelpa-checkout-melpa-p nil)
  '(quelpa-self-upgrade-p nil)
+ '(read-buffer-completion-ignore-case t)
+ '(read-file-name-completion-ignore-case t)
  '(recentf-mode t)
  '(rustic-ansi-faces
    ["#242730" "#ff665c" "#7bc275" "#FCCE7B" "#51afef" "#C57BDB" "#5cEfFF" "#bbc2cf"])
  '(safe-local-variable-values
-   '((magit-todos-exclude-globs "elpa/")
+   '((eval require 'org-make-toc)
+     (org-tags-column . 0)
+     (eval org-auto-expand)
+     (magit-wip-after-apply-mode)
+     (magit-wip-after-save-mode)
+     (magit-wip-before-change-mode)
+     (magit-todos-exclude-globs "makem.sh")
+     (magit-todos-exclude-globs "elpa/")
      (eval when
-	   (string-suffix-p ".txt" buffer-file-name)
-	   (fundamental-mode)
-	   (prism-mode))
+           (string-suffix-p ".txt" buffer-file-name)
+           (fundamental-mode)
+           (prism-mode))
      (org-auto-expand-nodes
       (("Daily")
        . body)
@@ -139,7 +273,8 @@
     (cons 360 "#62686E")))
  '(vc-annotate-very-old-color nil)
  '(which-key-mode t)
- '(window-resize-pixelwise t))
+ '(window-resize-pixelwise t)
+ '(winner-mode t))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -150,13 +285,14 @@
  '(font-lock-builtin-face ((t (:weight bold))))
  '(font-lock-comment-face ((t (:slant italic))))
  '(italic ((t (:slant italic))))
+ '(org-ellipsis ((t (:inherit font-lock-comment-face))))
  '(org-meta-line ((t (:inherit font-lock-comment-face))))
  '(org-todo ((t (:foreground "#859900" :inverse-video t :box (:line-width (2 . 2) :color "dark red" :style flat-button) :weight bold))))
  '(scrollkeeper-guideline-highlight ((t (:extend t :background "#2aa198"))) t)
- '(tab-bar ((t (:inherit (header-line default) :box nil :weight bold :height 1.2))))
+ '(tab-bar ((t (:inherit (header-line default) :box nil :weight bold :height 1.1 :width condensed :family "NK57 Monospace"))))
  '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
  '(tab-bar-tab-inactive ((t (:inherit tab-bar))))
- '(tab-line ((t (:box nil :height 1.05)))))
+ '(tab-line ((t (:inherit modus-themes-tab-backdrop :box nil :width condensed :family "NK57 Monospace")))))
 
 (cl-pushnew '("melpa" . "https://melpa.org/packages/") package-archives :test #'equal)
 
