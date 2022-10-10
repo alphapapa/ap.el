@@ -109,7 +109,7 @@
  '(org-log-into-drawer t)
  '(org-log-refile 'note)
  '(org-now-location '("~/org/now.org"))
- '(org-ql-find-goto-hook '(org-show-entry org-tree-to-indirect-buffer))
+ '(org-ql-find-goto-hook '(org-show-entry ap/org-ql-find-tree-to-indirect-buffer))
  '(org-ql-views
    '(("Watching / To-Watch" :buffers-files
       ("/home/me/org/articles.org" "/home/me/org/bible.org" "/home/me/org/books.org" "/home/me/org/calendar.org" "/home/me/org/cpb.org" "/home/me/org/inbox.org" "/home/me/org/job.org" "/home/me/org/links.org" "/home/me/org/log.org" "/home/me/org/main.org" "/home/me/org/misc.org" "/home/me/org/music.org" "/home/me/org/now.org" "/home/me/org/onyx-upgrade.org" "/home/me/org/op.org" "/home/me/org/people.org" "/home/me/org/posts.org" "/home/me/org/prayers.org" "/home/me/org/quotes.org" "/home/me/org/reference.org" "/home/me/org/research.org" "/home/me/org/scratch.org" "/home/me/org/sparky.org" "/home/me/org/temp.org")
@@ -735,7 +735,37 @@ selected instead of creating a new buffer."
 
 (use-package org-ql
   :quelpa (org-ql :fetcher github :repo "alphapapa/org-ql"
-	    :files (:defaults (:exclude "helm-org-ql.el"))))
+	          :files (:defaults (:exclude "helm-org-ql.el")))
+  :general
+  (:map org-mode-map
+        "M-g o" #'org-ql-find)
+  ("M-g O" #'org-ql-find-in-org-directory)
+
+  :config
+  (defun ap/org-ql-find-tree-to-indirect-buffer ()
+    "Show entry in indirect buffer and bury base buffer."
+    ;; This is not ideal, because e.g. when using `org-ql-find' in an
+    ;; Org buffer (rather than from elsewhere in Emacs), I might not
+    ;; want the base buffer to be buried.  But by the time this
+    ;; function is called from the hook, it's too late to know what
+    ;; buffer was current when the user called the command.  So for
+    ;; now we'll just try this.
+    (org-tree-to-indirect-buffer)
+    (let* ((base-buffer (buffer-base-buffer (current-buffer)))
+           (window (selected-window))
+           (entry (assq base-buffer (window-prev-buffers window))))
+      ;; Copied from `switch-to-prev-buffer':
+      ;; Remove `old-buffer' from WINDOW's previous and (restored list
+      ;; of) next buffers.
+      (set-window-prev-buffers window (assq-delete-all base-buffer (window-prev-buffers window)))
+      (set-window-next-buffers window (delq base-buffer next-buffers))
+      (when entry
+        ;; Append old-buffer's entry to list of WINDOW's previous
+        ;; buffers so it's less likely to get switched to soon but
+        ;; `display-buffer-in-previous-window' can nevertheless find
+        ;; it.
+        (set-window-prev-buffers window (append (window-prev-buffers window)
+                                                (list entry)))))))
 
 (use-package org-sidebar
   :quelpa (org-sidebar :fetcher github :repo "alphapapa/org-sidebar"))
