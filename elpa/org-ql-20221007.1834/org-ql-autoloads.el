@@ -151,7 +151,7 @@ Call `org-ql-find' on `org-agenda-files'." t nil)
 (autoload 'org-ql-find-in-org-directory "org-ql-find" "\
 Call `org-ql-find' on files in `org-directory'." t nil)
 
-(register-definition-prefixes "org-ql-find" '("org-ql-find-goto-hook"))
+(register-definition-prefixes "org-ql-find" '("org-ql-find-"))
 
 ;;;***
 
