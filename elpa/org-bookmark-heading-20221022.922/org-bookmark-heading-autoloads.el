@@ -11,8 +11,8 @@
 ;;; Generated autoloads from org-bookmark-heading.el
 
 (autoload 'org-bookmark-heading-make-record "org-bookmark-heading" "\
-Return alist for `bookmark-set' for current `org-mode'
-heading.  Set org-id for heading if necessary." nil nil)
+Return bookmark record for current heading.
+Sets ID property for heading if necessary." nil nil)
 
 (autoload 'org-bookmark-heading-jump "org-bookmark-heading" "\
 Jump to `org-bookmark-heading' BOOKMARK.
