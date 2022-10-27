@@ -315,7 +315,12 @@
 (use-package quelpa-use-package
   :demand t)
 
-(use-package general)
+(use-package general
+
+  :config
+  (global-unset-key (kbd "M-SPC"))
+  (general-create-definer ap/general-def
+    :prefix "M-SPC"))
 
 ;;; Per-package configuration
 
