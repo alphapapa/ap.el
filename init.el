@@ -404,8 +404,15 @@
   :init
   (burly-tabs-mode))
 
-(use-package company
-  :hook (prog-mode . company-mode))
+;; [2022-09-01 Thu 01:22] Disabling Company in favor of Corfu, which
+;; seems to generally perform better (e.g. it doesn't freeze when
+;; backspacing out of a long completion list).
+
+;; (use-package company
+;;   :hook (prog-mode . company-mode))
+
+(use-package corfu
+  :hook (prog-mode . corfu-mode))
 
 (use-package compile
   :config
