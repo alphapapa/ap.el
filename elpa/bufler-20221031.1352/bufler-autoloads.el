@@ -21,6 +21,13 @@ which are otherwise filtered by `bufler-filter-buffer-fns'.
 
 (defalias 'bufler #'bufler-list)
 
+(autoload 'bufler-sidebar "bufler" "\
+Display Bufler list in dedicated side window.
+With universal prefix, use left SIDE instead of right.  With two
+universal prefixes, prompt for side and slot.
+
+\(fn &key (SIDE \\='right) (SLOT 0))" t nil)
+
 (defalias 'bufler-switch-buffer #'bufler-workspace-switch-buffer)
 
 (defalias 'bufler-mode #'bufler-workspace-mode)
