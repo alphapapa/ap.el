@@ -770,7 +770,7 @@ selected instead of creating a new buffer."
       ;; Remove `old-buffer' from WINDOW's previous and (restored list
       ;; of) next buffers.
       (set-window-prev-buffers window (assq-delete-all base-buffer (window-prev-buffers window)))
-      (set-window-next-buffers window (delq base-buffer next-buffers))
+      (set-window-next-buffers window (delq base-buffer (window-next-buffers window)))
       (when entry
         ;; Append old-buffer's entry to list of WINDOW's previous
         ;; buffers so it's less likely to get switched to soon but
