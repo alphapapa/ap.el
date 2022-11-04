@@ -690,6 +690,38 @@ the file!"
 
   :config
 
+  (cl-defun ap/org-get-indirect-buffer (&optional (buffer (current-buffer)) heading)
+    ;; TODO: [2022-11-04 Fri 15:05] I just emailed this function as a
+    ;; patch to the Org list.  Remove this from my config when
+    ;; appropriate.
+    "Return an indirect buffer based on BUFFER.
+If HEADING, prepend it to the name of the new buffer."
+    (let* ((base-buffer (or (buffer-base-buffer buffer) buffer))
+           (suffix-prefix (if heading
+                              (concat heading "-")
+                            ""))
+           (buffer-name (cl-loop for n from 1 to 100
+                                 for suffix = (format "%s%s" suffix-prefix n)
+                                 for name = (format "%s-%s"
+                                                    (buffer-name base-buffer)
+                                                    suffix)
+                                 while (buffer-live-p (get-buffer name))
+                                 finally return name)))
+      (condition-case nil
+          (let ((indirect-buffer (make-indirect-buffer base-buffer buffer-name 'clone)))
+            ;; Decouple folding state.  We need to do it manually since
+            ;; `make-indirect-buffer' does not run
+            ;; `clone-indirect-buffer-hook'.
+            ;; NOTE: Commented this out since it's not in the Org version I'm using yet.
+            ;; (org-fold-core-decouple-indirect-buffer-folds)
+            ;; Return the buffer.
+            indirect-buffer)
+        ;; FIXME: Explain why this `condition-case' is necessary.  Why
+        ;; could an error be signaled with the CLONE argument non-nil,
+        ;; and why would trying again without CLONE solve the problem?
+        (error (make-indirect-buffer base-buffer buffer-name)))))
+  (advice-add #'org-get-indirect-buffer :override #'ap/org-get-indirect-buffer)
+
   (defun ap/org-tree-to-indirect-buffer (&optional arg)
     "Create indirect buffer and narrow it to current subtree.
 The buffer is named after the subtree heading, with the filename
