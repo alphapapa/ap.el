@@ -729,26 +729,32 @@ appended.  If a buffer by that name already exists, it is
 selected instead of creating a new buffer."
     ;; TODO: Upstream this into Org as one of the options for `org-indirect-buffer-display'.
     (interactive "P")
-    (let* ((new-buffer-p)
-           (pos (point))
+    (let* ((pos (point))
            (buffer-name (let* ((heading (org-get-heading t t))
                                (level (org-outline-level))
                                (face (intern (concat "outline-" (number-to-string level))))
                                (heading-string (propertize (org-link-display-format heading)
                                                            'face face)))
                           (concat heading-string "::" (buffer-name))))
-           (new-buffer (or (get-buffer buffer-name)
-                           (prog1 (condition-case nil
-                                      (make-indirect-buffer (current-buffer) buffer-name 'clone)
-                                    (error (make-indirect-buffer (current-buffer) buffer-name)))
-                             (setq new-buffer-p t)))))
+           (new-buffer (org-get-indirect-buffer)))
       (switch-to-buffer new-buffer)
-      (when new-buffer-p
-        ;; I don't understand why setting the point again is necessary, but it is.
-        (goto-char pos)
-        (rename-buffer buffer-name)
-        (org-narrow-to-subtree))))
+      ;; I don't understand why setting the point again is necessary, but it is.
+      (rename-buffer buffer-name)
+      (goto-char pos)
+      (org-narrow-to-subtree)
+      ;; NOTE: It took way too much time and effort and
+      ;; experimentation to arrive at calling
+      ;; `org-cycle-internal-local' in the new indirect buffer to
+      ;; provide a useful view of it.  Org needs a better visibility
+      ;; API, because the current situation is a mess of
+      ;; `org-show-all', `org-cycle', `org-cycle-internal-local',
+      ;; `org-cycle-internal-global', etc.  There should be one public
+      ;; function for users to call that should take sensible,
+      ;; intuitive, well-documented arguments to cause the desired
+      ;; behavior.
+      (org-cycle-internal-local)))
   (advice-add #'org-tree-to-indirect-buffer :override #'ap/org-tree-to-indirect-buffer)
+  ;; (advice-remove #'org-tree-to-indirect-buffer #'ap/org-tree-to-indirect-buffer)
 
   (defun ap/org-agenda-goto-heading-in-indirect-buffer (&optional switch-to)
     "Go to the current agenda headline in an indirect buffer. If SWITCH-TO is non-nil, close the org-agenda window."
