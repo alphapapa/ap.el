@@ -76,6 +76,7 @@
  '(list-directory-verbose-switches "-lh")
  '(load-prefer-newer t)
  '(magit-diff-refine-hunk 'all)
+ '(magit-status-goto-file-position t)
  '(magit-wip-after-apply-mode t)
  '(magit-wip-after-save-mode t)
  '(magit-wip-before-change-mode t)
