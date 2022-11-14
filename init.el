@@ -696,31 +696,20 @@ the file!"
     ;; patch to the Org list.  Remove this from my config when
     ;; appropriate.
     "Return an indirect buffer based on BUFFER.
-If HEADING, prepend it to the name of the new buffer."
+If HEADING, append it to the name of the new buffer."
     (let* ((base-buffer (or (buffer-base-buffer buffer) buffer))
-           (suffix-prefix (if heading
-                              (concat heading "-")
-                            ""))
-           (buffer-name (cl-loop for n from 1 to 100
-                                 for suffix = (format "%s%s" suffix-prefix n)
-                                 for name = (format "%s-%s"
-                                                    (buffer-name base-buffer)
-                                                    suffix)
-                                 while (buffer-live-p (get-buffer name))
-                                 finally return name)))
-      (condition-case nil
-          (let ((indirect-buffer (make-indirect-buffer base-buffer buffer-name 'clone)))
-            ;; Decouple folding state.  We need to do it manually since
-            ;; `make-indirect-buffer' does not run
-            ;; `clone-indirect-buffer-hook'.
-            ;; NOTE: Commented this out since it's not in the Org version I'm using yet.
-            ;; (org-fold-core-decouple-indirect-buffer-folds)
-            ;; Return the buffer.
-            indirect-buffer)
-        ;; FIXME: Explain why this `condition-case' is necessary.  Why
-        ;; could an error be signaled with the CLONE argument non-nil,
-        ;; and why would trying again without CLONE solve the problem?
-        (error (make-indirect-buffer base-buffer buffer-name)))))
+           (buffer-name (generate-new-buffer-name
+                         (format "%s%s"
+                                 (buffer-name base-buffer)
+                                 (if heading
+                                     (concat "::" heading)
+                                   ""))))
+           (indirect-buffer (make-indirect-buffer base-buffer buffer-name 'clone)))
+      ;; ;; Decouple folding state.  We need to do it manually since
+      ;; ;; `make-indirect-buffer' does not run
+      ;; ;; `clone-indirect-buffer-hook'.
+      ;; (org-fold-core-decouple-indirect-buffer-folds)
+      indirect-buffer))
   (advice-add #'org-get-indirect-buffer :override #'ap/org-get-indirect-buffer)
 
   (defun ap/org-tree-to-indirect-buffer (&optional arg)
@@ -731,16 +720,16 @@ selected instead of creating a new buffer."
     ;; TODO: Upstream this into Org as one of the options for `org-indirect-buffer-display'.
     (interactive "P")
     (let* ((pos (point))
-           (buffer-name (let* ((heading (org-get-heading t t))
-                               (level (org-outline-level))
-                               (face (intern (concat "outline-" (number-to-string level))))
-                               (heading-string (propertize (org-link-display-format heading)
-                                                           'face face)))
-                          (concat heading-string "::" (buffer-name))))
-           (new-buffer (org-get-indirect-buffer)))
+           ;; (buffer-name (let* ((heading (org-get-heading t t))
+           ;;                     (level (org-outline-level))
+           ;;                     (face (intern (concat "outline-" (number-to-string level))))
+           ;;                     (heading-string (propertize (org-link-display-format heading)
+           ;;                                                 'face face)))
+           ;;                (concat heading-string "::" (buffer-name))))
+           (new-buffer (org-get-indirect-buffer (current-buffer) (org-get-heading t t))))
       (switch-to-buffer new-buffer)
       ;; I don't understand why setting the point again is necessary, but it is.
-      (rename-buffer buffer-name)
+      ;; (rename-buffer buffer-name)
       (goto-char pos)
       (org-narrow-to-subtree)
       ;; NOTE: It took way too much time and effort and
