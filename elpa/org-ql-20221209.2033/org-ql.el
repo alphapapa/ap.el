@@ -1415,7 +1415,15 @@ Matching is done case-insensitively."
                  ;; "h" alias.
                  `(heading ,@args)))
   ;; TODO: Adjust regexp to avoid matching in tag list.
-  :preambles ((`(,predicate-names ,string)
+  :preambles ((`(,predicate-names)
+               ;; This clause protects against the case in which the
+               ;; arguments are nil, which would cause an error in
+               ;; `rx-to-string' in other clauses.  This can happen
+               ;; with `org-ql-completing-read', e.g. when the input
+               ;; is "h:" while the user is typing.
+               (list :regexp (rx bol (1+ "*") (1+ blank) (0+ nonl))
+                     :case-fold t :query query))
+              (`(,predicate-names ,string)
                ;; Only one string: match with preamble, then let predicate confirm (because
                ;; the match could be in e.g. the tags rather than the heading text).
                (list :regexp (rx-to-string `(seq bol (1+ "*") (1+ blank) (0+ nonl)
@@ -1442,7 +1450,15 @@ Matching is done case-insensitively."
                  ;; "h" alias.
                  `(heading-regexp ,@args)))
   ;; MAYBE: Adjust regexp to avoid matching in tag list.
-  :preambles ((`(,predicate-names ,regexp)
+  :preambles ((`(,predicate-names)
+               ;; This clause protects against the case in which the
+               ;; arguments are nil, which would cause an error in
+               ;; `rx-to-string' in other clauses.  This can happen
+               ;; with `org-ql-completing-read', e.g. when the input
+               ;; is "h:" while the user is typing.
+               (list :regexp (rx bol (1+ "*") (1+ blank) (0+ nonl))
+                     :case-fold t :query query))
+              (`(,predicate-names ,regexp)
                ;; Only one regexp: match with preamble, then let predicate confirm (because
                ;; the match could be in e.g. the tags rather than the heading text).
                (list :regexp (rx-to-string `(seq bol (1+ "*") (1+ blank) (0+ nonl)
@@ -1478,7 +1494,15 @@ COMPARATOR may be `<', `<=', `>', or `>='."
                                     ((pred stringp) (string-to-number it))
                                     (_ it))
                                   args))))
-  :preambles ((`(,predicate-names ,comparator-or-num ,num)
+  :preambles ((`(,predicate-names)
+               ;; This clause protects against the case in which the
+               ;; arguments are nil, which would cause an error in
+               ;; `rx-to-string' in other clauses.  This can happen
+               ;; with `org-ql-completing-read', e.g. when the input
+               ;; is "h:" while the user is typing.
+               (list :regexp (rx bol (1+ "*") " ")
+                     :case-fold t))
+              (`(,predicate-names ,comparator-or-num ,num)
                (let ((repeat (pcase comparator-or-num
                                ('< `(repeat 1 ,(1- num) "*"))
                                ('<= `(repeat 1 ,num "*"))
@@ -1736,7 +1760,18 @@ entry; if t, also match entries with inheritance.  If INHERIT is
 not specified, use the Boolean value of
 `org-use-property-inheritance', which see (i.e. it is only
 interpreted as nil or non-nil)."
-  :normalizers ((`(,predicate-names ,property ,value . ,plist)
+  :normalizers ((`(,predicate-names)
+                 ;; HACK: This clause protects against the case in
+                 ;; which the arguments are nil, which would cause an
+                 ;; error in `rx-to-string' in other clauses.  This
+                 ;; can happen with `org-ql-completing-read',
+                 ;; e.g. when the input is "property:" while the user
+                 ;; is typing.
+                 ;; FIXME: Instead of this being moot, make this
+                 ;; predicate test for whether an entry has local
+                 ;; properties when no arguments are given.
+                 (list 'property ""))
+                (`(,predicate-names ,property ,value . ,plist)
                  ;; Convert keyword property arguments to strings.  Non-sexp
                  ;; queries result in keyword property arguments (because to do
                  ;; otherwise would require ugly special-casing in the parsing).
@@ -1813,7 +1848,7 @@ interpreted as nil or non-nil)."
 (org-ql-defpred src (&key regexps lang)
   "Return non-nil if current entry contains an Org source block matching all of REGEXPS.
 If keyword argument LANG is non-nil, the block must be in that
-language."
+language.  Matching is done case-insensitively."
   :coalesce (lambda (coalesced-args current-args)
               (when (or (not coalesced-args)
                         (equal (plist-get current-args :lang)
@@ -1821,13 +1856,28 @@ language."
                 (setf coalesced-args
                       (plist-put coalesced-args :lang (plist-get current-args :lang)))
                 (setf coalesced-args
-                      (plist-put coalesced-args :regexps (append (plist-get coalesced-args :regexps)
-                                                                 (plist-get current-args :regexps))))))
-  :normalizers ((`(,predicate-names . ,args)
+                      (plist-put coalesced-args
+                                 :regexps (list 'quote
+                                                (append (car (delq 'quote (plist-get coalesced-args :regexps)))
+                                                        ;; A bit awkward, but necessary.
+                                                        (car (delq 'quote (plist-get current-args :regexps)))))))))
+  :normalizers ((`(,predicate-names)
+                 ;; This clause protects against the case in which the
+                 ;; arguments are nil, which would cause an error in
+                 ;; `rx-to-string' in other clauses.  This can happen
+                 ;; with `org-ql-completing-read', e.g. when the input
+                 ;; is "src:" while the user is typing.
+                 (list 'src))
+                ;; NOTE: The :regexps argument is a quoted list,
+                ;; because we call the byte-compiler at runtime, and
+                ;; without quoting, it would interpret it as a
+                ;; function call.  This requires some awkwardness in
+                ;; other places to deal with the quoting.
+                (`(,predicate-names . ,args)
                  ;; Rewrite to use keyword args.
                  (cond ((cl-every #'stringp args)
                         ;; No keywords, only regexps.
-                        `(src :regexps ,args))
+                        `(src :regexps ',args))
                        ((and (stringp (car args)) (cl-some #'keywordp args))
                         ;; Regexp as first arg with keyword later.
                         (let* ((keyword-pos (cl-position :lang args))
@@ -1835,16 +1885,33 @@ language."
                                ;; We assume that if :lang is given, the string argument follows.
                                (lang (nth (1+ (cl-position :lang args)) args)))
                           `(src :lang ,lang
-                                :regexps ,regexps)))
+                                :regexps ',regexps)))
                        ((keywordp (car args))
                         ;; All plist args.
                         `(src ,@(delq nil
                                       (append (when (plist-get args :lang)
                                                 (list :lang (plist-get args :lang)))
-                                              (when (plist-get args :regexps)
-                                                (list :regexps (plist-get args :regexps))))))))))
-  :preambles ((`(,predicate-names . ,args)
+                                              (pcase (plist-get args :regexps)
+                                                (`(quote . ,_)
+                                                 ;; Already quoted: return as-is to stop further normalization.
+                                                 (list :regexps (plist-get args :regexps)))
+                                                (_ (list :regexps `(quote ,(plist-get args :regexps))))))))))))
+  ;; NOTE: We match case-insensitively since the
+  ;; "#+BEGIN_SRC/#+END_SRC" lines could be either upper- or
+  ;; lowercase, as well as the language name.
+  :preambles ((`(,predicate-names)
+               ;; This clause protects against the case in which the
+               ;; arguments are nil, which would cause an error in
+               ;; `rx-to-string' in other clauses.  This can happen
+               ;; with `org-ql-completing-read', e.g. when the input
+               ;; is "src:" while the user is typing.
+               (list :regexp (org-ql--format-src-block-regexp)
+                     :case-fold t
+                     ;; Always check contents with predicate.
+                     :query query))
+              (`(,predicate-names . ,args)
                (list :regexp (org-ql--format-src-block-regexp (plist-get args :lang))
+                     :case-fold t
                      ;; Always check contents with predicate.
                      :query query)))
   :body
