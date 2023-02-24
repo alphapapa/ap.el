@@ -47,12 +47,17 @@ Overlay all text in current buffer with \"lorem ipsum\" text.
 When called again, remove overlays.  Useful for taking
 screenshots without revealing buffer contents.
 
-If REPLACE-P is non-nil (interactively, with prefix), replace
-buffer contents rather than overlaying them.  When a buffer is
-very large and would have so many overlays that performance would
-be prohibitively slow, you may replace the buffer contents
-instead.  (Of course, be careful about saving the buffer after
-replacing its contents.)
+If REPLACE-P is non-nil (interactively, with prefix and prompt),
+replace buffer contents rather than overlaying them.  When a
+buffer is very large and would have so many overlays that
+performance would be prohibitively slow, you may replace the
+buffer contents instead.  (Of course, be careful about saving the
+buffer after replacing its contents.)
+
+If USE-MAP-P is non-nil (interactively, with prefix and prompt),
+all instances of a real word are replaced with the same word;
+otherwise, each instance of a real word is replaced with a random
+word (further obscuring the text).
 
 Each piece of non-whitespace text in the buffer is compared with
 regexps in `unpackaged/lorem-ipsum-overlay-exclude', and ones
@@ -72,7 +77,7 @@ And the line would be overlaid like:
 
   #+TITLE: parturient.et
 
-\(fn &optional REPLACE-P)" t nil)
+\(fn &key REPLACE-P USE-MAP-P)" t nil)
 
 (autoload 'unpackaged/org-agenda-current-subtree-or-region "unpackaged" "\
 Display an agenda view for the current subtree or region.

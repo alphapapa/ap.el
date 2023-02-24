@@ -1,2 +1,0 @@
-;;; Generated package description from unpackaged.el  -*- no-byte-compile: t -*-
-(define-package #("unpackaged" 0 10 (face nil)) "20220505.1114" "Useful yet unsubstantial Emacs Lisp code" '((emacs "25.1") (dash "2.13") (s "1.10.0") (org "9.0") (use-package "2.4")) :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("convenience") :url "https://github.com/alphapapa/unpackaged.el")
