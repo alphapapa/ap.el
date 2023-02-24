@@ -5,7 +5,7 @@
 ;; Author: Helmut Eller <eller.helmut@gmail.com>
 ;; Maintainer: Stefan Monnier <monnier@iro.umontreal.ca>
 ;; Package-Requires: ((emacs "25"))
-;; Version: 1.0
+;; Version: 1.0.1
 ;;
 ;; This program is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -79,17 +79,69 @@
 ;;     Beginning-of-Symbol	(bos)
 ;;     End-of-Symbol		(eos)
 ;;
-;; PEXs also support parsing actions, i.e. Lisp snippets which
-;; are executed when a pex matches.  This can be used to construct
-;; syntax trees or for similar tasks.  Actions are written as
+;; Rules can refer to other rules, and a grammar is often structured
+;; as a tree, with a root rule referring to one or more "branch
+;; rules", all the way down to the "leaf rules" that deal with actual
+;; buffer text.  Rules can be recursive or mutually referential,
+;; though care must be taken not to create infinite loops.
+;;
+;; PEXs also support parsing actions, i.e. Lisp snippets which are
+;; executed when a pex matches.  This can be used to construct syntax
+;; trees or for similar tasks.  The most basic form of action is
+;; written as:
 ;;
 ;;     (action FORM)          ; evaluate FORM for its side-effects
-;;     `(VAR... -- FORM...)   ; stack action
 ;;
 ;; Actions don't consume input, but are executed at the point of
-;; match.  A "stack action" takes VARs from the "value stack" and
-;; pushes the result of evaluating FORMs to that stack.
-;; See `peg-ex-parse-int' in `peg-tests.el' for an example.
+;; match.  Another kind of action is called a "stack action", and
+;; looks like this:
+;;
+;;     `(VAR... -- FORM...)   ; stack action
+;;
+;; A stack action takes VARs from the "value stack" and pushes the
+;; results of evaluating FORMs to that stack.
+
+;; The value stack is created during the course of parsing.  Certain
+;; operators (see below) that match buffer text can push values onto
+;; this stack.  "Upstream" rules can then draw values from the stack,
+;; and optionally push new ones back.  For instance, consider this
+;; very simple grammar:
+;;
+;; (with-peg-rules
+;;     ((query (+ term) (eol))
+;;      (term key ":" value (opt (+ [space]))
+;; 	   `(k v -- (cons (intern k) v)))
+;;      (key (substring (and (not ":") (+ [word]))))
+;;      (value (or string-value number-value))
+;;      (string-value (substring (+ [alpha])))
+;;      (number-value (substring (+ [digit]))
+;; 		   `(val -- (string-to-number val))))
+;;   (peg-run (peg query)))
+;;
+;; This invocation of `peg-run' would parse this buffer text:
+;;
+;; name:Jane age:30
+;;
+;; And return this Elisp sexp:
+;;
+;; ((age . 30) (name . "Jane"))
+;;
+;; Note that, in complex grammars, some care must be taken to make
+;; sure that the number and type of values drawn from the stack always
+;; match those pushed.  In the example above, both `string-value' and
+;; `number-value' push a single value to the stack.  Since the `value'
+;; rule only includes these two sub-rules, any upstream rule that
+;; makes use of `value' can be confident it will always and only push
+;; a single value to the stack.
+;;
+;; Stack action forms are in a sense analogous to lambda forms: the
+;; symbols before the "--" are the equivalent of lambda arguments,
+;; while the forms after the "--" are return values.  The difference
+;; being that a lambda form can only return a single value, while a
+;; stack action can push multiple values onto the stack.  It's also
+;; perfectly valid to use `(-- FORM...)' or `(VAR... --)': the former
+;; pushes values to the stack without consuming any, and the latter
+;; pops values from the stack and discards them.
 ;;
 ;; Derived Operators:
 ;;
@@ -100,6 +152,8 @@
 ;;     (region E)     ; Match E and push the start and end positions.
 ;;     (replace E RPL); Match E and replace the matched region with RPL.
 ;;     (list E)       ; Match E and push a list of the items that E produced.
+;;
+;; See `peg-ex-parse-int' in `peg-tests.el' for further examples.
 ;;
 ;; Regexp equivalents:
 ;;
@@ -177,7 +231,7 @@ EXPS is a list of rules/expressions that failed.")
 
 ;;;; Main entry points
 
-;; Sometimes (with-peg-rule ... (peg-run (peg ...))) is too
+;; Sometimes (with-peg-rules ... (peg-run (peg ...))) is too
 ;; longwinded for the task at hand, so `peg-parse' comes in handy.
 (defmacro peg-parse (&rest pexs)
   "Match PEXS at point.
@@ -534,7 +588,9 @@ of PEG expressions, implicitly combined with `and'."
 
 (cl-defmethod peg--translate ((_ (eql syntax-class)) class)
   (let ((probe (assoc class peg-syntax-classes)))
-    (cond (probe `(looking-at ,(format "\\s%c" (cadr probe))))
+    (cond (probe `(when (looking-at ,(format "\\s%c" (cadr probe)))
+                    (forward-char)
+                    t))
 	  (t (error "Invalid syntax class: %S\nMust be one of: %s" class
 		    (mapcar #'car peg-syntax-classes))))))
 

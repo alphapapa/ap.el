@@ -154,6 +154,11 @@ resp. succeded instead of signaling an error."
     (should-not (peg-run (peg "to")))
     (should (peg-run (peg "ro")))
     (should (eobp)))
+  (with-temp-buffer
+    (insert "   ")
+    (goto-char (point-min))
+    (peg-run (peg (+ (syntax-class whitespace))))
+    (should (eobp)))
   )
 
 ;;; Examples:
