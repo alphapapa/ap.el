@@ -1221,6 +1221,13 @@ It would be expanded to:
                                  normalizers))
          (preambles (cl-sublis (list (cons 'predicate-names (cons 'or (--map (list 'quote it) predicate-names))))
                                preambles)))
+    ;; Ensure that a normalizer is defined if aliases are defined.
+    ;; (This doesn't ensure that the normalizer does what is intended,
+    ;; but it's at least some safeguard.)
+    ;; TODO: Add per-predicate test in suite to ensure that aliases
+    ;; are normalized to the full name.
+    (when (and aliases (not normalizers))
+      (user-error "org-ql-defpred: Aliases defined for predicate `%s' without a normalizer (which must be used to replace aliases with the predicate's full name)" name))
     `(progn
        (cl-defun ,fn-name ,args ,docstring ,body)
        ;; SOMEDAY: Use `map-elt' here, after map 2.1 can be automatically installed in CI sandbox...
@@ -1320,6 +1327,8 @@ result form."
 
 (org-ql-defpred (category c) (&rest categories)
   "Return non-nil if current heading is in one or more of CATEGORIES (a list of strings)."
+  :normalizers ((`(,predicate-names . ,rest)
+                 `(category ,@rest)))
   :body (when-let ((category (org-get-category (point))))
           (cl-typecase categories
             (null t)

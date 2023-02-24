@@ -1,4 +1,7 @@
-(define-package "org-ql" "20221209.2033" "Org Query Language, search command, and agenda-like view"
+(define-package
+  #("org-ql" 0 6
+    (face nil))
+  "20221225.1209" "Org Query Language, search command, and agenda-like view"
   '((emacs "26.1")
     (dash "2.18.1")
     (f "0.17.2")
@@ -16,7 +19,7 @@
   '("Adam Porter" . "adam@alphapapa.net")
   :keywords
   '("hypermedia" "outlines" "org" "agenda")
-  :url "https://github.com/alphapapa/org-ql")
+  :url ...)
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; End:
