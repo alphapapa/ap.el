@@ -1,0 +1,2 @@
+;;; Generated package description from magit-todos.el  -*- no-byte-compile: t -*-
+(define-package "magit-todos" "20230222.132" "Show source file TODOs in Magit" '((emacs "26.1") (async "1.9.2") (dash "2.13.0") (f "0.17.2") (hl-todo "1.9.0") (magit "2.13.0") (pcre2el "1.8") (s "1.12.0") (transient "0.2.0")) :commit "c6f3fd03aa5b750636c2647253f21cc03329566c" :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("magit" "vc") :url "http://github.com/alphapapa/magit-todos")

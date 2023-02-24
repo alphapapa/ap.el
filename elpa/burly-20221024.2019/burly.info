@@ -1,0 +1,325 @@
+This is README.info, produced by makeinfo version 5.2 from README.texi.
+
+INFO-DIR-SECTION Emacs
+START-INFO-DIR-ENTRY
+* Burly: (burly).       Save and restore window configurations and their buffers.
+END-INFO-DIR-ENTRY
+
+
+File: README.info,  Node: Top,  Next: Installation,  Up: (dir)
+
+Burly.el
+********
+
+This package provides tools to save and restore frame and window
+configurations in Emacs, including buffers that may not be live anymore.
+In this way, it’s like a lightweight "workspace" manager, allowing you
+to easily restore one or more frames, including their windows, the
+windows’ layout, and their buffers.
+
+   Internally it uses Emacs’s bookmarks system to restore buffers to
+their previous contents and location.  This provides power and
+extensibility, since many major modes already integrate with Emacs’s
+bookmarks system.  However, in case a mode’s bookmarking function isn’t
+satisfactory, Burly allows the user to customize buffer-restoring
+functions for specific modes.
+
+   For Org mode, Burly provides such custom functions so that narrowed
+and indirect Org buffers are properly restored, and headings are located
+by outline path in case they’ve moved since a bookmark was made (the
+org-bookmark-heading (https://github.com/alphapapa/org-bookmark-heading)
+package also provides this through the Emacs bookmark system, but users
+may not have it installed, and the functionality is too useful to not
+include here by default).
+
+   Internally, buffers and frame/window configurations are also encoded
+as URLs, and users may also save and open those URLs instead of using
+Emacs bookmarks.  (The name "Burly" comes from "buffer URL.") For
+example, a URL to the ‘Installation/Quelpa’ heading in this file, as I’m
+writing it, looks like this:
+
+     emacs+burly+file:///home/me/src/emacs/burly.el/README.org?pos=2651&outline-path=%28%22Installation%22%20%22Quelpa%22%29&relative-pos=308
+
+   In terms of built-in features, Burly may be seen as integrating or
+leveraging the built-in libraries ‘bookmark.el’, ‘window.el’, and
+‘frameset.el’.
+
+* Menu:
+
+* Installation::
+* Usage::
+* Changelog::
+* Development::
+* Credits::
+* License::
+
+— The Detailed Node Listing —
+
+Installation
+
+* MELPA::
+* Quelpa::
+* Manual::
+
+Usage
+
+* Bookmark commands::
+* URL commands::
+* Tab bar::
+* Tips::
+
+Changelog
+
+* 0.3-pre: 03-pre. 
+* 0.2: 02. 
+* 0.1: 01. 
+
+
+
+File: README.info,  Node: Installation,  Next: Usage,  Prev: Top,  Up: Top
+
+1 Installation
+**************
+
+* Menu:
+
+* MELPA::
+* Quelpa::
+* Manual::
+
+
+File: README.info,  Node: MELPA,  Next: Quelpa,  Up: Installation
+
+1.1 MELPA
+=========
+
+If you installed from MELPA, you’re done.  Just run one of the commands
+below.
+
+
+File: README.info,  Node: Quelpa,  Next: Manual,  Prev: MELPA,  Up: Installation
+
+1.2 Quelpa
+==========
+
+The easiest way is to install with quelpa-use-package
+(https://github.com/quelpa/quelpa-use-package), like this:
+
+     (use-package burly
+       :quelpa (burly :fetcher github :repo "alphapapa/burly.el"))
+
+
+File: README.info,  Node: Manual,  Prev: Quelpa,  Up: Installation
+
+1.3 Manual
+==========
+
+  1. Install version 2.1 or later of the ‘map’ library from GNU ELPA.
+  2. Copy ‘burly.el’ into a directory in your ‘load-path’, then
+     ‘(require 'burly)’.
+
+
+File: README.info,  Node: Usage,  Next: Changelog,  Prev: Installation,  Up: Top
+
+2 Usage
+*******
+
+* Menu:
+
+* Bookmark commands::
+* URL commands::
+* Tab bar::
+* Tips::
+
+
+File: README.info,  Node: Bookmark commands,  Next: URL commands,  Up: Usage
+
+2.1 Bookmark commands
+=====================
+
+Most users will probably use Burly by bookmarking frame and window
+configurations and accessing them with these commands:
+
+   • ‘burly-bookmark-frames’: Bookmark the current frames and their
+     window configurations.
+   • ‘burly-bookmark-windows’: Bookmark the current frame’s window
+     configuration.
+   • ‘burly-open-bookmark’: Select and open a Burly bookmark.
+   • ‘burly-open-last-bookmark’: Open the last-opened Burly bookmark.
+     Helpful for, e.g.  quickly restoring an overview while working on a
+     project.
+
+   Note that bookmarks created by Burly are regular Emacs bookmarks, so
+they can be managed by Emacs’s built-in bookmark commands, e.g.
+‘list-bookmarks’, ‘bookmark-delete’, etc.
+
+
+File: README.info,  Node: URL commands,  Next: Tab bar,  Prev: Bookmark commands,  Up: Usage
+
+2.2 URL commands
+================
+
+These commands work on URL strings.  While most users probably won’t use
+these, they may be useful for building custom tooling.
+
+   • ‘burly-open-url’: Open a Burly URL (at point, or prompt for one),
+     displaying the buffer(s) in the current window or frame.
+   • ‘burly-kill-buffer-url’: Copy BUFFER’s URL to the kill ring.
+   • ‘burly-kill-frames-url’: Copy the current frameset’s URL to the
+     kill ring.
+   • ‘burly-kill-windows-url’: Copy the current frame’s window
+     configuration URL to the kill ring.
+
+
+File: README.info,  Node: Tab bar,  Next: Tips,  Prev: URL commands,  Up: Usage
+
+2.3 Tab bar
+===========
+
+Burly supports Emacs’s ‘tab-bar-mode’ with ‘burly-tabs-mode’.  When
+active, Burly bookmarks are opened in new tabs, and the tabs are named
+according to the bookmarks.  Reopening a Burly bookmark uses the
+designated tab, if it already exists, and tabs may be reset to their
+bookmarked state with the command ‘burly-reset-tab’ (which you might
+bind to ‘C-x t R’).
+
+
+File: README.info,  Node: Tips,  Prev: Tab bar,  Up: Usage
+
+2.4 Tips
+========
+
+   • You can customize settings in the ‘burly’ group.
+   • An Info manual is included with this package.
+
+
+File: README.info,  Node: Changelog,  Next: Development,  Prev: Usage,  Up: Top
+
+3 Changelog
+***********
+
+* Menu:
+
+* 0.3-pre: 03-pre. 
+* 0.2: 02. 
+* 0.1: 01. 
+
+
+File: README.info,  Node: 03-pre,  Next: 02,  Up: Changelog
+
+3.1 0.3-pre
+===========
+
+*Added*
+   • Command ‘burly-tabs-mode’, which integrates Burly with
+     ‘tab-bar-mode’.  When active, Burly bookmarks are opened in new
+     tabs, and the tabs are named according to the bookmark.
+   • Command ‘burly-reset-tab’, which resets a tab to the state of the
+     bookmark which opened it.
+
+   *Changed*
+   • Emacs version 28.1 or later is required.
+
+   *Fixed*
+   • Buffers that can’t be restored by name no longer cause an error
+     which aborts restoration of the rest of the bookmark’s buffers.
+   • Added workaround for regression in Emacs 28 regarding bookmarks for
+     ‘help-mode’ buffers.  (See Emacs bug 56643
+     (https://debbugs.gnu.org/cgi/bugreport.cgi?bug=56643).)
+
+
+File: README.info,  Node: 02,  Next: 01,  Prev: 03-pre,  Up: Changelog
+
+3.2 0.2
+=======
+
+*Added*
+   • Bookmark commands use ‘completing-read’ and offer existing Burly
+     bookmark names, making it easier to update bookmarks.  (Thanks to
+     Erik Sjöstrand (https://github.com/Kungsgeten).)
+   • Command ‘burly-open-last-bookmark’.
+   • Option ‘burly-set-window-persistent-parameters’, which synchronizes
+     ‘window-persistent-parameters’ with
+     ‘burly-window-persistent-parameters’, ensuring that built-in Emacs
+     commands like ‘window-toggle-side-windows’ persist parameters that
+     are persisted with Burly.
+
+   *Changed*
+   • Option ‘burly-window-persistent-parameters’’s default value
+     includes more window parameters, like header/mode line, side, slot,
+     etc, making it easier to restore an overview of a project or
+     "workspace."
+   • Emacs version 27.1 or later is required.
+
+   *Fixed*
+   • Narrow Org buffers to correct heading (at the top of the buffer
+     rather than at point).
+   • Buffers whose names have multibyte characters.  (Fixes #43
+     (https://github.com/alphapapa/burly.el/issues/43).  Thanks to Liu
+     Hui (https://github.com/ilupin) for reporting.)
+   • Bind ‘print-level’ to nil where ‘prin1-to-string’ is used (in case
+     the value is non-nil in a user’s config, which would cause
+     truncated values).
+
+
+File: README.info,  Node: 01,  Prev: 02,  Up: Changelog
+
+3.3 0.1
+=======
+
+Initial release.
+
+
+File: README.info,  Node: Development,  Next: Credits,  Prev: Changelog,  Up: Top
+
+4 Development
+*************
+
+Bug reports, feature requests, suggestions — _oh my_!
+
+
+File: README.info,  Node: Credits,  Next: License,  Prev: Development,  Up: Top
+
+5 Credits
+*********
+
+   • Thanks to Clemens Radermacher (https://github.com/clemera) and
+     Robert Weiner (https://github.com/rswgnu) for their suggestions.
+   • Thanks to Trey Peacock (https://github.com/tpeacock19) for
+     extensive feedback on pre-release versions.
+
+
+File: README.info,  Node: License,  Prev: Credits,  Up: Top
+
+6 License
+*********
+
+GPLv3
+
+
+
+Tag Table:
+Node: Top219
+Node: Installation2378
+Node: MELPA2529
+Node: Quelpa2701
+Node: Manual3014
+Node: Usage3283
+Node: Bookmark commands3454
+Node: URL commands4320
+Node: Tab bar5001
+Node: Tips5490
+Node: Changelog5685
+Node: 03-pre5847
+Node: 026658
+Node: 018079
+Node: Development8173
+Node: Credits8344
+Node: License8704
+
+End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:
