@@ -1,9 +1,8 @@
 ;;; org-bookmark-heading.el --- Emacs bookmark support for Org mode  -*- lexical-binding: t; -*-
 
 ;; Author: Adam Porter <adam@alphapapa.net>
-;; Version: 1.2
-;; Package-Version: 20221022.1422
-;; Package-Commit: f245c9023df28d6ee545dae4b96a1c237e6965ba
+;; Version: 1.3-pre
+;; Package-Version: 20230307.1301
 ;; Url: http://github.com/alphapapa/org-bookmark-heading
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: hypermedia, outlines
@@ -99,6 +98,11 @@ created for entries that don't already have one."
                                (file-in-directory-p (buffer-file-name) org-directory))))
                  (const :tag "Use existing IDs, but don't make new ones" nil)
                  (function :tag "Custom predicate" :doc "Called with point at the heading, it should return non-nil if an ID should be created.  This may be useful to, e.g. only make IDs for entries within one's `org-directory'.")))
+
+(defcustom org-bookmark-heading-after-jump-hook nil
+  "Hook run after jumping to a heading.
+Called with point on heading.  Can be used to, e.g. cycle visibility."
+  :type 'hook)
 
 ;;;; Variables
 
@@ -218,7 +222,8 @@ supported, in which case it should be an entry ID)."
             ;; non-indirect buffer at the bottom of the prev-buffers list
             ;; so it won't be selected when the indirect buffer is killed.
             (set-window-prev-buffers nil (append (cdr (window-prev-buffers))
-                                                 (list (car (window-prev-buffers)))))))
+                                                 (list (car (window-prev-buffers))))))
+          (run-hooks 'org-bookmark-heading-after-jump-hook))
         (unless (equal (buffer-file-name (buffer-base-buffer)) filename)
           ;; TODO: Automatically update the bookmark?
           ;; Warn that the node has moved to another file
