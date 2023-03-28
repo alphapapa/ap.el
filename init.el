@@ -691,6 +691,32 @@ the file!"
 
   :config
 
+  (progn
+    ;; Org link type for running commands.
+    (require 'ol)
+
+    (org-link-set-parameters "start-process-shell-command"
+                             :follow #'org-link-start-process-shell-command-follow)
+
+    (defcustom org-link-start-process-shell-command-safe-commands nil
+      "Commands which are considered safe to run without prompting."
+      :type '(repeat string))
+
+    (defun org-link-start-process-shell-command-follow (command _)
+      (when (or (member command org-link-start-process-shell-command-safe-commands)
+                (pcase (read-answer (format "Run command %S? " command)
+                                    '(("yes" ?y "run command")
+                                      ("no" ?n "don't run command")
+                                      ("remember" ?! "run command and remember that it's safe to run")
+                                      ("help" ?h "show help")))
+                  ("yes" t)
+                  ("remember"
+                   (cl-pushnew command org-link-start-process-shell-command-safe-commands :test #'equal)
+                   (customize-save-variable 'org-link-start-process-shell-command-safe-commands
+                                            org-link-start-process-shell-command-safe-commands)
+                   t)))
+        (start-process-shell-command "org-link-start-process-shell-command-follow" nil command))))
+
   (cl-defun ap/org-get-indirect-buffer (&optional (buffer (current-buffer)) heading)
     ;; TODO: [2022-11-04 Fri 15:05] I just emailed this function as a
     ;; patch to the Org list.  Remove this from my config when
