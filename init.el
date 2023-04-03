@@ -690,6 +690,14 @@ the file!"
       :background ,(face-attribute 'org-scheduled-previously :foreground))))
 
   :config
+  (define-advice org-id-update-id-locations (:around (oldfun &rest args) include-work-files)
+    "Call `org-id-update-id-locations' with `org-id-extra-files' set to relevant Org files in \"~/work\"."
+    (let ((org-id-extra-files (directory-files-recursively
+                               "~/work" (rx ".org" eos)
+                               nil (lambda (filename)
+                                     ;; Ignore files in clones of Elisp package repos.
+                                     (not (string-match-p (rx "/.sandbox/") filename))))))
+      (apply oldfun args)))
 
   (progn
     ;; Org link type for running commands.
