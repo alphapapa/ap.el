@@ -218,25 +218,21 @@ The caller of `lispy--show' might use a substitute e.g. `describe-function'."
 
 (declare-function geiser-doc-symbol-at-point "geiser-doc")
 
-(defun lispy--describe-inline ()
+(defun lispy--describe-inline (str pos)
   "Toggle the overlay hint."
   (condition-case nil
-      (let ((new-hint-pos (lispy--hint-pos))
-            doc)
-        (if (and (eq lispy-hint-pos new-hint-pos)
-                 (overlayp lispy-overlay))
-            (lispy--cleanup-overlay)
-          (save-excursion
-            (when (= 0 (count-lines (window-start) (point)))
-              (recenter 1))
-            (setq lispy-hint-pos new-hint-pos)
-            (if (eq major-mode 'scheme-mode)
-                (geiser-doc-symbol-at-point)
-              (when (setq doc (lispy--docstring (lispy--current-function)))
-                (goto-char lispy-hint-pos)
-                (lispy--show (propertize doc 'face 'lispy-face-hint)))))))
+      (save-excursion
+        (when (= 0 (count-lines (window-start) (point)))
+          (recenter 1))
+        (setq lispy-hint-pos pos)
+        (goto-char lispy-hint-pos)
+        (lispy--show (propertize str 'face 'lispy-face-hint)))
     (error
      (lispy--cleanup-overlay))))
+
+(declare-function cider-nrepl-op-supported-p "ext:cider-client")
+(declare-function cider-sync-request:info "ext:cider-client")
+(declare-function nrepl-dict-get "ext:nrepl-dict")
 
 (defun lispy--docstring (sym)
   "Get the docstring for SYM."
@@ -306,13 +302,22 @@ The caller of `lispy--show' might use a substitute e.g. `describe-function'."
 (defun lispy-describe-inline ()
   "Display documentation for `lispy--current-function' inline."
   (interactive)
-  (if (cl-some
-       (lambda (window)
-         (equal (buffer-name (window-buffer window)) "*lispy-help*"))
-       (window-list))
-      (when (window-configuration-p lispy--di-window-config)
-        (set-window-configuration lispy--di-window-config))
-    (lispy--describe-inline)))
+  (cond ((cl-some
+          (lambda (window)
+            (equal (buffer-name (window-buffer window)) "*lispy-help*"))
+          (window-list))
+         (when (window-configuration-p lispy--di-window-config)
+           (set-window-configuration lispy--di-window-config)))
+        ((eq major-mode 'scheme-mode)
+         (geiser-doc-symbol-at-point))
+        (t
+         (let ((new-hint-pos (lispy--hint-pos)))
+           (if (and (eq lispy-hint-pos new-hint-pos)
+                    (overlayp lispy-overlay))
+               (lispy--cleanup-overlay)
+             (lispy--describe-inline
+              (lispy--docstring (lispy--current-function))
+              new-hint-pos))))))
 
 (declare-function lispy--python-docstring "le-python")
 (declare-function lispy--python-arglist "le-python")

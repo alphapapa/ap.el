@@ -47,16 +47,15 @@
 (defun lispy--eval-lisp (str)
   "Eval STR as Common Lisp code."
   (let* ((deactivate-mark nil)
-         (result (with-current-buffer (process-buffer (lispy--cl-process))
-                   (if (lispy--use-sly-p)
-                       (sly-eval `(slynk:eval-and-grab-output ,str))
-                     (slime-eval `(swank:eval-and-grab-output ,str))))))
-    (if (equal (car result) "")
-        (cadr result)
-      (concat (propertize (car result)
-                          'face 'font-lock-string-face)
-              "\n\n"
-              (cadr result)))))
+         (result (if (lispy--use-sly-p)
+                     (with-current-buffer (process-buffer (lispy--cl-process))
+                       (sly-eval `(slynk:eval-and-grab-output ,str)))
+                   (slime-eval `(swank:eval-and-grab-output ,str)))))
+    (pcase result
+      (`("" "") "(ok)")
+      (`("" ,val) val)
+      (`(,out ,val)
+       (concat (propertize (string-trim-left out) 'face 'font-lock-string-face) "\n\n" val)))))
 
 (defun lispy--cl-process ()
   (unless (lispy--use-sly-p)

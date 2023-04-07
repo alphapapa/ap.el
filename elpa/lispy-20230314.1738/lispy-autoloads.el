@@ -27,6 +27,13 @@
 
 ;;;***
 
+;;;### (autoloads nil "le-js" "le-js.el" (0 0 0 0))
+;;; Generated autoloads from le-js.el
+
+(register-definition-prefixes "le-js" '("lispy--"))
+
+;;;***
+
 ;;;### (autoloads nil "le-julia" "le-julia.el" (0 0 0 0))
 ;;; Generated autoloads from le-julia.el
 
@@ -44,7 +51,7 @@
 ;;;### (autoloads nil "le-python" "le-python.el" (0 0 0 0))
 ;;; Generated autoloads from le-python.el
 
-(register-definition-prefixes "le-python" '("lispy-"))
+(register-definition-prefixes "le-python" '("lispy-" "python-shell--interpreter"))
 
 ;;;***
 
@@ -111,6 +118,17 @@ backward through lists, which is useful to move into special.
 ;;; Generated autoloads from lispy-inline.el
 
 (register-definition-prefixes "lispy-inline" '("lispy-"))
+
+;;;***
+
+;;;### (autoloads nil "lispy-occur" "lispy-occur.el" (0 0 0 0))
+;;; Generated autoloads from lispy-occur.el
+
+(autoload 'lispy-occur "lispy-occur" "\
+Select a line within current top level sexp.
+See `lispy-occur-backend' for the selection back end." t nil)
+
+(register-definition-prefixes "lispy-occur" '("lispy-"))
 
 ;;;***
 
