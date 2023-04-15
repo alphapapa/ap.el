@@ -84,6 +84,7 @@
  '(minions-direct
    '(auto-revert-mode aggressive-indent-mode salv-mode obvious-mode hammy-mode))
  '(minions-mode t)
+ '(modus-themes-bold-constructs t)
  '(modus-themes-hl-line '(accented))
  '(modus-themes-org-blocks 'gray-background)
  '(modus-themes-tabs-accented t)
