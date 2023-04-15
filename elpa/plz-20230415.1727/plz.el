@@ -5,7 +5,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/plz.el
-;; Version: 0.3
+;; Version: 0.5.3
 ;; Package-Requires: ((emacs "26.3"))
 ;; Keywords: comm, network, http
 
@@ -96,8 +96,8 @@
 ;;;; Errors
 
 ;; FIXME: `condition-case' can't catch these...?
-(define-error 'plz-curl-error "Curl error")
-(define-error 'plz-http-error "HTTP error")
+(define-error 'plz-curl-error "plz: Curl error")
+(define-error 'plz-http-error "plz: HTTP error")
 
 ;;;; Structs
 
@@ -244,8 +244,7 @@ the curl process buffer.")
 (defcustom plz-curl-default-args
   '("--silent"
     "--compressed"
-    "--location"
-    "--dump-header" "-")
+    "--location")
   "Default arguments to curl.
 Note that these arguments are passed on the command line, which
 may be visible to other users on the local system."
@@ -314,11 +313,12 @@ above with AS.  Or THEN may be `sync' to make a synchronous
 request, in which case the result is returned directly.
 
 ELSE is an optional callback function called when the request
-fails with one argument, a `plz-error' structure.  If ELSE is
-nil, an error is signaled when the request fails, either
-`plz-curl-error' or `plz-http-error' as appropriate, with a
-`plz-error' structure as the error data.  For synchronous
-requests, this argument is ignored.
+fails (i.e. if curl fails, or if the HTTP response has a non-2xx
+status code).  It is called with one argument, a `plz-error'
+structure.  If ELSE is nil, an error is signaled when the request
+fails, either `plz-curl-error' or `plz-http-error' as
+appropriate, with a `plz-error' structure as the error data.  For
+synchronous requests, this argument is ignored.
 
 FINALLY is an optional function called without argument after
 THEN or ELSE, as appropriate.  For synchronous requests, this
@@ -353,15 +353,29 @@ NOQUERY is passed to `make-process', which see."
                                                  (number-to-string connect-timeout))))
                                    (when timeout
                                      (list (cons "--max-time" (number-to-string timeout))))
+                                   ;; NOTE: To make a HEAD request
+                                   ;; requires using the "--head"
+                                   ;; option rather than "--request
+                                   ;; HEAD", and doing so with
+                                   ;; "--dump-header" duplicates the
+                                   ;; headers, so we must instead
+                                   ;; specify that for each other
+                                   ;; method.
                                    (pcase method
+                                     ('get
+                                      (list (cons "--dump-header" "-")))
                                      ((or 'put 'post)
-                                      (cl-assert body)
-                                      (list (cons "--request" (upcase (symbol-name method)))
+                                      (list (cons "--dump-header" "-")
+                                            (cons "--request" (upcase (symbol-name method)))
                                             ;; It appears that this must be the last argument
                                             ;; in order to pass data on the rest of STDIN.
                                             (cons data-arg "@-")))
                                      ('delete
-                                      (list (cons "--request" (upcase (symbol-name method))))))))
+                                      (list (cons "--dump-header" "-")
+                                            (cons "--request" (upcase (symbol-name method)))))
+                                     ('head
+                                      (list (cons "--head" "")
+                                            (cons "--request" "HEAD"))))))
          (curl-config (cl-loop for (key . value) in curl-config-args
                                concat (format "%s \"%s\"\n" key value)))
          (decode (pcase as
@@ -370,6 +384,7 @@ NOQUERY is passed to `make-process', which see."
          sync-p)
     (when (eq 'sync then)
       (setf sync-p t
+            ;; FIXME: For sync requests, `else' should be forced nil.
             then (lambda (result)
                    (setf plz-result result))))
     (with-current-buffer (generate-new-buffer " *plz-request-curl*")
@@ -383,6 +398,9 @@ NOQUERY is passed to `make-process', which see."
                                    :command (append (list plz-curl-program) curl-command-line-args)
                                    :connection-type 'pipe
                                    :sentinel #'plz--sentinel
+                                   ;; FIXME: Set the stderr process sentinel to ignore to prevent
+                                   ;; "process finished" garbage in the buffer (response body).  See:
+                                   ;; <https://stackoverflow.com/questions/42810755/how-to-remove-process-finished-message-from-make-process-or-start-process-in-e>.
                                    :stderr (current-buffer)
                                    :noquery noquery))
             ;; The THEN function is called in the response buffer.
@@ -442,6 +460,7 @@ NOQUERY is passed to `make-process', which see."
         (when body
           (cl-typecase body
             (string (process-send-string process body))
+            ;; TODO: Document that BODY can be a buffer.
             (buffer (with-current-buffer body
                       (process-send-region process (point-min) (point-max))))))
         (process-send-eof process)
@@ -484,7 +503,9 @@ default, it's FIFO).  Use functions `plz-queue', `plz-run', and
   (canceled-p nil
               :documentation "Non-nil when queue has been canceled.")
   first-active last-active
-  first-request last-request)
+  first-request last-request
+  (finally nil
+           :documentation "Function called after queue has been emptied or canceled."))
 
 (defun plz-queue (queue &rest args)
   "Enqueue request for ARGS on QUEUE and return QUEUE.
@@ -599,15 +620,18 @@ QUEUE should be a `plz-queue' structure."
           (setf args (plist-put args :timeout timeout)))
         (setf (plz-queued-request-process request) (apply #'plz args))
         (push request (plz-queue-active queue))))
+    (when (plz-queue-finally queue)
+      (funcall (plz-queue-finally queue)))
     queue))
 
 (defun plz-clear (queue)
   "Clear QUEUE and return it.
-Cancels any active or pending requests.  For pending requests,
-their ELSE functions will be called with a `plz-error' structure
-with the message, \"`plz' queue cleared; request canceled.\";
-active requests will have their curl processes killed and their
-ELSE functions called with the corresponding data."
+Cancels any active or pending requests and calls the queue's
+FINALLY function.  For pending requests, their ELSE functions
+will be called with a `plz-error' structure with the message,
+\"`plz' queue cleared; request canceled.\"; active requests will
+have their curl processes killed and their ELSE functions called
+with the corresponding data."
   (setf (plz-queue-canceled-p queue) t)
   (dolist (request (plz-queue-active queue))
     (kill-process (plz-queued-request-process request))
@@ -616,6 +640,8 @@ ELSE functions called with the corresponding data."
     (funcall (plz-queued-request-else request)
              (make-plz-error :message "`plz' queue cleared; request canceled."))
     (setf (plz-queue-requests queue) (delq request (plz-queue-requests queue))))
+  (when (plz-queue-finally queue)
+    (funcall (plz-queue-finally queue)))
   (setf (plz-queue-first-active queue) nil
         (plz-queue-last-active queue) nil
         (plz-queue-first-request queue) nil
@@ -651,10 +677,15 @@ node `(elisp) Sentinels').  Kills the buffer before returning."
              (goto-char (point-min))
              (plz--skip-proxy-headers)
              (pcase (plz--http-status)
-               (200 (funcall plz-then))
+               ((and status (guard (<= 200 status 299)))
+                ;; Any 2xx response is considered successful.
+                (ignore status)  ; Byte-compiling in Emacs <28 complains without this.
+                (funcall plz-then))
+               ;; Any other status code is considered unsuccessful
+               ;; (for now, anyway).
                (_ (let ((err (make-plz-error :response (plz--response))))
                     (pcase-exhaustive plz-else
-                      (`nil (signal 'plz-http-error err))
+                      (`nil (signal 'plz-http-error (list "plz--sentinel: HTTP error" err)))
                       ((pred functionp) (funcall plz-else err)))))))
 
             ((or (and (pred numberp) code)
@@ -667,7 +698,7 @@ node `(elisp) Sentinels').  Kills the buffer before returning."
                     (err (make-plz-error :curl-error (cons curl-exit-code curl-error-message))))
                (pcase-exhaustive plz-else
                  ;; FIXME: Returning a plz-error structure which has a curl-error slot, wrapped in a plz-curl-error, is confusing.
-                 (`nil (signal 'plz-curl-error err))
+                 (`nil (signal 'plz-curl-error (list "plz--sentinel: Curl error" err)))
                  ((pred functionp) (funcall plz-else err)))))
 
             ((and (or "killed\n" "interrupt\n") status)
@@ -677,7 +708,7 @@ node `(elisp) Sentinels').  Kills the buffer before returning."
                                ("interrupt\n" "curl process interrupted")))
                     (err (make-plz-error :message message)))
                (pcase-exhaustive plz-else
-                 (`nil (signal 'plz-curl-error err))
+                 (`nil (signal 'plz-curl-error (list "plz--sentinel: Curl error" err)))
                  ((pred functionp) (funcall plz-else err)))))))
       (when finally
         (funcall finally))

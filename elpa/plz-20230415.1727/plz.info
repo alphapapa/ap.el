@@ -1,4 +1,4 @@
-This is README.info, produced by makeinfo version 5.2 from README.texi.
+This is README.info, produced by makeinfo version 6.7 from README.texi.
 
 INFO-DIR-SECTION Emacs
 START-INFO-DIR-ENTRY
@@ -46,10 +46,15 @@ Usage
 
 Changelog
 
-* 0.3: 03. 
-* 0.2.1: 021. 
-* 0.2: 02. 
-* 0.1: 01. 
+* 0.5.3: 053.
+* 0.5.2: 052.
+* 0.5.1: 051.
+* 0.5: 05.
+* 0.4: 04.
+* 0.3: 03.
+* 0.2.1: 021.
+* 0.2: 02.
+* 0.1: 01.
 
 Development
 
@@ -198,11 +203,12 @@ File: README.info,  Node: Functions,  Next: Queueing,  Prev: Examples,  Up: Usag
      request, in which case the result is returned directly.
 
      ‘ELSE’ is an optional callback function called when the request
-     fails with one argument, a ‘plz-error’ struct.  If ‘ELSE’ is nil,
-     an error is signaled when the request fails, either
-     ‘plz-curl-error’ or ‘plz-http-error’ as appropriate, with a
-     ‘plz-error’ struct as the error data.  For synchronous requests,
-     this argument is ignored.
+     fails (i.e.  if curl fails, or if the HTTP response has a non-2xx
+     status code).  It is called with one argument, a ‘plz-error’
+     structure.  If ‘ELSE’ is nil, an error is signaled when the request
+     fails, either ‘plz-curl-error’ or ‘plz-http-error’ as appropriate,
+     with a ‘plz-error’ structure as the error data.  For synchronous
+     requests, this argument is ignored.
 
      ‘FINALLY’ is an optional function called without argument after
      ‘THEN’ or ‘ELSE’, as appropriate.  For synchronous requests, this
@@ -268,19 +274,95 @@ File: README.info,  Node: Changelog,  Next: Credits,  Prev: Usage,  Up: Top
 
 * Menu:
 
-* 0.3: 03. 
-* 0.2.1: 021. 
-* 0.2: 02. 
-* 0.1: 01. 
+* 0.5.3: 053.
+* 0.5.2: 052.
+* 0.5.1: 051.
+* 0.5: 05.
+* 0.4: 04.
+* 0.3: 03.
+* 0.2.1: 021.
+* 0.2: 02.
+* 0.1: 01.
 
 
-File: README.info,  Node: 03,  Next: 021,  Up: Changelog
+File: README.info,  Node: 053,  Next: 052,  Up: Changelog
 
-3.1 0.3
+3.1 0.5.3
+=========
+
+*Fixes*
+   • Move new slot in ‘plz-queue’ struct to end to prevent invalid
+     byte-compiler expansions for already-compiled applications (which
+     would require them to be recompiled after upgrading ‘plz’).
+
+
+File: README.info,  Node: 052,  Next: 051,  Prev: 053,  Up: Changelog
+
+3.2 0.5.2
+=========
+
+*Fixes*
+   • When clearing a queue, only call ‘plz-queue’’s ‘finally’ function
+     when specified.
+
+
+File: README.info,  Node: 051,  Next: 05,  Prev: 052,  Up: Changelog
+
+3.3 0.5.1
+=========
+
+*Fixes*
+   • Only call ‘plz-queue’’s ‘finally’ function when specified.  (Thanks
+     to Dan Oriani (https://github.com/redchops) for reporting.)
+
+
+File: README.info,  Node: 05,  Next: 04,  Prev: 051,  Up: Changelog
+
+3.4 0.5
 =======
 
 *Additions*
-   • Handle HTTP proxy headers from Curl.
+   • Struct ‘plz-queue’’s ‘finally’ slot, a function called when the
+     queue is finished.
+
+
+File: README.info,  Node: 04,  Next: 03,  Prev: 05,  Up: Changelog
+
+3.5 0.4
+=======
+
+*Additions*
+   • Support for HTTP ‘HEAD’ requests.  (Thanks to Inc.  for
+     sponsoring.)
+
+   *Changes*
+   • Allow sending ‘POST’ and ‘PUT’ requests without bodies.  (#16
+     (https://github.com/alphapapa/plz.el/issues/16).  Thanks to Joseph
+     Turner (https://github.com/josephmturner) for reporting.  Thanks to
+     Inc.  for sponsoring.)
+
+   *Fixes*
+   • All 2xx HTTP status codes are considered successful.  (#17
+     (https://github.com/alphapapa/plz.el/issues/17).  Thanks to Joseph
+     Turner (https://github.com/josephmturner) for reporting.  Thanks to
+     Inc.  for sponsoring.)
+   • Errors are signaled with error data correctly.
+
+   *Internal*
+   • Test suite explicitly tests with both HTTP/1.1 and HTTP/2.
+   • Test suite also tests with Emacs versions 27.2, 28.1, and 28.2.
+
+
+File: README.info,  Node: 03,  Next: 021,  Prev: 04,  Up: Changelog
+
+3.6 0.3
+=======
+
+*Additions*
+   • Handle HTTP proxy headers from Curl.  (#2
+     (https://github.com/alphapapa/plz.el/issues/2).  Thanks to Alan
+     Third (https://github.com/alanthird) and Sawyer Zheng
+     (https://github.com/sawyerzheng) for reporting.)
 
    *Fixes*
    • Replaced words not in Ispell’s default dictionaries (so ‘checkdoc’
@@ -289,7 +371,7 @@ File: README.info,  Node: 03,  Next: 021,  Up: Changelog
 
 File: README.info,  Node: 021,  Next: 02,  Prev: 03,  Up: Changelog
 
-3.2 0.2.1
+3.7 0.2.1
 =========
 
 *Fixes*
@@ -298,7 +380,7 @@ File: README.info,  Node: 021,  Next: 02,  Prev: 03,  Up: Changelog
 
 File: README.info,  Node: 02,  Next: 01,  Prev: 021,  Up: Changelog
 
-3.3 0.2
+3.8 0.2
 =======
 
 *Added*
@@ -307,7 +389,7 @@ File: README.info,  Node: 02,  Next: 01,  Prev: 021,  Up: Changelog
 
 File: README.info,  Node: 01,  Prev: 02,  Up: Changelog
 
-3.4 0.1
+3.9 0.1
 =======
 
 Initial release.
@@ -367,23 +449,28 @@ GPLv3
 
 Tag Table:
 Node: Top199
-Node: Installation1084
-Node: GNU ELPA1227
-Node: Manual1473
-Node: Usage1779
-Node: Examples2280
-Node: Functions3647
-Node: Queueing6542
-Node: Tips7800
-Node: Changelog8101
-Node: 038266
-Node: 0218516
-Node: 028665
-Node: 018794
-Node: Credits8888
-Node: Development9254
-Node: Copyright assignment9768
-Node: License10356
+Node: Installation1144
+Node: GNU ELPA1287
+Node: Manual1533
+Node: Usage1839
+Node: Examples2340
+Node: Functions3707
+Node: Queueing6701
+Node: Tips7959
+Node: Changelog8260
+Node: 0538485
+Node: 0528789
+Node: 0518996
+Node: 059248
+Node: 049454
+Node: 0310360
+Node: 02110808
+Node: 0210957
+Node: 0111086
+Node: Credits11180
+Node: Development11546
+Node: Copyright assignment12060
+Node: License12648
 
 End Tag Table
 

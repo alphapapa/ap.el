@@ -13,3 +13,6 @@ File: dir,	Node: Top	This is the top of the INFO tree
   to select it.
 
 * Menu:
+
+Emacs
+* Plz: (plz).                   HTTP library using Curl as a backend.
