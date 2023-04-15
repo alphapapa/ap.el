@@ -89,6 +89,7 @@
  '(modus-themes-tabs-accented t)
  '(objed-cursor-color "#ff665c")
  '(org-agenda-files '("~/org/inbox.org"))
+ '(org-attach-use-inheritance nil)
  '(org-bookmark-heading-make-ids
    '(lambda nil
       (and
