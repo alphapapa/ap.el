@@ -602,6 +602,135 @@ the file!"
                        (cons "./" load-path)))
                   (apply oldfun args)))))
 
+(use-package hammy
+  :quelpa (hammy :fetcher github :repo "alphapapa/hammy.el")
+
+  :general (ap/general-def "hn" #'hammy-next)
+
+  :init
+  (hammy-mode)
+
+  :config
+  (progn
+    (require 'mpc)
+
+    (defcustom ap/hammy-mpc-before-command "pmm cheerful -e vocal %s"
+      "Command used to play music in function `ap/hammy-mpc-before'.
+Includes \"%s\" format spec for length of playlist in minutes."
+      :type 'string)
+
+    (defcustom ap/hammy-mpc-enabled t
+      "Whether to toggle MPC playback in Hammy timers."
+      :type 'boolean)
+
+    (defun ap/hammy-mpc-toggle ()
+      "Toggle option `ap/hammy-mpc-enabled'."
+      (interactive)
+      (setq ap/hammy-mpc-enabled (not ap/hammy-mpc-enabled))
+      (message "Hammy MPC playback %s." (if ap/hammy-mpc-enabled "enabled" "disabled")))
+
+    (defmacro ap/hammy-mpc-before (minutes)
+      ;; A macro so that the `run' function expanded by `hammy-define' will work.
+      "Play/pause MPC, or run `ap/hammy-mpc-before-command' for MINUTES."
+      `(progn
+         (mpc-status-refresh)
+         (pcase (map-elt mpc-status 'state)
+           ("play" nil)
+           ("pause" (mpc-play))
+           (_ (run (format ap/hammy-mpc-before-command ,minutes))))))
+
+    (hammy-define (propertize "🍅𝅘𝅥𝅮" 'face '(:foreground "tomato"))
+      :documentation "The classic pomodoro timer, enhanced (with MPC)."
+      :intervals
+      (list
+       (interval :name "Working"
+                 :duration "25 minutes"
+                 :before (do (announce "Starting work time.")
+                             (notify "Starting work time.")
+                             ;; TODO: Get the duration from the interval itself.
+                             (when ap/hammy-mpc-enabled
+                               (ap/hammy-mpc-before (/ current-duration 60))))
+                 :advance (remind "10 minutes"
+                                  (do (announce "Break time!")
+                                      (notify "Break time!")
+                                      (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_coin.wav"))))))
+       (interval :name "Resting"
+                 :duration (do (if (and (not (zerop cycles))
+                                        (zerop (mod cycles 3)))
+                                   ;; If a multiple of three cycles have
+                                   ;; elapsed, the fourth work period was
+                                   ;; just completed, so take a longer break.
+                                   "30 minutes"
+                                 "5 minutes"))
+                 :before (do (announce "Starting break time.")
+                             (notify "Starting break time.")
+                             (when ap/hammy-mpc-enabled
+                               (mpc-pause)))
+                 :advance (remind "10 minutes"
+                                  (do (announce "Break time is over!")
+                                      (notify "Break time is over!")
+                                      (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_princess_help.wav"))))))))
+
+    (defcustom ap/hammy-flywheel-rest-duration "5 minutes"
+      "Duration of Hammy flywheel rest intervals."
+      :type 'string)
+
+    (hammy-define (propertize "🎡𝅘𝅥𝅮" 'face '(:foreground "orange"))
+      :documentation "Get your momentum going! (with MPC)"
+      :intervals (list
+                  (interval :name "Rest"
+                            :face 'font-lock-type-face
+                            :duration (lambda (&rest _ignore)
+                                        ap/hammy-flywheel-rest-duration)
+                            :before (do (announce "Rest time!")
+                                        (notify "Rest time!")
+                                        (when ap/hammy-mpc-enabled
+                                          (mpc-pause)))
+                            :advance (remind "10 minutes"
+                                             (do (announce "Rest time is over!")
+                                                 (notify "Rest time is over!")
+                                                 (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_princess_help.wav"))))))
+                  (interval :name "Work"
+                            :face 'font-lock-builtin-face
+                            :duration (climb "5 minutes" "45 minutes"
+                                             :descend t :step "5 minutes")
+                            :before (do (announce "Work time!")
+                                        (notify "Work time!")
+                                        (when ap/hammy-mpc-enabled
+                                          (ap/hammy-mpc-before (/ current-duration 60))))
+                            :advance (remind "10 minutes"
+                                             (do (announce "Work time is over!")
+                                                 (notify "Work time is over!")
+                                                 (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_coin.wav")))))))
+      :after (do (announce "Flywheel session complete!")
+                 (notify "Flywheel session complete!"))
+      :complete-p (do (and (> cycles 1)
+                           interval
+                           (equal "Work" interval-name)
+                           (equal (duration "5 minutes") current-duration)))))
+
+  (hammy-define "🐮"
+    :documentation "Don't forget to stretch your legs."
+    :intervals (list (interval :name "💺"
+                               :duration "45 minutes"
+                               :face 'font-lock-type-face
+                               :before (do (announce "Whew!")
+                                           (notify "Whew!"))
+                               :advance (remind "10 minutes"
+                                                (do (announce "Time to stretch your legs!")
+                                                    (notify "Time to stretch your legs!")
+                                                    (run (concat "aplay "
+                                                                 (expand-file-name "~/Misc/Sounds/Mario/smw_yoshi_swallow.wav"))))))
+                     (interval :name "🤸"
+                               :duration "5 minutes"
+                               :face 'font-lock-builtin-face
+                               :before (do (announce "Mooove it!")
+                                           (notify "Mooove it!"))
+                               :advance (do (announce "Time for a sit-down...")
+                                            (notify "Time for a sit-down...")
+                                            (run (concat "aplay "
+                                                         (expand-file-name "~/Misc/Sounds/Mario/smw_yoshi_tongue.wav"))))))))
+
 (use-package helm-bufler
   :quelpa
   (helm-bufler :fetcher github :repo "alphapapa/bufler.el"
