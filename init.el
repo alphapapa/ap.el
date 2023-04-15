@@ -99,6 +99,7 @@
         (buffer-file-name)
         org-directory))))
  '(org-catch-invisible-edits 'smart)
+ '(org-catch-invisible-edits 'error)
  '(org-ctrl-k-protect-subtree t)
  '(org-ellipsis "↵")
  '(org-fontify-quote-and-verse-blocks t)
