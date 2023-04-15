@@ -217,6 +217,7 @@
  '(package-selected-packages
    '(pocket-reader org-ql ement typescript-mode emms ampc cape iscroll helpful hammy dogears company topsy ef-themes org-notely consult org-bookmark-heading hy-mode xr corfu dirvish salv org-recent-headings plz burly prism deffy embark geiser with-simulated-input buttercup inspector dtache macrostep unpackaged queue svg-lib taxy-magit-section taxy org-auto-expand org-sidebar helm-org-ql try htmlize modus-themes marginalia orderless vertico minions bufler helm-bufler snow which-key sr-speedbar org-sticky-header org-web-tools org-super-agenda doom-themes forge imenu-list magit-todos org-make-toc helm-org helm helm-core popup org-superstar org-now magit debbugs org-bullets spacemacs-theme highlight-function-calls scrollkeeper aggressive-indent general lispy magit-section pretty-hydra hydra lv f s dash-functional dash quelpa-use-package))
  '(pdf-view-midnight-colors (cons "#CBE3E7" "#1E1C31"))
+ '(prism-comments nil)
  '(prism-parens t)
  '(quelpa-checkout-melpa-p nil)
  '(quelpa-self-upgrade-p nil)
