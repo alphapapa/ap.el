@@ -1030,6 +1030,19 @@ boundaries."
   ;; :init (selectrum-prescient-mode)
   )
 
+(use-package switchy-window
+  :general
+  (:map switchy-window-minor-mode-map
+        [remap other-window] #'switchy-window)
+  :init
+  (switchy-window-minor-mode)
+  :config
+  (add-hook 'window-selection-change-functions
+            (defun ap/pulse-line-on-window-selection-change (frame)
+              "For use in `window-selection-change-functions', with `switchy-window-minor-mode'."
+              (when (eq frame (selected-frame))
+                (pulse-momentary-highlight-one-line)))))
+
 (use-package taxy
   :quelpa
   (taxy :fetcher github :repo "alphapapa/taxy.el"))
