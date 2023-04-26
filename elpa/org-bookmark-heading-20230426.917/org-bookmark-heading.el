@@ -2,7 +2,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Version: 1.3-pre
-;; Package-Version: 20230307.1831
+;; Package-Version: 20230426.917
 ;; Url: http://github.com/alphapapa/org-bookmark-heading
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: hypermedia, outlines
@@ -120,7 +120,8 @@ Sets ID property for heading if necessary."
                     (org-link-display-format (org-get-heading t t))))
          (name (concat display-filename (when heading
                                           (concat ":" heading))))
-         (outline-path (org-get-outline-path 'with-self))
+         (outline-path (when heading
+                         (org-get-outline-path 'with-self)))
          (indirectp (when (buffer-base-buffer) t))
          id handler)
     (unless (and (boundp 'bookmark-name)
