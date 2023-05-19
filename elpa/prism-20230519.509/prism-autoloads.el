@@ -10,7 +10,7 @@
 ;;; Generated autoloads from prism.el
 
 (autoload 'prism-mode "prism" "\
-Disperse lisp forms (and other non-whitespace-sensitive syntax) into a spectrum of colors according to depth.
+Disperse code into a spectrum of colors according to depth.
 Depth is determined by list nesting.  Suitable for Lisp, C-like
 languages, etc.
 
@@ -31,9 +31,10 @@ it is disabled.
 \(fn &optional ARG)" t nil)
 
 (autoload 'prism-whitespace-mode "prism" "\
-Disperse whitespace-sensitive syntax into a spectrum of colors according to depth.
+Disperse code into a spectrum of colors according to depth.
 Depth is determined by indentation and list nesting.  Suitable
-for Python, Haskell, etc.
+for whitespace-sensitive languages like Python, Haskell, shell,
+etc.
 
 This is a minor mode.  If called interactively, toggle the
 `Prism-Whitespace mode' mode.  If the prefix argument is
