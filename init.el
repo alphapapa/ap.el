@@ -114,6 +114,8 @@
  '(org-list-two-spaces-after-bullet-regexp nil)
  '(org-log-into-drawer t)
  '(org-log-refile 'note)
+ '(org-now-default-cycle-level nil)
+ '(org-now-hook '(hl-line-mode))
  '(org-now-location '("~/org/now.org"))
  '(org-ql-find-goto-hook '(org-show-entry ap/org-ql-find-tree-to-indirect-buffer))
  '(org-ql-views

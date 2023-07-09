@@ -1,4 +1,4 @@
-;;; org-now-autoloads.el --- automatically extracted autoloads
+;;; org-now-autoloads.el --- automatically extracted autoloads  -*- lexical-binding: t -*-
 ;;
 ;;; Code:
 
@@ -39,7 +39,7 @@ Also usable in `org-agenda-bulk-custom-functions'." t nil)
 Call `org-now-refile-to-previous-location' from an Agenda buffer.
 Also usable in `org-agenda-bulk-custom-functions'." t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "org-now" '("org-now-")))
+(register-definition-prefixes "org-now" '("org-now-"))
 
 ;;;***
 

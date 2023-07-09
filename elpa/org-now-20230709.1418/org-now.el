@@ -2,7 +2,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/org-now
-;; Package-Version: 20200312.1732
+;; Package-Version: 20230709.1418
 ;; Version: 0.1-pre
 ;; Package-Requires: ((emacs "26.1") (dash))
 ;; Keywords: org
@@ -71,6 +71,7 @@
 ;;;; Requirements
 
 (require 'org)
+(require 'org-id)
 
 (require 'dash)
 
@@ -104,9 +105,15 @@ subsequent string should be a heading in the outline hierarchy."
   :type '(repeat function))
 
 (defcustom org-now-no-other-window nil
-  "Whether `other-window' commands should cycle through the `org-now' sidebar window.
+  "Whether `other-window' should cycle through the `org-now' sidebar window.
 See info node `(elisp)Cyclic Window Ordering'."
   :type 'boolean)
+
+(defcustom org-now-window-parameters
+  `((tab-line-format . none)
+    (mode-line-format . none))
+  "Window parameters used for `org-now' window."
+  :type '(alist :key-type symbol :value-type sexp))
 
 (defface org-now-header
   '((t (:weight bold)))
@@ -126,8 +133,9 @@ See info node `(elisp)Cyclic Window Ordering'."
         (org-now-buffer)
         (list (cons 'side org-now-window-side)
               (cons 'slot 0)
-              (cons 'window-parameters (list (cons 'no-delete-other-windows t)
-                                             (cons 'no-other-window org-now-no-other-window))))))))
+              (cons 'window-parameters (append `((no-delete-other-windows . t)
+                                                 (no-other-window . ,org-now-no-other-window))
+                                               org-now-window-parameters)))))))
 
 ;;;###autoload
 (defun org-now-buffer ()
@@ -139,9 +147,9 @@ See info node `(elisp)Cyclic Window Ordering'."
           ;; MAYBE: Optionally hide the mode line.  It looks nicer, but it also
           ;; hides whether the buffer has been modified, which can be important,
           ;; especially for users not using `real-auto-save'.
-          (pcase (length org-now-location)
-            (1 (switch-to-buffer (clone-indirect-buffer "*org-now*" nil)))
-            (_ (org-tree-to-indirect-buffer)))
+          (switch-to-buffer (clone-indirect-buffer "*org-now*" nil))
+          (when (> (length org-now-location) 1)
+            (org-narrow-to-subtree))
           (setq header-line-format (propertize " org-now" 'face 'org-now-header))
           (toggle-truncate-lines 1)
           (rename-buffer "*org-now*")
@@ -170,6 +178,8 @@ a link for, not just in Org buffers."
   "Refile current entry to the `org-now' entry."
   (interactive)
   (org-now--ensure-configured)
+  ;; FIXME: When org-now-location is just a file path, entries seem to
+  ;; get refiled as subheadings rather than top-level headings.
   (when-let* ((target-marker (org-now--marker))
               (rfloc (list nil (car org-now-location) nil target-marker))
               (previous-location (or (save-excursion
