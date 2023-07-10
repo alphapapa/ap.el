@@ -950,7 +950,9 @@ selected instead of creating a new buffer."
 			:branch "wip/rewrite"))
 
 (use-package org-now
-  :quelpa (org-now :fetcher github :repo "alphapapa/org-now"))
+  :quelpa (org-now :fetcher github :repo "alphapapa/org-now")
+  :general
+  ("M-g w" #'org-now))
 
 (use-package org-ql
   :quelpa (org-ql :fetcher github :repo "alphapapa/org-ql"
