@@ -798,10 +798,16 @@ Includes \"%s\" format spec for length of playlist in minutes."
   :config
   (dolist (theme '(modus-operandi modus-vivendi))
     (unpackaged/customize-theme-faces theme
-      '(ement-room-membership ((t :height 0.8)))
+      '(ement-room-membership nil)
+      '(ement-room-list-name nil)
       `(ement-room-timestamp-header ((t :inherit header-line :weight bold :extend t)))
+      ;; I like the way this looks in Lisp buffers, but so many faces
+      ;; inherit from it that shouldn't be underlined...
+      ;; '(font-lock-function-name-face ((t :underline t)))
       '(font-lock-keyword-face ((t :weight bold)))
-      '(font-lock-warning-face ((t :weight bold))))))
+      '(font-lock-warning-face ((t :weight bold)))
+      `(org-done ((t :foreground ,(face-background 'default) :background ,(face-foreground 'default)
+                     :box (:line-width 2 :color "black" :style flat) :inverse-video t))))))
 
 (use-package orderless
   :custom
