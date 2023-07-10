@@ -10,7 +10,10 @@
 ;;; Generated autoloads from org-now.el
 
 (autoload 'org-now "org-now" "\
-Focus `org-now' sidebar window, displaying it anew if necessary." t nil)
+Toggle `org-now' side window.
+If the selected window shows the `org-now' buffer, call
+`quit-window'; otherwise, display/select the `org-now' buffer in
+a side window as configured." t nil)
 
 (autoload 'org-now-buffer "org-now" "\
 Return the \"now\" buffer, creating it if necessary." nil nil)
