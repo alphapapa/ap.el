@@ -1,29 +1,25 @@
-;;; macrostep-c.el --- macrostep interface to C preprocessor
+;;; macrostep-c.el --- macrostep interface to C preprocessor  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2015 Jon Oddie <j.j.oddie@gmail.com>
+;; Copyright (C) 2015 Jon Oddie
 
-;; Author:     Jon Oddie <j.j.oddie@gmail.com>
-;; Maintainer: Jon Oddie <j.j.oddie@gmail.com>
-;; Created:    27 November 2015
-;; Updated:    27 November 2015
-;; Version:    0.9
-;; Keywords:   c, languages, macro, debugging
-;; Url:        https://github.com/joddie/macrostep
+;; Author: Jon Oddie <j.j.oddie@gmail.com>
+;; Url: https://github.com/emacsorphanage/macrostep
+;; Keywords: c, languages, macro, debugging
 
-;; This file is NOT part of GNU Emacs.
+;; SPDX-License-Identifier: GPL-3.0-or-later
 
-;; This program is free software: you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation, either version 3 of the
-;; License, or (at your option) any later version.
+;; This file is free software: you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published
+;; by the Free Software Foundation, either version 3 of the License,
+;; or (at your option) any later version.
 ;;
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
+;; This file is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 ;;
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see `http://www.gnu.org/licenses/'.
+;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -51,15 +47,16 @@
 (require 'cmacexp)
 (require 'cl-lib)
 
-(eval-and-compile
-  (if (require 'subr-x nil t)
-      (defalias 'macrostep-c-string-trim 'string-trim)
-    (defun macrostep-c-string-trim (string)
+(require 'subr-x nil t)
+(defalias 'macrostep-c-string-trim
+  (if (fboundp 'string-trim)
+      #'string-trim
+    (lambda (string)
       (when (string-match "\\`[ \t\n\r]+" string)
 	(setq string (replace-match "" t t string)))
       (when (string-match "[ \t\n\r]+\\'" string)
 	(setq string (replace-match "" t t string)))
-	string)))
+      string)))
 
 (put 'macrostep-c-non-macro 'error-conditions
      '(macrostep-c-non-macro error))
@@ -88,7 +85,7 @@
   (add-hook 'macrostep-mode-off-hook
             #'macrostep-c-mode-off nil t))
 
-(defun macrostep-c-mode-off (&rest ignore)
+(defun macrostep-c-mode-off (&rest _ignore)
   (when (derived-mode-p 'c-mode)
     (let ((warning-window
            (get-buffer-window macrostep-c-warning-buffer)))
@@ -128,9 +125,8 @@
 (defun macrostep-c-expandable-p (region)
   (cl-destructuring-bind (start . end) region
     (condition-case nil
-        (cl-destructuring-bind (expansion warnings)
+        (cl-destructuring-bind (expansion _warnings)
             (macrostep-c-expand-region start end)
-          (declare (ignore warnings))
           (and (cl-plusp (length expansion))
                (not (string= expansion (buffer-substring start end)))))
       (macrostep-c-expansion-failed nil))))
