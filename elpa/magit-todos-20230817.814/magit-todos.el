@@ -4,9 +4,8 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/magit-todos
-;; Package-Version: 20230307.549
-;; Package-Commit: 7724259a008144b8cfc6cacdae3e764f207a03e7
-;; Version: 1.6
+;; Package-Version: 20230817.814
+;; Version: 1.7-pre
 ;; Package-Requires: ((emacs "26.1") (async "1.9.2") (dash "2.13.0") (f "0.17.2") (hl-todo "1.9.0") (magit "2.13.0") (pcre2el "1.8") (s "1.12.0") (transient "0.2.0"))
 ;; Keywords: magit, vc
 
@@ -1083,11 +1082,8 @@ if the process's buffer has already been deleted."
               (backward-sexp)
               (async-handle-result async-callback (read (current-buffer))
                                    (current-buffer)))
-          (set (make-local-variable 'async-callback-value)
-               (list 'error
-                     (format "Async process '%s' failed with exit code %d"
-                             (process-name proc) (process-exit-status proc))))
-          (set (make-local-variable 'async-callback-value-set) t))))))
+          (error "magit-todos--async-when-done: process %S failed with exit code %d.  Output:%S"
+                 (process-name proc) (process-exit-status proc) (buffer-string)))))))
 
 ;;;;; Formatters
 
@@ -1142,6 +1138,7 @@ if the process's buffer has already been deleted."
 ;;;; Scanners
 
 (cl-defmacro magit-todos-defscanner (name &key test command results-regexp
+                                          (directory-form '(f-relative directory default-directory))
                                           (callback (function 'magit-todos--scan-callback)))
   "Define a `magit-todos' scanner named NAME.
 
@@ -1189,6 +1186,14 @@ Where MATCH may also match Org outline heading stars when
 appropriate.  Custom regexps may also match column numbers or
 byte offsets in the appropriate numbered groups; see
 `make-magit-todos-item'.
+
+DIRECTORY-FORM may be a form within which the symbol `directory'
+is bound to the directory path being searched; it should evaluate
+to the directory path that should be passed to the
+command.  (Since some commands' output differs by the way the
+search directory is passed, like \"./\" or \".\" vs. a full path,
+this may be used to, e.g. ensure that the command does not
+include a leading \"./\" in filenames.)
 
 CALLBACK is called to process the process's output buffer.
 Normally the default should be used, which inserts items into the
@@ -1239,7 +1244,7 @@ argument, a list of match items.
 When SYNC is non-nil, match items are returned."
                   name-without-spaces)
          (let* ((process-connection-type 'pipe)
-                (directory (f-relative directory default-directory))
+                (directory ,directory-form)
                 (extra-args (when ,extra-args-var
                               (--map (s-split (rx (1+ space)) it 'omit-nulls)
                                      ,extra-args-var)))
@@ -1327,6 +1332,10 @@ When SYNC is non-nil, match items are returned."
 
 (magit-todos-defscanner "rg"
   :test (executable-find "rg")
+  :directory-form (if (equal directory default-directory)
+                      ;; Prevent leading "./" in filenames.
+                      nil
+                    (f-relative directory default-directory))
   :command (list "rg" "--no-heading" "--line-number"
                  (when depth
                    (list "--maxdepth" (1+ depth)))
@@ -1410,14 +1419,18 @@ When SYNC is non-nil, match items are returned."
                                  ")" "-prune"))
                          (when magit-todos-exclude-globs
                            (list "-o" "("
-                                 (--map (list "-iname" it)
-                                        magit-todos-exclude-globs)
+                                 (-interpose (list "-o")
+                                             (--map (list "-iname"
+                                                          ;; Arguments to "-iname" must not end in "/".
+                                                          (replace-regexp-in-string (rx "/" eos) "" it))
+                                                    magit-todos-exclude-globs))
                                  ")" "-prune"))
                          (unless magit-todos-submodule-list
-                           (list "-o" "("
-                                 (--map (list "-iname" it)
-                                        (magit-list-module-paths))
-                                 ")" "-prune")))
+                           (when (magit-list-module-paths)
+                             (list "-o" "("
+                                   (--map (list "-ipath" it)
+                                          (magit-list-module-paths))
+                                   ")" "-prune"))))
                    (list "-o" "-type" "f")
                    ;; NOTE: This uses "grep -P", i.e. "Interpret the pattern as a
                    ;; Perl-compatible regular expression (PCRE).  This is highly
