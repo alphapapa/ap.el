@@ -98,6 +98,7 @@ NARROW corresponds to the `org-ql-select' argument NARROW.
 
 (autoload 'org-ql-completing-read "org-ql-completing-read" "\
 Return marker at Org entry in BUFFERS-FILES selected with `org-ql'.
+PROMPT is shown to the user.
 
 QUERY-PREFIX may be a string to prepend to the query entered by
 the user (e.g. use \"heading:\" to only search headings, easily
@@ -124,7 +125,7 @@ single predicate).
 (autoload 'org-ql-find "org-ql-find" "\
 Go to an Org entry in BUFFERS-FILES selected by searching entries with `org-ql'.
 Interactively, with universal prefix, select multiple buffers to
-search with completion.
+search with completion and PROMPT.
 
 QUERY-PREFIX may be a string to prepend to the query (e.g. use
 \"heading:\" to only search headings, easily creating a custom
@@ -163,8 +164,8 @@ Show a sparse tree for QUERY in BUFFER and return number of results.
 The tree will show the lines where the query matches, and any
 other context defined in `org-show-context-detail', which see.
 
-QUERY is an `org-ql' query sexp (quoted, since this is a
-function).  BUFFER defaults to the current buffer.
+QUERY is an `org-ql' query in either sexp or string form (see
+Info node `(org-ql)Queries').
 
 When KEEP-PREVIOUS is non-nil (interactively, with prefix), the
 outline is not reset to the overview state before finding
@@ -195,7 +196,7 @@ SUPER-GROUPS: An `org-super-agenda' group set.  See variable
 selectors'.
 
 NARROW: When non-nil, don't widen buffers before
-searching. Interactively, with prefix, leave narrowed.
+searching.  Interactively, with prefix, leave narrowed.
 
 SORT: One or a list of `org-ql' sorting functions, like `date' or
 `priority' (see Info node `(org-ql)Listing / acting-on results').
@@ -250,6 +251,7 @@ TYPE may be `ts', `ts-active', `ts-inactive', `clocked', or
 
 (autoload 'org-ql-view-sidebar "org-ql-view" "\
 Show `org-ql-view' view list sidebar.
+SLOT is passed to `display-buffer-in-side-window', which see.
 
 \(fn &key (SLOT org-ql-view-list-slot))" t nil)
 
