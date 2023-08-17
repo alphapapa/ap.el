@@ -4,9 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/dogears.el
-;; Package-Version: 20220829.441
-;; Package-Commit: 5b8a85d03ca17d8b8185868fdbacf320784026d5
-;; Version: 0.1-pre
+;; Version: 0.2-pre
 ;; Package-Requires: ((emacs "26.3") (map "2.1"))
 ;; Keywords: convenience
 
@@ -89,7 +87,7 @@ Dogears adds `dogears-remember' to these hooks when
 (defcustom dogears-ignore-places-functions
   (list #'minibufferp
         #'dogears--ignored-mode-p)
-  "Don't remember places in buffers for which any of these functions return non-nil."
+  "Ignore places for which any of these functions return non-nil."
   :type '(repeat function))
 
 (defcustom dogears-ignore-modes
@@ -183,47 +181,51 @@ you've been and helps you retrace your steps."
       (cancel-timer dogears-idle-timer)
       (setf dogears-idle-timer nil))))
 
+(defun dogears--place (&optional manualp)
+  "Return record for current buffer at point."
+  (when-let ((record (or (ignore-errors
+                           (funcall bookmark-make-record-function))
+                         (dogears--buffer-record))))
+    (pcase (car record)
+      ;; Like `bookmark-make-record', we may have to add a string ourselves.
+      ;; And we want every record to have one as its first element, for
+      ;; consistency.  And sometimes, records have a nil name rather than an
+      ;; empty string, depending on the bookmark-make-record-function (I'm
+      ;; not sure if there are defined standards for what the first element
+      ;; of a bookmark record should be).
+      ((pred stringp)
+       ;; Record already has a string as its first element: do nothing.
+       nil)
+      (`nil (setf (car record) ""))
+      (_ (push "" record)))
+    (setf (map-elt (cdr record) 'manualp) manualp)
+    (unless (map-elt (cdr record) 'buffer)
+      (setf (map-elt (cdr record) 'buffer) (buffer-name)))
+    (when-let ((within (or (funcall dogears-within-function)
+                           (dogears--within)
+                           (car record))))
+      (setf (map-elt (cdr record) 'within) within))
+    (setf (map-elt (cdr record) 'mode) major-mode
+          (map-elt (cdr record) 'line) (buffer-substring
+                                        (point-at-bol) (point-at-eol)))
+    record))
+
 ;;;###autoload
 (defun dogears-remember (&rest _ignore)
   "Remember (\"dogear\") the current place."
   (interactive)
   (unless (cl-some #'funcall dogears-ignore-places-functions)
-    (if-let ((record (or (ignore-errors
-                           (funcall bookmark-make-record-function))
-                         (dogears--buffer-record))))
+    (if-let ((record (dogears--place (called-interactively-p 'interactive))))
         (progn
-          (pcase (car record)
-            ;; Like `bookmark-make-record', we may have to add a string ourselves.
-            ;; And we want every record to have one as its first element, for
-            ;; consistency.  And sometimes, records have a nil name rather than an
-            ;; empty string, depending on the bookmark-make-record-function (I'm
-            ;; not sure if there are defined standards for what the first element
-            ;; of a bookmark record should be).
-            ((pred stringp)
-             ;; Record already has a string as its first element: do nothing.
-             nil)
-            (`nil (setf (car record) ""))
-            (_ (push "" record)))
-          (setf (map-elt (cdr record) 'manual)
-                (if (called-interactively-p 'interactive) "✓" " "))
-          (unless (map-elt (cdr record) 'buffer)
-            (setf (map-elt (cdr record) 'buffer) (buffer-name)))
-          (when-let ((within (or (funcall dogears-within-function)
-                                 (dogears--within)
-                                 (car record))))
-            (setf (map-elt (cdr record) 'within) within))
-          (setf (map-elt (cdr record) 'mode) major-mode
-                (map-elt (cdr record) 'line) (buffer-substring
-                                              (point-at-bol) (point-at-eol)))
           ;; It's hard to say whether push or pushnew is the best choice.  When returning
           ;; to a dogeared place, that place gets moved to the front of the list, or it
           ;; remains where it was.  Either way, unless we allow dupes, the list changes.
           (cl-pushnew record dogears-list :test #'dogears--equal)
           (setf dogears-list (delete-dups dogears-list)
                 dogears-list (seq-take dogears-list dogears-limit))
-          (when (and dogears-update-list-buffer (buffer-live-p dogears-list-buffer))
-            (with-current-buffer dogears-list-buffer
-              (revert-buffer))))
+          (dogears--update-list-buffer)
+          (when (called-interactively-p 'interactive)
+            (message "Dogeared")))
       (when (called-interactively-p 'interactive)
         (message "Dogears: Couldn't dogear this place")))))
 
@@ -245,33 +247,62 @@ bookmark record."
         (if (buffer-live-p buffer)
             (switch-to-buffer buffer)
           (user-error "Buffer no longer exists: %s" buffer))))
+  (dogears--update-list-buffer))
+
+(defun dogears-back (&optional manualp)
+  "Go to previous dogeared place.
+If MANUALP (interactively, with prefix), go to previous manually
+remembered place."
+  (interactive "P")
+  (dogears-move 'backward manualp))
+
+(defun dogears-forward (&optional manualp)
+  "Go to next dogeared place.
+If MANUALP (interactively, with prefix), go to next manually
+remembered place."
+  (interactive "P")
+  (dogears-move 'forward manualp))
+
+;;;; Functions
+
+(defun dogears-move (direction &optional manualp)
+  "Move to next/previous dogeared place in DIRECTION.
+DIRECTION may be `forward' or `backward'.  If MANUALP, only
+consider manually dogeared places."
+  (let* ((current-place (dogears--place) )
+         (predicate (lambda (place)
+                      (and (not (dogears--equal place current-place))
+                           (or (not manualp)
+                               (map-elt (cdr place) 'manualp)))))
+         (place (cl-find-if predicate dogears-list
+                            :start (pcase direction
+                                     ('forward (1+ dogears-index)))
+                            :end (pcase direction
+                                   ('backward dogears-index))
+                            :from-end (equal 'backward direction))))
+    (if place
+        (progn
+          (setf dogears-index (cl-position place dogears-list :test #'dogears--equal))
+          (when (not (dogears--equal place current-place :ignore-manual-p manualp))
+            (dogears-go place)
+            (when dogears-message
+              (message "Dogears: %s to %s/%s"
+                       (pcase direction
+                         ('backward "Back")
+                         ('forward "Forward"))
+                       (1+ dogears-index) (length dogears-list)))))
+      (dogears--update-list-buffer)
+      (user-error "At %s %sdogeared place"
+                  (pcase direction
+                    ('backward "oldest")
+                    ('forward "newest"))
+                  (if manualp "manually " "")))))
+
+(defun dogears--update-list-buffer ()
+  "Update list buffer if it is open and so-configured."
   (when (and dogears-update-list-buffer (buffer-live-p dogears-list-buffer))
     (with-current-buffer dogears-list-buffer
       (revert-buffer))))
-
-(defun dogears-back ()
-  "Go to previous dogeared place."
-  (interactive)
-  (if-let ((place (nth (cl-incf dogears-index) dogears-list)))
-      (progn
-        (dogears-go place)
-        (when dogears-message
-          (message "Dogears: Back to %s/%s" dogears-index (length dogears-list))))
-    (cl-decf dogears-index)
-    (user-error "Already at oldest dogeared place")))
-
-(defun dogears-forward ()
-  "Go to next dogeared place."
-  (interactive)
-  (if-let ((place (nth (cl-decf dogears-index) dogears-list)))
-      (progn
-        (dogears-go place)
-        (when dogears-message
-          (message "Dogears: Forward to %s/%s" dogears-index (length dogears-list))))
-    (cl-incf dogears-index)
-    (user-error "Already at latest dogeared place")))
-
-;;;; Functions
 
 (defun dogears--buffer-record ()
   "Return a bookmark-like record for the current buffer.
@@ -284,24 +315,25 @@ returns nil."
         (cons 'mode major-mode)
         (cons 'position (point))))
 
-(defun dogears--equal (a b)
+(cl-defun dogears--equal (a b &key ignore-manual-p)
   "Return non-nil if places A and B are considered equal.
 A and B should be bookmark records as stored in `dogears-list'.
 They are considered equal if they have the same elements, with
 two exceptions: their `line's may differ, and their `position's
-may differ by up to `dogears-position-delta'."
+may differ by up to `dogears-position-delta'.  If
+IGNORE-MANUAL-P, ignore whether places were manually remembered."
   (pcase-let* ((`(,a-name . ,(map ('filename a-filename) ('line _a-line)
-                                  ('manual a-manual) ('mode a-mode)
+                                  ('manualp a-manualp) ('mode a-mode)
                                   ('position a-position) ('within a-within)))
                 a)
                (`(,b-name . ,(map ('filename b-filename) ('line _b-line)
-                                  ('manual b-manual) ('mode b-mode)
+                                  ('manualp b-manualp) ('mode b-mode)
                                   ('position b-position) ('within b-within)))
                 b))
     ;; Test elements in, roughly, the order of some balance of factors
     ;; involving what's quickest to compare and what's most likely to differ.
     (and (equal a-mode b-mode)
-         (equal a-manual b-manual)
+         (or ignore-manual-p (equal a-manualp b-manualp))
          (equal a-within b-within)
          (equal a-filename b-filename)
          (equal a-name b-name)
@@ -324,10 +356,10 @@ may differ by up to `dogears-position-delta'."
 
 (defun dogears--format-record (record)
   "Return bookmark RECORD formatted."
-  (pcase-let* ((`(,manual ,relevance ,within ,line ,mode ,buffer ,position ,dir)
+  (pcase-let* ((`(,manualp ,relevance ,within ,line ,mode ,buffer ,position ,dir)
                 (dogears--format-record-list record)))
     (format "%s [%9s]  (%25s)  \"%25s\"  %s %12s %s\\%s"
-            manual relevance within line buffer mode position dir)))
+            (if manualp "✓" " ") relevance within line buffer mode position dir)))
 
 (defun dogears--format-record-list (record)
   "Return a list of elements in RECORD formatted."
@@ -342,7 +374,8 @@ may differ by up to `dogears-position-delta'."
 			     (and (listp property) (member face property)))
                    (add-face-text-property 0 (length string) face 'append string)))
                string))
-    (pcase-let* ((`(,name . ,(map filename line manual mode position within)) record)
+    (pcase-let* ((`(,name . ,(map filename line manualp mode position within)) record)
+                 (manual (if manualp "✓" " "))
                  (buffer (face-propertize (if filename
                                               (file-name-nondirectory filename)
                                             name)
@@ -493,9 +526,12 @@ Compares against modes in `dogears-ignore-modes'."
   "Return `tabulated-list-entries'."
   (cl-loop for place in dogears-list
            for i from 0
+           for index = (if (= i dogears-index)
+                           (propertize (number-to-string i)
+                                       'face 'font-lock-keyword-face)
+                         (number-to-string i))
            collect (list place
-                         (cl-coerce (cons (number-to-string i)
-                                          (dogears--format-record-list place))
+                         (cl-coerce (cons index (dogears--format-record-list place))
                                     'vector))))
 
 ;;;; Footer
