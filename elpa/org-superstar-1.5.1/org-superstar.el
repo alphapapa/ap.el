@@ -5,8 +5,6 @@
 ;; Author: D. Williams <d.williams@posteo.net>
 ;; Maintainer: D. Williams <d.williams@posteo.net>
 ;; Keywords: faces, outlines
-;; Package-Version: 20230116.1358
-;; Package-Commit: 29dbbc48ac925f36cc1636b36b4a3ccb3588e17f
 ;; Version: 1.5.1
 ;; Homepage: https://github.com/integral-dw/org-superstar-mode
 ;; Package-Requires: ((org "9.1.9") (emacs "26.1"))
@@ -364,15 +362,11 @@ raise an error."
 Each type of plain list bullet is associated with a
 corresponding UTF8 character in ‘org-superstar-item-bullet-alist’.
 
-If set to the symbol ‘only’, disable fontifying headlines entirely.
-This takes precedence over all other customizations.
-
 You should call ‘org-superstar-restart’ after changing this
 variable for your changes to take effect."
   :group 'org-superstar
   :type '(choice (const :tag "Enable item bullet fontification" t)
-                 (const :tag "Disable item bullet fontification" nil)
-                 (const :tag "Exclusively fontify item bullets" only)))
+                 (const :tag "Disable item bullet fontification" nil)))
 
 (defcustom org-superstar-special-todo-items nil
   "Non-nil means use special bullets for TODO items.
@@ -839,23 +833,21 @@ cleanup routines."
         `(,@(when org-superstar-prettify-item-bullets
               '(("^[ \t]*?\\(?:\\(?1:[-+]\\)\\|[ \t]\\(?1:\\*\\)\\) "
                  (1 (org-superstar--prettify-ibullets)))))
-          ,@(unless (eq org-superstar-prettify-item-bullets 'only)
-              `(("^\\(?3:\\**?\\)\\(?2:\\*?\\)\\(?1:\\*\\) "
-                 (1 (org-superstar--prettify-main-hbullet) prepend)
-                 ,@(unless (or org-hide-leading-stars
-                               org-superstar-remove-leading-stars)
-                     '((3 (org-superstar--prettify-leading-hbullets)
-                          t)
-                       (2 (org-superstar--prettify-other-lbullet)
-                          t)))
-                 ,@(when org-superstar-remove-leading-stars
-                     '((3 (org-superstar--make-invisible 3))
-                       (2 (org-superstar--make-invisible 2))))
-                 ,@(when (featurep 'org-inlinetask)
-                     '((2 (org-superstar--prettify-other-hbullet)
-                          prepend))))))
+          ("^\\(?3:\\**?\\)\\(?2:\\*?\\)\\(?1:\\*\\) "
+           (1 (org-superstar--prettify-main-hbullet) prepend)
+           ,@(unless (or org-hide-leading-stars
+                         org-superstar-remove-leading-stars)
+               '((3 (org-superstar--prettify-leading-hbullets)
+                    t)
+                 (2 (org-superstar--prettify-other-lbullet)
+                    t)))
+           ,@(when org-superstar-remove-leading-stars
+               '((3 (org-superstar--make-invisible 3))
+                 (2 (org-superstar--make-invisible 2))))
+           ,@(when (featurep 'org-inlinetask)
+               '((2 (org-superstar--prettify-other-hbullet)
+                    prepend))))
           ,@(when (and (featurep 'org-inlinetask)
-                       (not (eq org-superstar-prettify-item-bullets 'only))
                        org-inlinetask-show-first-star
                        (not org-superstar-remove-leading-stars))
               '(("^\\(?4:\\*\\)\\(?:\\*\\{2,\\}\\) "
