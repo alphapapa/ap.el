@@ -1,4 +1,4 @@
-(define-package "plz" "20230415.1727" "HTTP library"
+(define-package "plz" "20230709.1446" "HTTP library"
   '((emacs "26.3"))
   :authors
   '(("Adam Porter" . "adam@alphapapa.net"))
