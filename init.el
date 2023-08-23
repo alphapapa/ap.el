@@ -946,6 +946,19 @@ selected instead of creating a new buffer."
     (interactive)
     (ap/org-agenda-goto-heading-in-indirect-buffer t)))
 
+(use-package org-agenda
+  :config
+  (define-minor-mode ap/org-agenda-bulk-allow-search-type-mode
+    "Advise `org-agenda-check-type' to allow `search' type agenda-like buffers to use bulk actions.
+Useful in, e.g. `org-ql-view' buffers that work fine with bulk
+actions but set the `org-agenda-type' to `search', causing
+org-agenda to deny bulk actions."
+    :global t
+    (if ap/org-agenda-bulk-allow-search-type-mode
+        (define-advice org-agenda-check-type (:filter-args (error &rest types) allow-search-type)
+          (cons error (cons 'search types)))
+      (advice-remove 'org-agenda-check-type 'org-agenda-check-type@allow-search-type))))
+
 (use-package org-bookmark-heading
   :quelpa (org-bookmark-heading :fetcher github :repo "alphapapa/org-bookmark-heading"))
 
