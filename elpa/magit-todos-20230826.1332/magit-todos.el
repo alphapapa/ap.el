@@ -4,8 +4,8 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/magit-todos
-;; Package-Version: 20230817.814
-;; Version: 1.7-pre
+;; Package-Version: 20230826.1332
+;; Version: 1.7
 ;; Package-Requires: ((emacs "26.1") (async "1.9.2") (dash "2.13.0") (f "0.17.2") (hl-todo "1.9.0") (magit "2.13.0") (pcre2el "1.8") (s "1.12.0") (transient "0.2.0"))
 ;; Keywords: magit, vc
 
@@ -116,7 +116,7 @@ This should be set automatically by customizing
 (defvar-local magit-todos-active-scan nil
   "The current scan's process.
 Used to avoid running multiple simultaneous scans for a
-magit-status buffer.")
+`magit-status' buffer.")
 
 (defvar magit-todos-section-map
   (let ((map (make-sparse-keymap)))
@@ -168,7 +168,7 @@ A time value as returned by `current-time'.")
 (defcustom magit-todos-scanner nil
   "File scanning method.
 \"Automatic\" will attempt to use rg, ag, git-grep, and
-find-grep, in that order. "
+find-grep, in that order."
   :type '(choice (const :tag "Automatic" nil)
                  (function :tag "Custom function"))
   :set (lambda (option value)
@@ -371,7 +371,7 @@ This can be toggled locally in Magit buffers with command
                  (const :tag "In non-master branches" branch)
                  (const :tag "Always" t)))
 
-(defcustom magit-todos-branch-list-merge-base-ref "master"
+(defcustom magit-todos-branch-list-merge-base-ref nil
   "Commit ref passed to command \"git merge-base HEAD\".
 Determines the ancestor commit from which the current branch's
 todos should be searched for.  May be overridden in the case that
@@ -388,7 +388,8 @@ By default, the branch todo list would show todos from both the
 \"topic\" branch and the \"topic2\" branch.  To show only todos
 from the \"topic2\" branch, this option could be set to
 \"topic\"."
-  :type 'string)
+  :type '(choice (const :tag "Automatic" :doc "Value returned by `magit-main-branch'" nil)
+                 (string :tag "Specified branch name")))
 
 (defcustom magit-todos-submodule-list nil
   "Show submodule to-do list."
@@ -444,14 +445,13 @@ Only necessary when option `magit-todos-update' is nil."
   (magit-todos-update))
 
 (defun magit-todos-branch-list-set-commit (ref)
-  "Set commit ref used in branch to-do list."
+  "Set commit REF used in branch to-do list."
   (interactive (list (completing-read "Refname: " (magit-list-refnames))))
   (setq-local magit-todos-branch-list-merge-base-ref ref)
   (magit-todos-update))
 
-(declare-function org-show-entry "org")
 (cl-defun magit-todos-jump-to-item (&key peek (item (oref (magit-current-section) value)))
-  "Show current item.
+  "Show current ITEM.
 If PEEK is non-nil, keep focus in status buffer window."
   (interactive)
   (let* ((status-window (selected-window))
@@ -459,7 +459,14 @@ If PEEK is non-nil, keep focus in status buffer window."
     (pop-to-buffer buffer)
     (magit-todos--goto-item item)
     (when (derived-mode-p 'org-mode)
-      (org-show-entry))
+      ;; Because `org-show-entry' was renamed and moved in Org 9.6, we
+      ;; have to silence warnings about it.  If Org is loaded, the
+      ;; function will be.
+      (cond ((version<= "9.6" (org-version))
+             (with-no-warnings
+               (org-fold-show-entry)))
+            (t (with-no-warnings
+                 (org-show-entry)))))
     (when peek
       (select-window status-window))))
 
@@ -488,7 +495,8 @@ If PEEK is non-nil, keep focus in status buffer window."
 ;;;###autoload
 (defun magit-todos-list (&optional directory)
   "Show to-do list of the current Git repository in a buffer.
-With prefix, prompt for repository."
+With prefix, prompt for repository.  Use repository in DIRECTORY,
+or `default-directory' if nil."
   ;; Mostly copied from `magit-status'
   (interactive
    (let ((magit--refresh-cache (list (cons 0 0))))
@@ -541,13 +549,13 @@ Type \\[magit-diff-show-or-scroll-up] to peek at the item at point."
   "Return end position of section matching CONDITION, or nil.
 CONDITION may be one accepted by `magit-section-match', or `top'
 or `bottom', which are handled specially."
-  (cl-labels ((find-section
-               (condition) (save-excursion
-                             (goto-char (point-min))
-                             (ignore-errors
-                               (cl-loop until (magit-section-match condition)
-                                        do (magit-section-forward)
-                                        finally return (magit-current-section))))))
+  (cl-labels ((find-section (condition)
+                (save-excursion
+                  (goto-char (point-min))
+                  (ignore-errors
+                    (cl-loop until (magit-section-match condition)
+                             do (magit-section-forward)
+                             finally return (magit-current-section))))))
     (save-excursion
       (goto-char (point-min))
       (pcase condition
@@ -631,7 +639,13 @@ buffer for RESULTS-REGEXP."
 
 (cl-defun magit-todos--git-diff-callback (&key magit-status-buffer results-regexp search-regexp-elisp process heading
                                                exclude-globs &allow-other-keys)
-  "Callback for git diff scanner output."
+  "Callback for git diff scanner output.
+Insert into MAGIT-STATUS-BUFFER.  RESULTS-REGEXP matches a result
+on each line.  SEARCH-REGEXP-ELISP finds the next hunk of
+results.  PROCESS is the \"git diff\" process object.
+`magit-todos-section-heading' is bound to HEADING when inserting
+items.  EXCLUDE-GLOBS is a list of glob patterns matching
+filenames to be excluded."
   ;; NOTE: Doesn't handle newlines in filenames or diff.mnemonicPrefix.
   (cl-macrolet ((next-diff () `(re-search-forward (rx bol "diff --git ") nil t))
                 (next-filename () `(when (re-search-forward (rx bol "+++ b/" (group (1+ nonl))) nil t)
@@ -755,12 +769,14 @@ This function should be called from inside a ‘magit-status’ buffer."
      (magit-todos--insert-items (current-buffer) magit-todos-item-cache)))
   (when (or (eq magit-todos-branch-list t)
             (and (eq magit-todos-branch-list 'branch)
-                 (not (string= "master" (magit-get-current-branch)))))
+                 (not (equal (or magit-todos-branch-list-merge-base-ref (magit-main-branch))
+                             (magit-get-current-branch)))))
     ;; Insert branch-local items.
     (magit-todos--scan-with-git-diff :magit-status-buffer (current-buffer)
                                      :directory default-directory
                                      :depth magit-todos-depth
-                                     :heading (format "TODOs (branched from %s)" magit-todos-branch-list-merge-base-ref))))
+                                     :heading (format "TODOs (branched from %s)"
+                                                      (or magit-todos-branch-list-merge-base-ref (magit-main-branch))))))
 
 (cl-defun magit-todos--insert-items (magit-status-buffer items &key branch-p)
   "Insert to-do ITEMS into MAGIT-STATUS-BUFFER.
@@ -994,6 +1010,7 @@ advance to the next line."
 
 (defun magit-todos--fontify-like-in-org-mode (s &optional odd-levels)
   "Fontify string S like in Org-mode.
+Bind `org-odd-levels-only' to ODD-LEVELS.
 
 `org-fontify-like-in-org-mode' is a very, very slow function
 because it creates a new temporary buffer and runs `org-mode' for
@@ -1021,12 +1038,12 @@ useful with absolute paths)."
   (car (f-split (magit-todos-item-filename item))))
 
 (cl-defun magit-todos--async-start-process (name &key command finish-func)
-  "Start the executable PROGRAM asynchronously.  See `async-start'.
+  "Start the executable COMMAND asynchronously.  See `async-start'.
 PROGRAM is passed PROGRAM-ARGS, calling FINISH-FUNC with the
 process object when done.  If FINISH-FUNC is nil, the future
 object will return the process object when the program is
 finished.  Set DEFAULT-DIRECTORY to change PROGRAM's current
-working directory.
+working directory.  Process is named NAME.
 
 This is a copy of `async-start-process' that does not override
 `process-connection-type'.  It also uses keyword arguments."
@@ -1046,7 +1063,7 @@ This is a copy of `async-start-process' that does not override
       proc)))
 
 (defun magit-todos--async-when-done (proc &optional _change)
-  "Process sentinel used to retrieve the value from the child process.
+  "Process sentinel used to retrieve the value from the child PROC.
 
 This is a copy of `async-when-done' that does not raise an error
 if the process's buffer has already been deleted."
@@ -1069,7 +1086,7 @@ if the process's buffer has already been deleted."
       (let ((async-current-process proc))
         ;; TRAMP processes seem to have the exit status 9 instead of
         ;; 0.  I can't find documentation or code about it.
-        (if (memq (process-exit-status proc) '(0 9))
+        (if (memq (process-exit-status proc) (process-get proc :allow-exit-codes))
             (if async-callback-for-process
                 (if async-callback
                     (prog1
@@ -1082,7 +1099,7 @@ if the process's buffer has already been deleted."
               (backward-sexp)
               (async-handle-result async-callback (read (current-buffer))
                                    (current-buffer)))
-          (error "magit-todos--async-when-done: process %S failed with exit code %d.  Output:%S"
+          (error "magit-todos--async-when-done: Process %S failed with exit code %d.  Output:%S"
                  (process-name proc) (process-exit-status proc) (buffer-string)))))))
 
 ;;;;; Formatters
@@ -1113,7 +1130,7 @@ if the process's buffer has already been deleted."
 (defun magit-todos--sort-by-keyword (a b)
   "Return non-nil if A's keyword is before B's in `magit-todos-keywords-list'."
   (cl-flet ((keyword-index (keyword)
-                           (or (-elem-index keyword magit-todos-keywords-list) 0)))
+              (or (-elem-index keyword magit-todos-keywords-list) 0)))
     (< (keyword-index (magit-todos-item-keyword a))
        (keyword-index (magit-todos-item-keyword b)))))
 
@@ -1138,6 +1155,7 @@ if the process's buffer has already been deleted."
 ;;;; Scanners
 
 (cl-defmacro magit-todos-defscanner (name &key test command results-regexp
+                                          (allow-exit-codes '(0))
                                           (directory-form '(f-relative directory default-directory))
                                           (callback (function 'magit-todos--scan-callback)))
   "Define a `magit-todos' scanner named NAME.
@@ -1153,7 +1171,8 @@ COMMAND is a sexp which should evaluate to the scanner command,
 i.e. a list of strings to be eventually passed to
 `start-process'.  Nil elements are removed, numbers are converted
 to strings, and nested lists are flattened into a single list.
-It is evaluated each time the scanner is run.
+It is evaluated each time the scanner is run.  If COMMAND
+evaluates to nil, it is not run.
 
 Within the COMMAND list these variables are available:
 
@@ -1186,6 +1205,12 @@ Where MATCH may also match Org outline heading stars when
 appropriate.  Custom regexps may also match column numbers or
 byte offsets in the appropriate numbered groups; see
 `make-magit-todos-item'.
+
+ALLOW-EXIT-CODES is a list of integers corresponding to exit
+codes which should not be interpreted as errors (e.g. rg uses 1
+to indicate no match and no error, so its list should include 0
+and 1).  Note that TRAMP seems to use code 9 instead of 0, so 9
+is added to this list automatically.
 
 DIRECTORY-FORM may be a form within which the symbol `directory'
 is bound to the directory path being searched; it should evaluate
@@ -1222,6 +1247,8 @@ It also adds the scanner to the customization variable
          (scan-fn-name (concat "magit-todos--scan-with-" name-without-spaces))
          (scan-fn-symbol (intern scan-fn-name))
          (extra-args-var (intern (format "magit-todos-%s-extra-args" name-without-spaces))))
+    (cl-pushnew 9 allow-exit-codes)
+    (setf allow-exit-codes (sort allow-exit-codes #'<))
     `(progn
        (defcustom ,extra-args-var nil
          ,(format "Extra arguments passed to %s." name)
@@ -1294,25 +1321,29 @@ When SYNC is non-nil, match items are returned."
                     when (numberp elt)
                     do (setf elt (number-to-string elt)))
            ;; Run command.
-           (if sync
-               ;; Synchronous: return matching items.
-               (with-temp-buffer
-                 (unless (= 0 (apply #'call-process (car command) nil (current-buffer) nil
-                                     (cdr command)))
-                   (user-error (concat (car command) " failed")))
-                 (magit-todos--buffer-items results-regexp))
-             ;; Async: return process.
-             (magit-todos--async-start-process ,scan-fn-name
-               :command command
-               ;; NOTE: This callback chain.
-               :finish-func (apply-partially ,callback
-                                             :callback callback
-                                             :magit-status-buffer magit-status-buffer
-                                             :results-regexp results-regexp
-                                             :search-regexp-elisp search-regexp-elisp
-                                             :heading heading
-                                             :exclude-globs magit-todos-exclude-globs
-                                             :process))))) ; Process is appended to the list.
+           (when command
+             (if sync
+                 ;; Synchronous: return matching items.
+                 (with-temp-buffer
+                   (unless (member (apply #'call-process (car command) nil (current-buffer) nil
+                                          (cdr command))
+                                   ',allow-exit-codes)
+                     (user-error (concat (car command) " failed")))
+                   (magit-todos--buffer-items results-regexp))
+               ;; Async: return process.
+               (let ((process (magit-todos--async-start-process ,scan-fn-name
+                                :command command
+                                ;; NOTE: This callback chain.
+                                :finish-func (apply-partially ,callback
+                                                              :callback callback
+                                                              :magit-status-buffer magit-status-buffer
+                                                              :results-regexp results-regexp
+                                                              :search-regexp-elisp search-regexp-elisp
+                                                              :heading heading
+                                                              :exclude-globs magit-todos-exclude-globs
+                                                              :process)))) ; Process is appended to the list.
+                 (setf (process-get process :allow-exit-codes) ',allow-exit-codes)
+                 process)))))
        (magit-todos--add-to-custom-type 'magit-todos-scanner
          (list 'const :tag ,name #',scan-fn-symbol))
        (add-to-list 'magit-todos-scanners
@@ -1336,6 +1367,7 @@ When SYNC is non-nil, match items are returned."
                       ;; Prevent leading "./" in filenames.
                       nil
                     (f-relative directory default-directory))
+  :allow-exit-codes (0 1)
   :command (list "rg" "--no-heading" "--line-number"
                  (when depth
                    (list "--maxdepth" (1+ depth)))
@@ -1351,6 +1383,7 @@ When SYNC is non-nil, match items are returned."
 
 (magit-todos-defscanner "git grep"
   :test (string-match "--perl-regexp" (shell-command-to-string "git grep --magit-todos-testing-git-grep"))
+  :allow-exit-codes (0 1)
   :command (list "git" "--no-pager" "grep"
                  "--full-name" "--no-color" "-n"
                  (when depth
@@ -1374,17 +1407,19 @@ When SYNC is non-nil, match items are returned."
   :command (progn
              ;; Silence byte-compiler warnings about these vars we don't use in this scanner.
              (ignore search-regexp-elisp search-regexp-pcre extra-args directory depth)
-             (list "git" "--no-pager" "diff" "--no-color" "-U0"
-                   (-> "git merge-base HEAD "
-                       (concat magit-todos-branch-list-merge-base-ref)
-                       shell-command-to-string
-                       string-trim)))
+             (let ((merge-base-ref (-> "git merge-base HEAD "
+                                       (concat (or magit-todos-branch-list-merge-base-ref (magit-main-branch)))
+                                       shell-command-to-string
+                                       string-trim)))
+               (unless (string-empty-p merge-base-ref)
+                 (list "git" "--no-pager" "diff" "--no-color" "-U0" merge-base-ref))))
   :callback 'magit-todos--git-diff-callback)
 
 (magit-todos-defscanner "find|grep"
   ;; NOTE: The filenames output by find|grep have a leading "./".  I don't expect this scanner to be
   ;; used much, if at all, so I'm not going to go to the trouble to fix this now.
   :test (string-match "--perl-regexp" (shell-command-to-string "grep --help"))
+  :allow-exit-codes (0 1)
   :command (let* ((grep-find-template (progn
                                         (unless grep-find-template
                                           (grep-compute-defaults))
@@ -1460,7 +1495,7 @@ When SYNC is non-nil, match items are returned."
 ;; Helm or Ivy to be installed; it is only called after one of them is loaded.
 
 (declare-function helm-make-source "ext:helm-source")
-(declare-function helm "ext:helm")
+(declare-function helm "ext:helm-core")
 
 (with-eval-after-load 'helm
   (defvar helm-magit-todos-source

@@ -39,7 +39,8 @@ it is disabled.
 (fn &optional ARG)" t)
 (autoload 'magit-todos-list "magit-todos" "\
 Show to-do list of the current Git repository in a buffer.
-With prefix, prompt for repository.
+With prefix, prompt for repository.  Use repository in DIRECTORY,
+or `default-directory' if nil.
 
 (fn &optional DIRECTORY)" t)
 (autoload 'magit-todos-list-internal "magit-todos" "\
