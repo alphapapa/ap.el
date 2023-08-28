@@ -6,11 +6,9 @@
 ;; Hacked additionally by:	opensource at hardakers dot net
 ;; Created:			14 Feb 2012
 ;; Updated:			13 December 2015
-;; Version:                     1.8
-;; Package-Version: 20161120.2103
-;; Package-Commit: 0b5b2a2c173aab3fd14aac6cf5e90ad3bf58fa7d
+;; Version:                     1.12
 ;; Url:                         https://github.com/joddie/pcre2el
-;; Package-Requires:            ((emacs "24") (cl-lib "0.3"))
+;; Package-Requires:            ((emacs "25.1"))
 
 ;; This file is NOT part of GNU Emacs.
 
@@ -465,11 +463,13 @@
 (defface rxt-highlight-face
   '((((min-colors 16581375) (background light)) :background "#eee8d5")
     (((min-colors 16581375) (background dark)) :background "#222222"))
-  "Face for highlighting corresponding regex syntax in `rxt-explain' buffers."
+  "Face for highlighting corresponding regex syntax in
+ `rxt-explain' buffers."
   :group 'rxt)
 
 (defcustom rxt-verbose-rx-translation nil
-  "Non-nil if `rxt-pcre-to-rx' and `rxt-elisp-to-rx' should use verbose `rx' primitives.
+  "Non-nil if `rxt-pcre-to-rx' and `rxt-elisp-to-rx' should use
+ verbose `rx' primitives.
 
 Verbose primitives are things like `line-start' instead of `bol',
 etc."
@@ -477,7 +477,8 @@ etc."
   :type 'boolean)
 
 (defcustom rxt-explain-verbosely t
-  "Non-nil if `rxt-explain-elisp' and `rxt-explain-pcre' should use verbose `rx' primitives.
+  "Non-nil if `rxt-explain-elisp' and `rxt-explain-pcre' should
+ use verbose `rx' primitives.
 
 This overrides the value of `rxt-verbose-rx-translation' for
 these commands only."
@@ -557,7 +558,7 @@ these commands only."
           (condition-case nil
               (save-excursion
                 (while (nth 3 (syntax-ppss)) (forward-char))
-                (let ((re (eval (preceding-sexp))))
+                (let ((re (eval (elisp--preceding-sexp))))
                   (if (stringp re) re
                     (read-string prompt))))
             (error
@@ -595,7 +596,7 @@ You should not normally call this directly.  It will be enabled
 in minibuffers for `read-regexp' and in the `re-builder' buffer
 when `pcre-mode' is active.  These bindings will also be added to
 `isearch-mode-map' in `pcre-mode'."
-  :initial nil
+  :initial-value nil
   :lighter nil
   :keymap
   `((,(kbd "C-c s") . ,#'rxt--toggle-s-mode)
@@ -717,8 +718,9 @@ translate to its Emacs equivalent:
 - `ibuffer-do-replace-regexp'
 
 Also alters the behavior of `isearch-mode' when searching by regexp."
-  nil " PCRE"
-  nil
+  :init-value nil
+  :lighter " PCRE"
+  :keymap nil
   :global t
 
   (if pcre-mode
@@ -1041,7 +1043,7 @@ Throws an error if REGEXP contains any infinite quantifiers."
   (let* ((context (syntax-ppss))
          (string-start (nth 8 context)))
     (cond (string-start (goto-char string-start))
-          ((looking-back "\"") (backward-sexp))
+          ((looking-back "\"" nil t) (backward-sexp))
           ((looking-at "\"") nil)
           (t
            ;; Search backwards, leaving point in place on error
@@ -1063,12 +1065,12 @@ Throws an error if REGEXP contains any infinite quantifiers."
         ;; Pretty-print rx form
         (save-restriction
           (let* ((start (point))
-                 (rx-syntax (rxt-elisp-to-rx regex))
-                 (rx-form
-                  (pcase rx-syntax
+                 (rx--syntax-codes (rxt-elisp-to-rx regex))
+                 (rx--form
+                  (pcase rx--syntax-codes
                     (`(seq . ,rest) `(rx . ,rest))
                     (form           `(rx ,form)))))
-            (rxt-print rx-form)
+            (rxt-print rx--form)
             (narrow-to-region start (point)))
           (pp-buffer)
           ;; remove the extra newline that pp-buffer inserts
@@ -1249,7 +1251,10 @@ the kill ring; see the two functions named above for details."
 
 ;;;###autoload
 (define-minor-mode rxt-mode
-  "Regex translation utilities." nil nil)
+  "Regex translation utilities."
+  :init-value nil
+  :lighter nil
+  :keymap rxt-mode-map)
 
 ;;;###autoload
 (defun turn-on-rxt-mode ()
@@ -1752,7 +1757,7 @@ list (OTHER-ELEMENTS CHAR-SET CASE-FOLDED-CHAR-SET):
   symbol)
 
 (defun rxt-syntax-class (symbol)
-  (if (assoc symbol rx-syntax)
+  (if (assoc symbol rx--syntax-codes)
       (make-rxt-syntax-class :symbol symbol)
     (rxt-error "Invalid syntax class symbol `%s'" symbol)))
 
@@ -1762,7 +1767,7 @@ list (OTHER-ELEMENTS CHAR-SET CASE-FOLDED-CHAR-SET):
   symbol)
 
 (defun rxt-char-category (symbol)
-  (if (assoc symbol rx-categories)
+  (if (assoc symbol rx--categories)
       (make-rxt-char-category :symbol symbol)
     (rxt-error "Invalid character category symbol `%s'" symbol)))
 
@@ -1916,8 +1921,8 @@ Example:
                  (let* ((split-point (/ (+ start end) 2))
                         (left (recur start split-point))
                         (right (recur (1+ split-point) end)))
-                   (merge left right))))))
-         (merge (left right)
+                   (pcre2el-merge left right))))))
+         (pcre2el-merge (left right)
            (cond ((null left) right)
                  ((null right) left)
                  (t
@@ -2320,7 +2325,7 @@ otherwise it would not match.")
          (let ((negated (string= (match-string 1) "S"))
                (syntax
                 (car (rassoc (string-to-char (match-string 2))
-                              rx-syntax))))
+                              rx--syntax-codes))))
            (if syntax
                (let ((re (rxt-syntax-class syntax)))
                  (if negated (rxt-negate re) re))
@@ -2330,7 +2335,7 @@ otherwise it would not match.")
          (let ((negated (string= (match-string 1) "C"))
                (category
                 (car (rassoc (string-to-char (match-string 2))
-                             rx-categories))))
+                             rx--categories))))
            (if category
                (let ((re (rxt-char-category category)))
                  (if negated (rxt-negate re) re))
@@ -2755,7 +2760,7 @@ in character classes as outside them."
                  ((and (equal from 1) (null to))
                   `(,(if greedy '+ '+?) ,body))
                  ((and (zerop from) (equal to 1))
-                  `(,(if greedy ? ??) ,body))
+                  `(,(if greedy '\? ??) ,body))
                  ((null to)
                   `(>= ,from ,body))
                  ((equal from to)
@@ -2770,6 +2775,8 @@ in character classes as outside them."
                   (ranges (rxt-char-set-union-ranges re))
                   (classes (rxt-char-set-union-classes re))
                   (case-fold (rxt-char-set-union-case-fold re)))
+             ;; Do not let the byte compiler optimize this variable out.
+             (ignore case-fold)
              (if (and (null chars) (null ranges) (= 1 (length classes)))
                  (car classes)
                `(any ,@chars ,@ranges ,@classes))))
@@ -2889,12 +2896,12 @@ in character classes as outside them."
     (if (null (cdr elts))
         (list s lev)
       (cl-destructuring-bind
-          (s1 lev1) (rxt-choice-elts->pcre (cdr elts))
+          (s1 _lev1) (rxt-choice-elts->pcre (cdr elts))
         (list (concat s "|" s1) 3)))))
 
 (defun rxt-submatch->pcre (re)
   (cl-destructuring-bind
-      (s lev) (rxt-adt->pcre/lev (rxt-submatch-body re))
+      (s _lev) (rxt-adt->pcre/lev (rxt-submatch-body re))
     (list (concat "(" s ")") 0)))
 
 (defun rxt-repeat->pcre (re)
@@ -3033,7 +3040,7 @@ in character classes as outside them."
    (t           ; to > from
     (let* ((strs-n (rxt-repeat-n->strings from strings))
            (accum (cl-copy-list strs-n)))
-      (dotimes (i (- to from))
+      (dotimes (_i (- to from))
         (setq strs-n (rxt-concat-product strs-n strings))
         (setq accum (nconc accum strs-n)))
       accum))))
@@ -3117,7 +3124,9 @@ in character classes as outside them."
   (around rxt () activate compile)
   "This function is hacked for emulated PCRE syntax and regexp conversion."
   (if (eq reb-re-syntax 'pcre)
-      (let ((src (reb-target-binding reb-regexp-src)))
+      (let ((src (if (fboundp #'reb-target-value)
+                     (reb-target-value 'reb-regexp-src)
+                   (reb-target-binding reb-regexp-src))))
         (if src
             (insert "\n/" (replace-regexp-in-string "/" "\\/" src t t) "/")
           (insert "\n//")))
