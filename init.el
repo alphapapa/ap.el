@@ -616,6 +616,40 @@ the file!"
   (progn
     (require 'mpc)
 
+    (cl-defun ap/mpris-toggle-players (&key (bus :session) (messagep t))
+      "Toggle playback in MPRIS players that are playing or paused."
+      (require 'dbus)
+      (cl-labels
+          ((mpris-service-p (service)
+             (string-prefix-p "org.mpris.MediaPlayer2." service))
+           (service-playback-status (service)
+             (dbus-get-property bus service "/org/mpris/MediaPlayer2" "org.mpris.MediaPlayer2.Player"
+                                "PlaybackStatus"))
+           (service-player-name (service)
+             (dbus-get-property bus service "/org/mpris/MediaPlayer2" "org.mpris.MediaPlayer2"
+                                "Identity"))
+           (service-player-metadata (service)
+             (dbus-get-property bus service "/org/mpris/MediaPlayer2" "org.mpris.MediaPlayer2.Player"
+                                "Metadata"))
+           (toggle-playback (service)
+             (dbus-call-method bus service "/org/mpris/MediaPlayer2" "org.mpris.MediaPlayer2.Player"
+                               "PlayPause")
+             (when messagep
+               (message "Toggled playback of %S in %s"
+                        (format-metadata (service-player-metadata service))
+                        (service-player-name service))))
+           (format-metadata (metadata)
+             (-let (((&alist "xesam:artist" ((artists))
+                             "xesam:album" ((album))
+                             "xesam:title" ((title)))
+                     metadata))
+               (format "%s - %s: %s" (s-join ", " artists) album title))))
+        (->> (dbus-list-known-names bus)
+             (-select #'mpris-service-p)
+             (--select (member (service-playback-status it)
+                               '("Playing" "Paused")))
+             (mapc #'toggle-playback))))
+
     (defcustom ap/hammy-mpc-before-command "pmm cheerful -e vocal %s"
       "Command used to play music in function `ap/hammy-mpc-before'.
 Includes \"%s\" format spec for length of playlist in minutes."
