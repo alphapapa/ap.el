@@ -99,12 +99,16 @@ Usually this will be something like \"/usr/share/emacs/VERSION\".")
 (defvar bufler-workspace-name nil
   "The buffer's named workspace, if any.")
 
+(defvar bufler-project-cache (make-hash-table :test #'equal)
+  "Cache mapping directories to projects.
+Used by `bufler-project-current', which see.")
+
 (defvar bufler-cache-related-dirs (make-hash-table :test #'equal)
   "Cache of relations between directories.
 See `bufler-cache-related-dirs-p'.")
 
-(defvar bufler-cache-related-dirs-timer nil
-  "Timer used to clear `bufler-dir-related-cache'.")
+(defvar bufler-cache-timer nil
+  "Timer used to clear Bufler's caches.")
 
 ;;;; Customization
 
@@ -228,12 +232,12 @@ makes the performance impact virtually unnoticable.
 
 This should always be accurate except in the rare case that a
 path is a symlink whose target is changed.  See
-`bufler-cache-related-dirs-timeout'."
+`bufler-cache-timeout'."
   :type 'boolean)
 
-(defcustom bufler-cache-related-dirs-timeout 3600
-  "How often to reset the cache, in seconds.
-The cache should not be allowed to grow unbounded, so it's
+(defcustom bufler-cache-timeout 3600
+  "How often to reset caches, in seconds.
+Caches should not be allowed to grow unbounded, so they're
 cleared with a timer that runs this many seconds after the last
 `bufler-list' command."
   :type 'boolean)
@@ -287,6 +291,24 @@ Used when `bufler-list' is called."
 ;; Silence byte-compiler.  This is defined later in the file.
 (defvar bufler-groups)
 
+;;;; Inline functions
+
+(define-inline bufler-project-current (&optional maybe-prompt directory)
+  "Call `project-current' with memoization.
+Passes MAYBE-PROMPT and DIRECTORY to `project-current', which
+see.
+
+The `project-current' function can be slow when called for many
+buffers' files in rapid succession, so we memoize it in variable
+`bufler-project-cache'."
+  (inline-letevals (maybe-prompt directory)
+    (inline-quote
+     (let ((directory (expand-file-name ,directory)))
+       (pcase (gethash directory bufler-project-cache :bufler-notfound)
+         (:bufler-notfound (setf (gethash directory bufler-project-cache)
+                                 (project-current ,maybe-prompt directory)))
+         (else else))))))
+
 ;;;; Commands
 
 (define-derived-mode bufler-list-mode magit-section-mode "Bufler")
@@ -302,7 +324,7 @@ clear `bufler-cache', and regenerate buffer groups (which can be
 useful after changing `bufler-groups' if the buffer list has not
 yet changed).  With two universal prefix args, also show buffers
 which are otherwise filtered by `bufler-filter-buffer-fns'."
-  (interactive "p")
+  (interactive "P")
   (let (format-table)
     (cl-labels
         ;; This gets a little hairy because we have to wrap `-group-by'
@@ -373,7 +395,7 @@ which are otherwise filtered by `bufler-filter-buffer-fns'."
          (format< (test-dir buffer-dir)
                   (string< (as-string test-dir) (as-string buffer-dir))))
       (when arg
-        (setf bufler-cache nil))
+        (bufler--reset-caches))
       (pcase-let* ((inhibit-read-only t)
                    (bufler-vc-refresh arg)
                    (groups (bufler-buffers :filter-fns (unless (and (numberp arg) (>= arg 16))
@@ -399,13 +421,8 @@ which are otherwise filtered by `bufler-filter-buffer-fns'."
           (setf buffer-read-only t)
           (pop-to-buffer (current-buffer) bufler-list-display-buffer-action)
           (goto-char pos))
-        ;; Cancel cache-clearing idle timer and start a new one.
-        (when bufler-cache-related-dirs-timer
-          (cancel-timer bufler-cache-related-dirs-timer))
-        (setf bufler-cache-related-dirs-timer
-              (run-with-idle-timer bufler-cache-related-dirs-timeout nil
-                                   (lambda ()
-                                     (setf bufler-cache-related-dirs (make-hash-table :test #'equal)))))))))
+        (unless (timerp bufler-cache-timer)
+          (setf bufler-cache-timer (run-with-idle-timer bufler-cache-timeout nil #'bufler--reset-caches)))))))
 
 ;;;###autoload
 (defalias 'bufler #'bufler-list)
@@ -709,6 +726,12 @@ omit buffers that match any of them."
                          (list (mapc #'do-thing thing)))))
     (mapc #'do-section sections)))
 
+(defun bufler--reset-caches ()
+  "Reset Bufler's caches."
+  (setf bufler-cache nil
+        bufler-cache-related-dirs (make-hash-table :test #'equal)
+        bufler-project-cache (make-hash-table :test #'equal)))
+
 ;;;;; Buffer predicates
 
 ;; These functions take a buffer as their sole argument.  They may be
@@ -781,7 +804,7 @@ PLIST may be a plist setting the following options:
        (defun ,fn-name (buffer depth)
          (if-let ((string (progn ,@body)))
              (progn
-               ,(when max-width
+               ,(when (plist-member plist :max-width)
                   `(when ,max-width-variable
                      (setf string (truncate-string-to-width string ,max-width-variable))))
                ,(when face
@@ -1108,17 +1131,16 @@ NAME, okay, `checkdoc'?"
     "*special*"))
 
 (bufler-defauto-group project
-  (when-let* ((project (with-current-buffer buffer
-                         (project-current)))
+  (when-let* ((project (bufler-project-current nil (buffer-local-value 'default-directory buffer)))
               (project-root (bufler-project-root project)))
     (concat "Project: " project-root)))
 
 (bufler-defauto-group parent-project
-  (when-let* ((project (project-current nil (buffer-local-value 'default-directory buffer))))
+  (when-let* ((project (bufler-project-current nil (buffer-local-value 'default-directory buffer))))
     (let* ((project-root (bufler-project-root project))
            ;; Emacs needs a built-in function like `f-parent'.
            (parent-dir (file-name-directory (directory-file-name project-root)))
-           (parent-dir-project (project-current nil parent-dir)))
+           (parent-dir-project (bufler-project-current nil parent-dir)))
       (concat "Project: "
               (if parent-dir-project
                   (bufler-project-root parent-dir-project)
