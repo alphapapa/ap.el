@@ -993,6 +993,13 @@ org-agenda to deny bulk actions."
           (cons error (cons 'search types)))
       (advice-remove 'org-agenda-check-type 'org-agenda-check-type@allow-search-type))))
 
+(use-package org-clock
+  :general (ap/general-def
+             "ocg" #'org-clock-goto
+             "oci" #'org-clock-in
+             "oco" #'org-clock-out
+             "ocl" #'org-clock-in-last))
+
 (use-package org-bookmark-heading
   :quelpa (org-bookmark-heading :fetcher github :repo "alphapapa/org-bookmark-heading"))
 
