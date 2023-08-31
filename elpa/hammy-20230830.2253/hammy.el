@@ -4,9 +4,9 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/hammy.el
-;; Package-Version: 20230830.1556
+;; Package-Version: 20230830.2253
 ;; Version: 0.3-pre
-;; Package-Requires: ((emacs "28.1") (ts "0.2.2"))
+;; Package-Requires: ((emacs "28.1") (svg-lib "0.2.5") (ts "0.2.2"))
 ;; Keywords: convenience
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -55,6 +55,7 @@
   ;; For `org-with-point-at'.
   (require 'org-macs))
 
+(require 'svg-lib)
 (require 'ts)
 
 ;;;; Structs
@@ -560,21 +561,7 @@ prompt for the interval with completion)."
                                       (if current-interval
                                           (ring-next (hammy-intervals hammy) current-interval)
                                         (ring-ref (hammy-intervals hammy) 0))))
-                   (next-duration
-                    (or duration
-                        ;; This seems a bit awkward, but we want to allow the value to be a
-                        ;; number, a string, or a function that returns a number or string.
-                        (pcase-exhaustive
-                            (cl-etypecase (hammy-interval-duration next-interval)
-                              (function (condition-case _err
-                                            (funcall (hammy-interval-duration next-interval) hammy)
-                                          (hammy-complete
-                                           (run-hook-with-args 'hammy-complete-hook hammy)
-                                           (message "Hammy is over!  (%s)" (hammy-name hammy))
-                                           nil)))
-                              ((or number string) (hammy-interval-duration next-interval)))
-                          ((and (pred numberp) it) it)
-                          ((and (pred stringp) it) (timer-duration it))))))
+                   (next-duration))
         (if (not (advancep))
             ;; Interval requires manual advancing.
             (progn
@@ -594,6 +581,21 @@ prompt for the interval with completion)."
             (hammy-call (hammy-interval-after (hammy-interval hammy)) hammy))
           (setf (hammy-interval hammy) next-interval
                 (hammy-current-interval-start-time hammy) (current-time)
+                ;; We calculate the next duration after recording the
+                ;; previous interval so, e.g. the ⅓-time hammy can
+                ;; refer to its duration.
+                next-duration (or duration
+                                  (pcase-exhaustive
+                                      (cl-etypecase (hammy-interval-duration next-interval)
+                                        (function (condition-case _err
+                                                      (funcall (hammy-interval-duration next-interval) hammy)
+                                                    (hammy-complete
+                                                     (run-hook-with-args 'hammy-complete-hook hammy)
+                                                     (message "Hammy is over!  (%s)" (hammy-name hammy))
+                                                     nil)))
+                                        ((or number string) (hammy-interval-duration next-interval)))
+                                    ((and (pred numberp) it) it)
+                                    ((and (pred stringp) it) (timer-duration it))))
                 (hammy-current-duration hammy) next-duration
                 (hammy-overduep hammy) nil)
           (when next-duration
@@ -801,6 +803,10 @@ Summary includes elapsed times, etc."
   "Shown when no hammys are running."
   :type 'string)
 
+(defcustom hammy-mode-lighter-pie t
+  "Show progress pie in the lighter."
+  :type 'boolean)
+
 (defcustom hammy-mode-update-mode-line-continuously t
   "Update the mode line every second while a hammy is running."
   :type 'boolean)
@@ -816,6 +822,26 @@ Summary includes elapsed times, etc."
 
 (defvar hammy-mode-update-mode-line-timer nil
   "Timer used to update the mode line.")
+
+(defface hammy-mode-lighter-pie '((t (:inherit mode-line)))
+  "Hammy progress pies.
+If showing progress in the mode line or tab bar, inherit from the
+appropriate face to ensure proper appearance.")
+
+(defface hammy-mode-lighter-pie-normal '((t (:inherit hammy-mode-lighter-pie)))
+  "Hammy with > 50% remaining.")
+
+(defface hammy-mode-lighter-pie-50 '((t (:inherit hammy-mode-lighter-pie)))
+  "Hammy with <= 50% remaining.")
+
+(defface hammy-mode-lighter-pie-25 '((t (:inherit font-lock-variable-name-face)))
+  "Hammy with <= 25% remaining.")
+
+(defface hammy-mode-lighter-pie-10 '((t (:inherit  font-lock-warning-face)))
+  "Hammy with <= 10% remaining.")
+
+(defface hammy-mode-lighter-pie-0 '((t (:inherit error)))
+  "Hammy that is overdue.")
 
 ;;;###autoload
 (define-minor-mode hammy-mode
@@ -859,7 +885,9 @@ Summary includes elapsed times, etc."
                      "")
                    (propertize (hammy-interval-name (hammy-interval hammy))
                                'face (hammy-interval-face (hammy-interval hammy)))
-                   (concat (if (hammy-overduep hammy)
+                   (concat (when hammy-mode-lighter-pie
+                             (propertize " " 'display (hammy--pie hammy)))
+                           (if (hammy-overduep hammy)
                                ;; We use the negative sign when counting down to
                                ;; the end of an interval (i.e. "T-minus...") .
                                "+" "-")
@@ -890,6 +918,25 @@ Summary includes elapsed times, etc."
   "Force updating of all mode lines when a hammy is active."
   (when hammy-active
     (force-mode-line-update 'all)))
+
+(defun hammy--pie (hammy)
+  "Return an SVG progress pie for HAMMY.
+Suitable for inserting with `insert-image'."
+  (let* ((elapsed (float-time (time-subtract (current-time) (hammy-current-interval-start-time hammy))))
+         (remaining (- (hammy-current-duration hammy) elapsed))
+         (fraction (/ remaining (hammy-current-duration hammy)))
+         (face (pcase fraction
+                 ((pred (> 0)) 'hammy-pie-0)
+                 ((pred (> 0.10)) 'hammy-pie-10)
+                 ((pred (> 0.25)) 'hammy-pie-25)
+                 ((pred (> 0.50)) 'hammy-pie-50)
+                 (_ 'hammy-pie-normal)))
+         ;; After choosing face, take the absolute value of the fraction
+         ;; so it will fill up again as it becomes further overdue.
+         (fraction (abs fraction)))
+    (svg-lib-progress-pie fraction nil :height 1.0
+                          :background (face-attribute 'hammy-pie :background nil t)
+                          :foreground (face-attribute face :foreground nil t))))
 
 ;;;; Log buffer
 
