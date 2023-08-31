@@ -20,7 +20,7 @@ Copy BUFFER's URL to the kill ring.
 
 (fn BUFFER)" t)
 (autoload 'burly-kill-frames-url "burly" "\
-Copy current frameset's URL to the kill ring." t)
+Copy current frameset URL to the kill ring." t)
 (autoload 'burly-kill-windows-url "burly" "\
 Copy current frame's window configuration URL to the kill ring." t)
 (autoload 'burly-open-url "burly" "\
