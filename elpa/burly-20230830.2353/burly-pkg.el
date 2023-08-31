@@ -1,7 +1,7 @@
-(define-package "burly" "20221024.2019" "Save and restore frame/window configurations with buffers"
+(define-package "burly" "20230830.2353" "Save and restore frame/window configurations with buffers"
   '((emacs "27.1")
     (map "2.1"))
-  :commit "f570fa87ee72a451f535cfb038d81798a01a7e20" :authors
+  :authors
   '(("Adam Porter" . "adam@alphapapa.net"))
   :maintainer
   '("Adam Porter" . "adam@alphapapa.net")
