@@ -2,6 +2,146 @@
 #+author: Daniel Mendler
 #+language: en
 
+* Version 0.35 (2023-07-02)
+
+- Bugfixes.
+- =consult--read= now accepts programmable completion tables as argument, e.g.,
+  =completion-table-dynamic= or =completion--file-name-table=. This allows you to
+  reuse existing completion tables to write completion commands enhanced with
+  Consult candidate preview.
+- Replace =consult-preview-cursor= face with =cursor-highlight-mark=.
+- Change calling convention of =consult-focus-lines= and =consult-keep-lines=.
+- The regexps in =consult-buffer-filter= are matched case sensitively now.
+  Similarly, the =INCLUDE= and =EXCLUDE= arguments of =consult--buffer-query= are also
+  case sensitive.
+- Do not preview remote files by default, see =consult-preview-excluded-files=.
+- Use =consult--maybe-recenter= instead of =recenter= in =consult-after-jump-hook=.
+- =consult-goto-line=: Support =line:column= input.
+
+* Version 0.34 (2023-04-21)
+
+- Bugfixes.
+- =consult-org-heading=: Support tag inheritance.
+- Use pure =consult--fast-abbreviate-file-name= function to abbreviate file names
+  in =consult-buffer= and =consult-recent-file=. This ensures that abbreviation does
+  not access the file system (or worse remote hosts via Tramp) and is always
+  fast. The downside is that some paths may not get abbreviated.
+- Introduce buffer sources =consult--source-project-buffer-hidden= and
+  =consult--source-project-recent-file-hidden=. Set the buffer sources of
+  =consult-project= to =consult--source-project-buffer= and
+  =consult--source-project-recent-file= to ease customization.
+- =consult-buffer=: Explicitly save =window-next-buffers= and =window-prev-buffers=.
+- When previewing files literally (=consult-preview-raw-size=), set the multi byte
+  flag of the previewed buffer, such that UTF-8 buffers are not garbled.
+- Do not create preview cursor overlay. Instead display the actual point by
+  ensuring that =cursor-in-non-selected-windows= is set.
+
+* Version 0.33 (2023-03-11)
+
+- BREAKING: The key convention has been updated. The old key convention is not
+  supported anymore. Keys must now be strings valid according to =key-valid-p=.
+  This changes affects the keys =consult-narrow-key=, =consult-widen-key=,
+  =consult-preview-key= and the =:preview-key= of sources and passed as keyword
+  argument to =consult--read=. See the example configurations in the manual.
+- BREAKING: Remove the "." argument from  =consult-grep-args= and
+  =consult-ripgrep-args=, since directories or files to search are appended by the
+  command line builder. Take this change into account, when you use a customized
+  version of those variables.
+- =consult-grep=: Add support for grep and find over multiple files or directory.
+  If the prefix argument DIR is a single C-u, prompt for comma separated
+  directories or files to search recursively via =completing-read-multiple=.
+- =consult-buffer= and =consult-isearch-history=: Align annotations dynamically
+  depending on candidate width, instead of computing the alignment beforehand.
+- Add the full path as =help-echo= property to abbreviated directory paths and
+  project names. Enable =tooltip-mode= and hover with the mouse over the
+  abbreviated directory path to see the full path.
+- =consult-grep/find/etc=: Print first line of stderr output if command failed.
+
+* Version 0.32 (2023-02-06)
+
+- Bugfixes
+- Deprecate the old key convention. Keys must now be strings valid according to
+  =key-valid-p=. This changes affects the keys =consult-narrow-key=,
+  =consult-widen-key=, =consult-preview-key= and the =:preview-key= of sources and
+  passed as keyword argument to =consult--read=. See the example configurations in
+  the manual.
+- Add =consult-info= command (#634, #727).
+- =consult-buffer=: Always select the first candidate when narrowing (#714).
+- =consult-locate-args=: Remove =--existing=, which is not supported by =plocate= on
+  Debian stable.
+- =consult-ripgrep-args=: Add =--search-zip= option to automatically search through
+  compressed files. This will allow you to search Elisp files bundled with your
+  Emacs installation. Move to an Elisp library via =find-library=, then invoke
+  =consult-ripgrep=.
+- Drop obsolete =consult-apropos=. Alternatives: =describe-symbol= in combination
+  with =embark-export=. See also =consult-info= and =consult-ripgrep= to search
+  through info manuals and Elisp source code.
+- Drop obsolete =consult-multi-occur=. Alternative: Built-in =multi-occur=,
+  =multi-occur-in-matching-buffers= or =consult-line-multi=.
+- Drop obsolete =consult-file-externally=. The command has been moved to Embark
+  under the name =embark-open-externally=.
+
+* Version 0.31 (2023-01-06)
+
+- Version bump to update the Compat package dependency (29.1.0.1)
+
+* Version 0.30 (2023-01-02)
+
+- Bugfixes
+- Drop Selectrum support
+- Deprecate =consult-file-externally= in favor of =embark-open-externally=
+- Deprecate =consult-multi-occur=. The =multi-occur= command should be improved
+  upstream to take advantage of =completing-read-multiple=. Consult provides the
+  command =consult-line-multi= as an alternative.
+- =consult-history=: Use input as initial completion input
+
+* Version 0.29 (2022-12-03)
+
+- Bugfixes
+- =consult-line-multi= has been rewritten completely. The candidates are computed
+  on demand based on the input. This reduces startup speed greatly. The command
+  behaves like =consult-grep=, but operates on buffers instead of files.
+- Add =consult--source-file-register=, and make the registers available in
+  =consult-buffer=. Registers are often used as quick access keys for files, e.g.,
+  =(add-to-list 'register-alist '(?i file . "~/.emacs.d/init.el")))=.
+- Remove obsolete =consult-line-point-placement=
+- =consult-grep/find=: Always show directory in the prompt
+- Add variable =consult-yank-rotate=, =consult-yank-from-kill-ring= rotates kill ring
+- Emacs 29: =consult-register= supports =buffer= register type
+- Emacs 29: Support =outline-search-function=
+- Org 9.6: Support new =org-fold-core= API (both overlays and text-properties)
+- Support abbreviated file names in =recentf-list=, see =recentf-filename-handler=.
+- Deprecate =consult-apropos=
+
+* Version 0.20 (2022-10-16)
+
+- Bugfixes
+- Allow =consult-*-args= to be a string, or a list of strings or expressions.
+- Introduce face =consult-highlight-match= to highlight grep matches in the
+  completion buffer.
+- Highlight full matches in =consult-line=, =consult-outline=, =consult-*grep= and
+  =consult-flymake=.
+- Remove face =consult-preview-error=.
+- Deprecate =consult-line-point-placement= in favor of more general
+  =consult-point-placement=, which is also used by the =consult-*grep= commands.
+- =consult-imenu=: Support imenu-after-jump-hook and non-default
+  =imenu-default-goto-function=
+- =consult-history=: Add support for history index variables, which are updated
+  after selection.
+- Deprecate support for Selectrum in favor of Vertico. If you use Selectrum
+  consider switching to Vertico, Icomplete, Mct or default completion.
+
+* Version 0.19 (2022-09-09)
+
+- Bugfixes
+- Allow =consult-flymake= to work across all buffers in a project
+- Remove deprecated =consult-completing-read-multiple=
+- =consult-grep/git-grep/ripgrep=: Add =--fixed-strings= support
+- =consult-grep=: Respect =grep-find-ignored-directories/files=
+- =consult-org-heading=: Add tags to completion candidates
+- Add =consult-preview-excluded-files=
+- =consult-themes=: Support regexps
+
 * Version 0.18 (2022-05-25)
 
 - Bugfixes
@@ -41,7 +181,7 @@
 
 * Version 0.16 (2022-03-08)
 
-- Bug fixes
+- Bugfixes
 - Deprecate =consult-project-root-function= in favor of =consult-project-function=.
 - Preconfigure =consult-project-function= with a default function based
   on project.el.
@@ -175,7 +315,7 @@
 - Rename =consult-error= to =consult-compile-error=
 - =consult-compile-error=: Allow calling the command from any buffer,
   use the errors from all compilation buffers related to the current buffer.
-- =consult-man=: Handle aggreated entries returned by mandoc
+- =consult-man=: Handle aggregated entries returned by mandoc
 - =consult-completion-in-region=: Added preview and =consult-preview-region= face
 - Added =consult-completion-in-region-styles= customization variable
 - Added =consult-xref=. The function can be set as =xref-show-xrefs-function=

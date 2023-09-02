@@ -1,4 +1,4 @@
-This is consult.info, produced by makeinfo version 6.7 from
+This is docuMwWvw.info, produced by makeinfo version 6.7 from
 consult.texi.
 
 INFO-DIR-SECTION Emacs misc features
@@ -7,18 +7,59 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: consult.info,  Node: Top,  Next: Introduction,  Up: (dir)
+File: docuMwWvw.info,  Node: Top,  Next: Available commands,  Up: (dir)
 
 consult.el - Consulting completing-read
 ***************************************
 
+Consult provides search and navigation commands based on the Emacs
+completion function completing-read
+(https://www.gnu.org/software/emacs/manual/html_node/elisp/Minibuffer-Completion.html).
+Completion allows you to quickly select an item from a list of
+candidates.  Consult offers asynchronous and interactive ‘consult-grep’
+and ‘consult-ripgrep’ commands, and the line-based search command
+‘consult-line’.  Furthermore Consult provides an advanced buffer
+switching command ‘consult-buffer’ to switch between buffers, recently
+opened files, bookmarks and buffer-like candidates from other sources.
+Some of the Consult commands are enhanced versions of built-in Emacs
+commands.  For example the command ‘consult-imenu’ presents a flat list
+of the Imenu with *note live preview: Live previews, *note grouping and
+narrowing: Narrowing and grouping.  Please take a look at the *note full
+list of commands: Available commands.
+
+   Consult is fully compatible with completion systems centered around
+the standard Emacs ‘completing-read’ API, notably the default completion
+system, Vertico (https://github.com/minad/vertico), Mct
+(https://github.com/protesilaos/mct), and Icomplete
+(https://www.gnu.org/software/emacs/manual/html_node/emacs/Icomplete.html).
+
+   This package keeps the completion system specifics to a minimum.  The
+ability of the Consult commands to work well with arbitrary completion
+systems is one of the main advantages of the package.  Consult fits well
+into existing setups and it helps you to create a full completion
+environment out of small and independent components.
+
+   You can combine the complementary packages Marginalia
+(https://github.com/minad/marginalia/), Embark
+(https://github.com/oantolin/embark/) and Orderless
+(https://github.com/oantolin/orderless) with Consult.  Marginalia
+enriches the completion display with annotations, e.g., documentation
+strings or file information.  The versatile Embark package provides
+local actions, comparable to a context menu.  These actions operate on
+the selected candidate in the minibuffer or at point in normal buffers.
+For example, when selecting from a list of files, Embark offers an
+action to delete the file.  Additionally Embark offers a facility to
+collect completion candidates in a collect buffer.  The section *note
+Embark integration:: documents in greater detail how Consult and Embark
+work together.
+
 * Menu:
 
-* Introduction::                 Why Consult?
 * Available commands::           Navigation, search, editing commands and more
 * Special features::             Enhancements over built-in ‘completing-read’
 * Configuration::                Example configuration and customization variables
 * Recommended packages::         Related packages recommended for installation
+* Auxiliary packages::           Integrations with the wider ecosystem
 * Bug reports::                  How to create reproducible bug reports
 * Contributions::                Feature requests and pull requests
 * Acknowledgments::              Contributors and Sources of Inspiration
@@ -38,6 +79,7 @@ Available commands
 * Histories::                    Navigating histories
 * Modes::                        Toggling minor modes and executing commands
 * Org Mode::                     Org-specific commands
+* Help::                         Searching through help
 * Miscellaneous::                Various other useful commands
 
 Special features
@@ -61,60 +103,9 @@ Indices
 
 
 
-File: consult.info,  Node: Introduction,  Next: Available commands,  Prev: Top,  Up: Top
+File: docuMwWvw.info,  Node: Available commands,  Next: Special features,  Prev: Top,  Up: Top
 
-1 Introduction
-**************
-
-Consult provides practical commands based on the Emacs completion
-function completing-read
-(https://www.gnu.org/software/emacs/manual/html_node/elisp/Minibuffer-Completion.html).
-Completion allows you to quickly select an item from a list of
-candidates.  Consult offers in particular an advanced buffer switching
-command ‘consult-buffer’ to switch between buffers and recently opened
-files.  Furthermore Consult provides multiple search commands, an
-asynchronous ‘consult-grep’ and ‘consult-ripgrep’, and the line-based
-search command ‘consult-line’.  Some of the Consult commands are
-enhanced versions of built-in Emacs commands.  For example the command
-‘consult-imenu’ presents a flat list of the Imenu with *note live
-preview: Live previews, *note grouping and narrowing: Narrowing and
-grouping.  Please take a look at the *note full list of commands:
-Available commands.
-
-   Consult is fully compatible with completion systems based on the
-standard Emacs ‘completing-read’ API, notably the default completion
-system, Vertico (https://github.com/minad/vertico), Mct
-(https://github.com/protesilaos/mct), Icomplete
-(https://www.gnu.org/software/emacs/manual/html_node/emacs/Icomplete.html)
-and Selectrum (https://github.com/raxod502/selectrum).
-
-   This package keeps the completion system specifics to a minimum.  The
-ability of the Consult commands to work well with arbitrary completion
-systems is one of the main advantages of the package.  Consult fits well
-into existing setups and it helps you to create a full completion
-environment out of small and independent components.  Note that, if you
-use Ivy (https://github.com/abo-abo/swiper#ivy) or Helm
-(https://github.com/emacs-helm/helm), you probably don’t need Consult,
-since both packages bring their own Consult-like functionality.
-
-   You can combine the complementary packages Marginalia
-(https://github.com/minad/marginalia/), Embark
-(https://github.com/oantolin/embark/) and Orderless
-(https://github.com/oantolin/orderless) with Consult.  Marginalia
-enriches the completion display with annotations, e.g., documentation
-strings or file information.  The versatile Embark package provides
-local actions, comparable to a context menu.  These actions operate on
-the selected candidate in the minibuffer or at point in normal buffers.
-For example, when selecting from a list of files, Embark offers an
-action to delete the file.  Additionally Embark offers a facility to
-collect completion candidates in a collect buffer.  The section *note
-Embark integration:: documents in greater detail how Consult and Embark
-work together.
-
-
-File: consult.info,  Node: Available commands,  Next: Special features,  Prev: Introduction,  Up: Top
-
-2 Available commands
+1 Available commands
 ********************
 
 Most Consult commands follow the meaningful naming scheme
@@ -141,12 +132,13 @@ their descriptions.
 * Histories::                    Navigating histories
 * Modes::                        Toggling minor modes and executing commands
 * Org Mode::                     Org-specific commands
+* Help::                         Searching through help
 * Miscellaneous::                Various other useful commands
 
 
-File: consult.info,  Node: Virtual Buffers,  Next: Editing,  Up: Available commands
+File: docuMwWvw.info,  Node: Virtual Buffers,  Next: Editing,  Up: Available commands
 
-2.1 Virtual Buffers
+1.1 Virtual Buffers
 ===================
 
    • ‘consult-buffer’ (‘-other-window’, ‘-other-frame’): Enhanced
@@ -159,6 +151,7 @@ File: consult.info,  Node: Virtual Buffers,  Next: Editing,  Up: Available comma
         • SPC Hidden buffers
         • * Modified buffers
         • f Files (Requires ‘recentf-mode’)
+        • r File registers
         • m Bookmarks
         • p Project
         • Custom *note other sources: Multiple sources. configured in
@@ -178,9 +171,9 @@ File: consult.info,  Node: Virtual Buffers,  Next: Editing,  Up: Available comma
      ‘recentf-mode’ enables tracking of recent files.
 
 
-File: consult.info,  Node: Editing,  Next: Register,  Prev: Virtual Buffers,  Up: Available commands
+File: docuMwWvw.info,  Node: Editing,  Next: Register,  Prev: Virtual Buffers,  Up: Available commands
 
-2.2 Editing
+1.2 Editing
 ===========
 
    • ‘consult-yank-from-kill-ring’: Enhanced version of ‘yank’ to select
@@ -196,9 +189,9 @@ File: consult.info,  Node: Editing,  Next: Register,  Prev: Virtual Buffers,  Up
    • ‘consult-kmacro’: Select macro from the macro ring and execute it.
 
 
-File: consult.info,  Node: Register,  Next: Navigation,  Prev: Editing,  Up: Available commands
+File: docuMwWvw.info,  Node: Register,  Next: Navigation,  Prev: Editing,  Up: Available commands
 
-2.3 Register
+1.3 Register
 ============
 
    • ‘consult-register’: Select from list of registers.  The command
@@ -227,13 +220,16 @@ File: consult.info,  Node: Register,  Next: Navigation,  Prev: Editing,  Up: Ava
         • ‘C-u 100 M-' x’: Store number in register ‘x’.
 
 
-File: consult.info,  Node: Navigation,  Next: Search,  Prev: Register,  Up: Available commands
+File: docuMwWvw.info,  Node: Navigation,  Next: Search,  Prev: Register,  Up: Available commands
 
-2.4 Navigation
+1.4 Navigation
 ==============
 
    • ‘consult-goto-line’: Jump to line number enhanced with live
-     preview.  This is a drop-in replacement for ‘goto-line’.
+     preview.  This is a drop-in replacement for ‘goto-line’.  Enter a
+     line number to jump to the first column of the given line.
+     Alternatively enter ‘line:column’ in order to jump to a specific
+     column.
    • ‘consult-mark’: Jump to a marker in the ‘mark-ring’.  Supports live
      preview and recursive editing.
    • ‘consult-global-mark’: Jump to a marker in the ‘global-mark-ring’.
@@ -248,9 +244,9 @@ File: consult.info,  Node: Navigation,  Next: Search,  Prev: Register,  Up: Avai
      imenu-anywhere (https://github.com/vspinu/imenu-anywhere).
 
 
-File: consult.info,  Node: Search,  Next: Grep and Find,  Prev: Navigation,  Up: Available commands
+File: docuMwWvw.info,  Node: Search,  Next: Grep and Find,  Prev: Navigation,  Up: Available commands
 
-2.5 Search
+1.5 Search
 ==========
 
    • ‘consult-line’: Enter search string and select from matching lines.
@@ -259,11 +255,11 @@ File: consult.info,  Node: Search,  Next: Grep and Find,  Prev: Navigation,  Up:
      can be accessed by pressing ‘M-n’.  When ‘consult-line’ is bound to
      the ‘isearch-mode-map’ and is invoked during a running Isearch, it
      will use the current Isearch string.
-   • ‘consult-line-multi’: Search across multiple buffers.  By default
-     search across project buffers.  If invoked with a prefix argument
-     search across all buffers.  Behaves like ‘consult-line’.
-   • ‘consult-multi-occur’: Replacement for ‘multi-occur’ which uses
-     ‘completing-read-multiple’.
+   • ‘consult-line-multi’: Search dynamically across multiple buffers.
+     By default search across project buffers.  If invoked with a prefix
+     argument search across all buffers.  The candidates are computed on
+     demand based on the input.  The command behaves like
+     ‘consult-grep’, but operates on buffers instead of files.
    • ‘consult-keep-lines’: Replacement for ‘keep/flush-lines’ which uses
      the current completion style for filtering the buffer.  The
      function updates the buffer while typing.  In particular
@@ -281,9 +277,9 @@ File: consult.info,  Node: Search,  Next: Grep and Find,  Prev: Navigation,  Up:
      region restricts the filtering.
 
 
-File: consult.info,  Node: Grep and Find,  Next: Compilation,  Prev: Search,  Up: Available commands
+File: docuMwWvw.info,  Node: Grep and Find,  Next: Compilation,  Prev: Search,  Up: Available commands
 
-2.6 Grep and Find
+1.6 Grep and Find
 =================
 
    • ‘consult-grep’, ‘consult-ripgrep’, ‘consult-git-grep’: Search for
@@ -306,23 +302,24 @@ File: consult.info,  Node: Grep and Find,  Next: Compilation,  Prev: Search,  Up
      returns non-nil, ‘consult-grep’ searches the current project
      directory.  Otherwise the ‘default-directory’ is searched.  If
      ‘consult-grep’ is invoked with prefix argument ‘C-u M-s g’, you can
-     specify the directory manually.
+     specify one or more comma-separated files and directories manually.
    • ‘consult-find’, ‘consult-locate’: Find file by matching the path
-     against a regexp.  Like for ‘consult-grep,’ either the project root
+     against a regexp.  Like for ‘consult-grep’, either the project root
      or the current directory is the root directory for the search.  The
      input string is treated similarly to ‘consult-grep’, where the
      first part is passed to find, and the second part is used for Emacs
-     filtering.
+     filtering.  Prefix arguments to ‘consult-find’ work just like those
+     for the consult grep commands.
 
 
-File: consult.info,  Node: Compilation,  Next: Histories,  Prev: Grep and Find,  Up: Available commands
+File: docuMwWvw.info,  Node: Compilation,  Next: Histories,  Prev: Grep and Find,  Up: Available commands
 
-2.7 Compilation
+1.7 Compilation
 ===============
 
    • ‘consult-compile-error’: Jump to a compilation error.  Supports
      live preview narrowing and recursive editing.
-   • ‘consult-flymake’: Jump to flymake diagnostic.  Supports live
+   • ‘consult-flymake’: Jump to Flymake diagnostic.  Supports live
      preview and recursive editing.  The command supports narrowing.
      Press ‘e SPC’, ‘w SPC’, ‘n SPC’ to only show errors, warnings and
      notes respectively.
@@ -330,9 +327,9 @@ File: consult.info,  Node: Compilation,  Next: Histories,  Prev: Grep and Find, 
      ‘xref-show-xrefs-function’ and ‘xref-show-definitions-function’.
 
 
-File: consult.info,  Node: Histories,  Next: Modes,  Prev: Compilation,  Up: Available commands
+File: docuMwWvw.info,  Node: Histories,  Next: Modes,  Prev: Compilation,  Up: Available commands
 
-2.8 Histories
+1.8 Histories
 =============
 
    • ‘consult-complex-command’: Select a command from the
@@ -353,9 +350,9 @@ File: consult.info,  Node: Histories,  Next: Modes,  Prev: Compilation,  Up: Ava
      ‘isearch-edit-string’.
 
 
-File: consult.info,  Node: Modes,  Next: Org Mode,  Prev: Histories,  Up: Available commands
+File: docuMwWvw.info,  Node: Modes,  Next: Org Mode,  Prev: Histories,  Up: Available commands
 
-2.9 Modes
+1.9 Modes
 =========
 
    • ‘consult-minor-mode-menu’: Enable/disable minor mode.  Supports
@@ -366,9 +363,9 @@ File: consult.info,  Node: Modes,  Next: Org Mode,  Prev: Histories,  Up: Availa
      local-minor/global-minor/major mode via the keys ‘l/g/m’.
 
 
-File: consult.info,  Node: Org Mode,  Next: Miscellaneous,  Prev: Modes,  Up: Available commands
+File: docuMwWvw.info,  Node: Org Mode,  Next: Help,  Prev: Modes,  Up: Available commands
 
-2.10 Org Mode
+1.10 Org Mode
 =============
 
    • ‘consult-org-heading’: Similar to ‘consult-outline’, for Org
@@ -379,19 +376,41 @@ File: consult.info,  Node: Org Mode,  Next: Miscellaneous,  Prev: Modes,  Up: Av
      live preview and recursive editing.
 
 
-File: consult.info,  Node: Miscellaneous,  Prev: Org Mode,  Up: Available commands
+File: docuMwWvw.info,  Node: Help,  Next: Miscellaneous,  Prev: Org Mode,  Up: Available commands
 
-2.11 Miscellaneous
-==================
+1.11 Help
+=========
 
-   • ‘consult-apropos’: Replacement for ‘apropos’ with completion.  As a
-     better alternative, you can run ‘embark-export’ from commands like
-     ‘M-x’ or ‘describe-symbol’.
    • ‘consult-man’: Find Unix man page, via Unix ‘apropos’ or ‘man -k’.
      ‘consult-man’ opens the selected man page using the Emacs ‘man’
      command.
-   • ‘consult-file-externally’: Select a file and open it externally,
-     e.g. using ‘xdg-open’ on Linux.
+   • ‘consult-info’: Full text search through info pages.  If the
+     command is invoked from within an ‘*info*’ buffer, it will search
+     through the current manual.  You may want to create your own
+     commands which search through a predefined set of info pages, for
+     example:
+     (defun consult-info-emacs ()
+       "Search through Emacs info pages."
+       (interactive)
+       (consult-info "emacs" "efaq" "elisp" "cl" "compat"))
+
+     (defun consult-info-org ()
+       "Search through the Org info page."
+       (interactive)
+       (consult-info "org"))
+
+     (defun consult-info-completion ()
+       "Search through completion info pages."
+       (interactive)
+       (consult-info "vertico" "consult" "marginalia" "orderless" "embark"
+                     "corfu" "cape" "tempel"))
+
+
+File: docuMwWvw.info,  Node: Miscellaneous,  Prev: Help,  Up: Available commands
+
+1.12 Miscellaneous
+==================
+
    • ‘consult-theme’: Select a theme and disable all currently enabled
      themes.  Supports live preview of the theme while scrolling through
      the candidates.
@@ -404,9 +423,7 @@ File: consult.info,  Node: Miscellaneous,  Prev: Org Mode,  Up: Available comman
      (https://github.com/minad/corfu) as your in-buffer completion UI,
      this function can be set as ‘completion-in-region-function’.  Then
      your minibuffer completion UI (e.g., Vertico or Icomplete) will be
-     used for ‘completion-at-point’.  Note that Selectrum provides its
-     own variant of ‘consult-completion-in-region’.  If you use Mct, you
-     may want to try ‘mct-region-mode’ instead.
+     used for ‘completion-at-point’.
           ;; Use `consult-completion-in-region' if Vertico is enabled.
           ;; Otherwise use the default `completion--in-region' function.
           (setq completion-in-region-function
@@ -429,9 +446,9 @@ File: consult.info,  Node: Miscellaneous,  Prev: Org Mode,  Up: Available comman
      the original buffer.
 
 
-File: consult.info,  Node: Special features,  Next: Configuration,  Prev: Available commands,  Up: Top
+File: docuMwWvw.info,  Node: Special features,  Next: Configuration,  Prev: Available commands,  Up: Top
 
-3 Special features
+2 Special features
 ******************
 
 Consult enhances ‘completing-read’ with live previews of candidates,
@@ -453,9 +470,9 @@ advanced features.
 * Embark integration::           Actions, Grep/Occur-buffer export
 
 
-File: consult.info,  Node: Live previews,  Next: Narrowing and grouping,  Up: Special features
+File: docuMwWvw.info,  Node: Live previews,  Next: Narrowing and grouping,  Up: Special features
 
-3.1 Live previews
+2.1 Live previews
 =================
 
 Some Consult commands support live previews.  For example when you
@@ -475,47 +492,63 @@ with its own ‘:preview-key’.  The following settings are possible:
 
    • Automatic and immediate ‘'any’
    • Automatic and delayed ‘(list :debounce 0.5 'any)’
-   • Manual and immediate ‘(kbd "M-.")’
-   • Manual and delayed ‘(list :debounce 0.5 (kbd "M-."))’
+   • Manual and immediate ‘"M-."’
+   • Manual and delayed ‘(list :debounce 0.5 "M-.")’
    • Disabled ‘nil’
 
    A safe recommendation is to leave automatic immediate previews
-enabled in general and disable the automatic preview only for commands,
-where the preview may be expensive due to file loading.
+enabled in general and disable the automatic preview only for commands
+where the preview may be expensive due to file loading.  Internally,
+Consult uses the value of ‘this-command’ to determine the ‘:preview-key’
+customized.  This means that if you wrap a ‘consult-*’ command within
+your own function or command, you will also need to add the name of
+_your custom command_ to the ‘consult-customize’ call in order for it to
+be considered.
 
      (consult-customize
       consult-ripgrep consult-git-grep consult-grep
       consult-bookmark consult-recent-file consult-xref
-      consult--source-bookmark consult--source-recent-file
-      consult--source-project-recent-file
-      ;; :preview-key '(:debounce 0.2 any) ;; Option 1: Delay preview
-      :preview-key (kbd "M-."))            ;; Option 2: Manual preview
+      consult--source-bookmark consult--source-file-register
+      consult--source-recent-file consult--source-project-recent-file
+      ;; my/command-wrapping-consult    ;; disable auto previews inside my command
+      :preview-key '(:debounce 0.4 any) ;; Option 1: Delay preview
+      ;; :preview-key "M-.")            ;; Option 2: Manual preview
 
    In this case one may wonder what the difference is between using an
 Embark action on the current candidate in comparison to a manually
 triggered preview.  The main difference is that the files opened by
-manual preview are closed again after the completion session.
-Furthermore during preview some functionality is disabled to improve the
-performance, see for example the customization variables
-‘consult-preview-allowed-hooks’ and ‘consult-preview-variables’.  Files
-larger than ‘consult-preview-raw-size’ are previewed literally without
-syntax highlighting and without changing the major mode.  Delaying the
-preview is also useful for ‘consult-theme’, since the theme preview is
-slow.  The delay results in a smoother UI experience.
+manual preview are closed again after the completion session.  During
+preview some functionality is disabled to improve the performance, see
+for example the customization variables ‘consult-preview-variables’ and
+‘consult-preview-allowed-hooks’.  Only the hooks listed in
+‘consult-preview-allowed-hooks’ are executed when a file is opened
+(‘find-file-hook’).  In order to enable additional font locking during
+preview, add the corresponding hooks to the allow list.  The following
+code demonstrates this for org-modern
+(https://github.com/minad/org-modern) and hl-todo
+(https://github.com/tarsius/hl-todo).
+
+     (add-to-list 'consult-preview-allowed-hooks 'global-org-modern-mode-check-buffers)
+     (add-to-list 'consult-preview-allowed-hooks 'global-hl-todo-mode-check-buffers)
+
+   Files larger than ‘consult-preview-raw-size’ are previewed literally
+without syntax highlighting and without changing the major mode.
+Delaying the preview is also useful for ‘consult-theme’, since the theme
+preview is slow.  The delay results in a smoother UI experience.
 
      ;; Preview on any key press, but delay 0.5s
      (consult-customize consult-theme :preview-key '(:debounce 0.5 any))
      ;; Preview immediately on M-., on up/down after 0.5s, on any other key after 1s
      (consult-customize consult-theme
                         :preview-key
-                        (list (kbd "M-.")
-                              :debounce 0.5 (kbd "<up>") (kbd "<down>")
-                              :debounce 1 'any))
+                        '("M-."
+                          :debounce 0.5 "<up>" "<down>"
+                          :debounce 1 any))
 
 
-File: consult.info,  Node: Narrowing and grouping,  Next: Asynchronous search,  Prev: Live previews,  Up: Special features
+File: docuMwWvw.info,  Node: Narrowing and grouping,  Next: Asynchronous search,  Prev: Live previews,  Up: Special features
 
-3.2 Narrowing and grouping
+2.2 Narrowing and grouping
 ==========================
 
 Consult has special support for candidate groups.  If the completion UI
@@ -548,9 +581,9 @@ keys are automatically shown in the which-key window after pressing the
 ‘consult-narrow-key’.
 
 
-File: consult.info,  Node: Asynchronous search,  Next: Multiple sources,  Prev: Narrowing and grouping,  Up: Special features
+File: docuMwWvw.info,  Node: Asynchronous search,  Next: Multiple sources,  Prev: Narrowing and grouping,  Up: Special features
 
-3.3 Asynchronous search
+2.3 Asynchronous search
 =======================
 
 Consult has support for asynchronous generation of candidate lists.
@@ -614,9 +647,9 @@ status:
      provided.
 
 
-File: consult.info,  Node: Multiple sources,  Next: Embark integration,  Prev: Asynchronous search,  Up: Special features
+File: docuMwWvw.info,  Node: Multiple sources,  Next: Embark integration,  Prev: Asynchronous search,  Up: Special features
 
-3.4 Multiple sources
+2.4 Multiple sources
 ====================
 
 Multiple synchronous candidate sources can be combined.  This feature is
@@ -674,17 +707,18 @@ which takes an ACTION and a CANDIDATE argument.  See the docstring of
 ‘consult--with-preview’ for more details about the ACTION argument.
 
    By default, ‘consult-buffer’ previews buffers, bookmarks and files.
-Loading recent files, bookmarks or views can result in expensive
-operations.  However it is possible to configure a manual preview as
-follows.
+Loading recent files or bookmarks can result in expensive operations.
+However it is possible to configure a manual preview as follows.
 
      (consult-customize
-      consult--source-bookmark consult--source-recent-file
-      consult--source-project-recent-file :preview-key (kbd "M-."))
+      consult--source-bookmark consult--source-file-register
+      consult--source-recent-file consult--source-project-recent-file
+      :preview-key "M-.")
 
    Sources can be added directly to the ‘consult-buffer-source’ list for
-convenience.  For example views can be added to the list of virtual
-buffers from a library like <https://github.com/minad/bookmark-view/>.
+convenience.  For example views/perspectives can be added to the list of
+virtual buffers from a library like bookmark-view
+(https://github.com/minad/bookmark-view/).
 
      ;; Configure new bookmark-view source
      (add-to-list 'consult-buffer-sources
@@ -742,9 +776,9 @@ used to create new multi-source commands, but is part of the internal
 API as of now, since some details may still change.
 
 
-File: consult.info,  Node: Embark integration,  Prev: Multiple sources,  Up: Special features
+File: docuMwWvw.info,  Node: Embark integration,  Prev: Multiple sources,  Up: Special features
 
-3.5 Embark integration
+2.5 Embark integration
 ======================
 
 *NOTE*: Install the ‘embark-consult’ package from MELPA, which provides
@@ -786,13 +820,13 @@ package is installed.  These three workflows are symmetric.
      ‘wdired-change-to-wdired-mode’ for editing.
 
 
-File: consult.info,  Node: Configuration,  Next: Recommended packages,  Prev: Special features,  Up: Top
+File: docuMwWvw.info,  Node: Configuration,  Next: Recommended packages,  Prev: Special features,  Up: Top
 
-4 Configuration
+3 Configuration
 ***************
 
 Consult can be installed from ELPA
-(http://elpa.gnu.org/packages/consult.html) or MELPA
+(https://elpa.gnu.org/packages/consult.html) or MELPA
 (https://melpa.org/#/consult) via the Emacs built-in package manager.
 Alternatively it can be directly installed from the development
 repository via other non-standard package managers.
@@ -813,9 +847,9 @@ For this reason many Consult-related snippets require lexical binding.
 * Fine-tuning::                  Fine-grained configuration for special requirements
 
 
-File: consult.info,  Node: Use-package example,  Next: Custom variables,  Up: Configuration
+File: docuMwWvw.info,  Node: Use-package example,  Next: Custom variables,  Up: Configuration
 
-4.1 Use-package example
+3.1 Use-package example
 =======================
 
 The Consult package only provides commands and does not add any
@@ -834,11 +868,14 @@ additional configuration examples.
      ;; Example configuration for Consult
      (use-package consult
        ;; Replace bindings. Lazily loaded due by `use-package'.
-       :bind (;; C-c bindings (mode-specific-map)
+       :bind (;; C-c bindings in `mode-specific-map'
+              ("C-c M-x" . consult-mode-command)
               ("C-c h" . consult-history)
-              ("C-c m" . consult-mode-command)
               ("C-c k" . consult-kmacro)
-              ;; C-x bindings (ctl-x-map)
+              ("C-c m" . consult-man)
+              ("C-c i" . consult-info)
+              ([remap Info-search] . consult-info)
+              ;; C-x bindings in `ctl-x-map'
               ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
               ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
               ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
@@ -851,8 +888,7 @@ additional configuration examples.
               ("C-M-#" . consult-register)
               ;; Other custom bindings
               ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-              ("<help> a" . consult-apropos)            ;; orig. apropos-command
-              ;; M-g bindings (goto-map)
+              ;; M-g bindings in `goto-map'
               ("M-g e" . consult-compile-error)
               ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
               ("M-g g" . consult-goto-line)             ;; orig. goto-line
@@ -862,7 +898,7 @@ additional configuration examples.
               ("M-g k" . consult-global-mark)
               ("M-g i" . consult-imenu)
               ("M-g I" . consult-imenu-multi)
-              ;; M-s bindings (search-map)
+              ;; M-s bindings in `search-map'
               ("M-s d" . consult-find)
               ("M-s D" . consult-locate)
               ("M-s g" . consult-grep)
@@ -870,7 +906,6 @@ additional configuration examples.
               ("M-s r" . consult-ripgrep)
               ("M-s l" . consult-line)
               ("M-s L" . consult-line-multi)
-              ("M-s m" . consult-multi-occur)
               ("M-s k" . consult-keep-lines)
               ("M-s u" . consult-focus-lines)
               ;; Isearch integration
@@ -913,22 +948,22 @@ additional configuration examples.
        ;; Optionally configure preview. The default value
        ;; is 'any, such that any key triggers the preview.
        ;; (setq consult-preview-key 'any)
-       ;; (setq consult-preview-key (kbd "M-."))
-       ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+       ;; (setq consult-preview-key "M-.")
+       ;; (setq consult-preview-key '("S-<down>" "S-<up>"))
        ;; For some commands and buffer sources it is useful to configure the
        ;; :preview-key on a per-command basis using the `consult-customize' macro.
        (consult-customize
-        consult-theme
-        :preview-key '(:debounce 0.2 any)
+        consult-theme :preview-key '(:debounce 0.2 any)
         consult-ripgrep consult-git-grep consult-grep
         consult-bookmark consult-recent-file consult-xref
-        consult--source-bookmark consult--source-recent-file
-        consult--source-project-recent-file
-        :preview-key (kbd "M-."))
+        consult--source-bookmark consult--source-file-register
+        consult--source-recent-file consult--source-project-recent-file
+        ;; :preview-key "M-."
+        :preview-key '(:debounce 0.4 any))
 
        ;; Optionally configure the narrowing key.
        ;; Both < and C-+ work reasonably well.
-       (setq consult-narrow-key "<") ;; (kbd "C-+")
+       (setq consult-narrow-key "<") ;; "C-+"
 
        ;; Optionally make narrowing help available in the minibuffer.
        ;; You may want to use `embark-prefix-help-command' or which-key instead.
@@ -936,22 +971,23 @@ additional configuration examples.
 
        ;; By default `consult-project-function' uses `project-root' from project.el.
        ;; Optionally configure a different project root function.
-       ;; There are multiple reasonable alternatives to chose from.
        ;;;; 1. project.el (the default)
        ;; (setq consult-project-function #'consult--default-project--function)
-       ;;;; 2. projectile.el (projectile-project-root)
+       ;;;; 2. vc.el (vc-root-dir)
+       ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
+       ;;;; 3. locate-dominating-file
+       ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+       ;;;; 4. projectile.el (projectile-project-root)
        ;; (autoload 'projectile-project-root "projectile")
        ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
-       ;;;; 3. vc.el (vc-root-dir)
-       ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-       ;;;; 4. locate-dominating-file
-       ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+       ;;;; 5. No project support
+       ;; (setq consult-project-function nil)
      )
 
 
-File: consult.info,  Node: Custom variables,  Next: Fine-tuning,  Prev: Use-package example,  Up: Configuration
+File: docuMwWvw.info,  Node: Custom variables,  Next: Fine-tuning,  Prev: Use-package example,  Up: Configuration
 
-4.2 Custom variables
+3.2 Custom variables
 ====================
 
 *TIP:* If you have Marginalia (https://github.com/minad/marginalia)
@@ -981,15 +1017,16 @@ consult-grep-max-columns           Maximal number of columns of the matching lin
 consult-grep-args                  Command line arguments for grep
 consult-imenu-config               Mode-specific configuration for ‘consult-imenu’
 consult-line-numbers-widen         Show absolute line numbers when narrowing is active.
-consult-line-point-placement       Placement of the point used by ‘consult-line’
 consult-line-start-from-top        Start the ‘consult-line’ search from the top
 consult-locate-args                Command line arguments for locate
 consult-man-args                   Command line arguments for man
 consult-mode-command-filter        Filter for ‘consult-mode-command’
 consult-mode-histories             Mode-specific history variables
 consult-narrow-key                 Narrowing prefix key during completion
+consult-point-placement            Placement of the point when jumping to matches
 consult-preview-key                Keys which triggers preview
 consult-preview-allowed-hooks      List of ‘find-file’ hooks to enable during preview
+consult-preview-excluded-files     Regexps matched against file names during preview
 consult-preview-max-count          Maximum number of files to keep open during preview
 consult-preview-max-size           Files larger than this size are not previewed
 consult-preview-raw-size           Files larger than this size are previewed in raw form
@@ -1000,11 +1037,12 @@ consult-register-prefix            Prefix string for register keys during comple
 consult-ripgrep-args               Command line arguments for ripgrep
 consult-themes                     List of themes to be presented for selection
 consult-widen-key                  Widening key during completion
+consult-yank-rotate                Rotate kill ring
 
 
-File: consult.info,  Node: Fine-tuning,  Prev: Custom variables,  Up: Configuration
+File: docuMwWvw.info,  Node: Fine-tuning,  Prev: Custom variables,  Up: Configuration
 
-4.3 Fine-tuning of individual commands
+3.3 Fine-tuning of individual commands
 ======================================
 
 *NOTE:* Consult supports fine-grained customization of individual
@@ -1015,11 +1053,9 @@ configuration examples.
 
    Commands and buffer sources allow flexible, individual customization
 by using the ‘consult-customize’ macro.  You can override any option
-passed to the internal ‘consult--read’ API.  The Consult wiki
-(https://github.com/minad/consult/wiki) already contains a numerous
-useful configuration examples.  Note that since ‘consult--read’ is part
-of the internal API, options could be removed, replaced or renamed in
-future versions of the package.
+passed to the internal ‘consult--read’ API.  Note that since
+‘consult--read’ is part of the internal API, options could be removed,
+replaced or renamed in future versions of the package.
 
    Useful options are:
    • ‘:prompt’ set the prompt string
@@ -1038,17 +1074,17 @@ future versions of the package.
       ;; Disable preview for `consult-theme' completely.
       consult-theme :preview-key nil
       ;; Set preview for `consult-buffer' to key `M-.'
-      consult-buffer :preview-key (kbd "M-.")
+      consult-buffer :preview-key "M-."
       ;; For `consult-line' change the prompt and specify multiple preview
       ;; keybindings. Note that you should bind <S-up> and <S-down> in the
       ;; `minibuffer-local-completion-map' or `vertico-map' to the commands which
       ;; select the previous or next candidate.
       consult-line :prompt "Search: "
-      :preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+      :preview-key '("S-<down>" "S-<up>"))
 
    The configuration values are evaluated at runtime, just before the
 completion session is started.  Therefore you can use for example
-‘thing-at-point’ to adjust the initial input or the future hitory.
+‘thing-at-point’ to adjust the initial input or the future history.
 
      (consult-customize
       consult-line
@@ -1073,9 +1109,9 @@ by the following techniques:
   5. Write or propose a patch.
 
 
-File: consult.info,  Node: Recommended packages,  Next: Bug reports,  Prev: Configuration,  Up: Top
+File: docuMwWvw.info,  Node: Recommended packages,  Next: Auxiliary packages,  Prev: Configuration,  Up: Top
 
-5 Recommended packages
+4 Recommended packages
 **********************
 
 I use and recommend this combination of packages:
@@ -1092,45 +1128,72 @@ I use and recommend this combination of packages:
 
    There exist many other fine completion UIs beside Vertico, which are
 supported by Consult.  Give them a try and find out which interaction
-model fits best for you!
+model fits best for you.
 
    • The builtin completion UI, which pops up the ‘*Completions*’
      buffer.
+   • The builtin ‘icomplete-vertical-mode’ in Emacs 28.
    • mct by Protesilaos Stavrou (https://git.sr.ht/~protesilaos/mct):
      Minibuffer and Completions in Tandem, which builds on the default
-     completion UI.
-   • selectrum by Radon Rosborough
-     (https://github.com/raxod502/selectrum): Alternative vertical
-     completion system.
-   • icomplete-vertical by Omar Antolín Camarena
-     (https://github.com/oantolin/icomplete-vertical): Vertical
-     completion system based on Icomplete.  Icomplete-vertical is only
-     needed for Emacs 27, built-in on Emacs 28.
+     completion UI (development currently discontinued
+     (https://protesilaos.com/codelog/2022-04-14-emacs-discontinue-mct/)).
 
-   You can integrated Consult with special programs or with other
-packages in the wider Emacs ecosystem.  You may want to install some of
-theses packages depending on your preferences and requirements.
+   Note that all packages are independent and can be exchanged with
+alternative components, since there exist no hard dependencies.
+Furthermore it is possible to get started with only default completion
+and Consult and add more components later to the mix.  For example you
+can omit Marginalia if you don’t need annotations.  I highly recommend
+the Embark package, but in order to familiarize yourself with the other
+components, you can first start without it - or you could use with
+Embark right away and add the other components later on.
+
+
+File: docuMwWvw.info,  Node: Auxiliary packages,  Next: Bug reports,  Prev: Recommended packages,  Up: Top
+
+5 Auxiliary packages
+********************
+
+You can integrate Consult with special programs or with other packages
+in the wider Emacs ecosystem.  You may want to install some of theses
+packages depending on your preferences and requirements.
 
    • consult-ag (https://github.com/yadex205/consult-ag): Support for
      the Silver Searcher (https://github.com/ggreer/the_silver_searcher)
      in the style of ‘consult-grep’.
+   • consult-codesearch
+     (https://github.com/youngker/consult-codesearch.el): Integration
+     with Code Search (https://github.com/google/codesearch).
    • consult-company (https://github.com/mohkale/consult-company):
      Completion at point using the Company
      (https://github.com/company-mode/company-mode) backends.
+   • consult-compile-multi
+     (https://github.com/mohkale/consult-compile-multi): Integration
+     with compile-multi (https://github.com/mohkale/compile-multi).
    • consult-dir (https://github.com/karthink/consult-dir): Directory
      jumper using Consult multi sources.
+   • consult-dash (https://codeberg.org/ravi/consult-dash): Consult
+     interface to Dash documentation
+     (https://github.com/dash-docs-el/dash-docs)
    • consult-eglot (https://github.com/mohkale/consult-eglot):
      Integration with Eglot (LSP client).
    • consult-flycheck (https://github.com/minad/consult-flycheck):
      Additional Flycheck integration.
    • consult-flyspell (https://gitlab.com/OlMon/consult-flyspell):
      Additional Flyspell integration.
+   • consult-git-log-grep
+     (https://github.com/ghosty141/consult-git-log-grep): Consult
+     interface to git log.
+   • consult-hatena-bookmark
+     (https://github.com/Nyoho/consult-hatena-bookmark): Access Hatena
+     bookmarks.
    • consult-ls-git (https://github.com/rcj/consult-ls-git): List files
      from git via Consult.
    • consult-lsp (https://github.com/gagbo/consult-lsp): Integration
      with Lsp-mode (LSP client).
    • consult-notmuch (https://codeberg.org/jao/consult-notmuch): Access
      the Notmuch (https://notmuchmail.org/) email system using Consult.
+   • consult-notes (https://github.com/mclear-tools/consult-notes):
+     Searching notes with Consult.
    • consult-org-roam (https://github.com/jgru/consult-org-roam):
      Integration with Org-roam (https://github.com/org-roam/org-roam).
    • consult-project-extra
@@ -1173,20 +1236,13 @@ follow a similar spirit or offer functionality based on
    • wgrep (https://github.com/mhayashi1120/Emacs-wgrep): Editing of
      grep buffers, use together with ‘consult-grep’ via ‘embark-export’.
    • all-the-icons-completion
-     (https://github.com/iyefrat/all-the-icons-completion): Icons for
-     the completion UI.
-
-   Note that all packages are independent and can be exchanged with
-alternative components, since there exist no hard dependencies.
-Furthermore it is possible to get started with only default completion
-and Consult and add more components later to the mix.  For example you
-can omit Marginalia if you don’t need annotations.  I highly recommend
-the Embark package, but in order to familarize yourself with the other
-components, you can first start without it - or you could use with
-Embark right away and add the other components later on.
+     (https://github.com/iyefrat/all-the-icons-completion),
+     nerd-icons-completion
+     (https://github.com/rainstormstudio/nerd-icons-completion): Icons
+     for the completion UI.
 
 
-File: consult.info,  Node: Bug reports,  Next: Contributions,  Prev: Recommended packages,  Up: Top
+File: docuMwWvw.info,  Node: Bug reports,  Next: Contributions,  Prev: Auxiliary packages,  Up: Top
 
 6 Bug reports
 *************
@@ -1194,17 +1250,22 @@ File: consult.info,  Node: Bug reports,  Next: Contributions,  Prev: Recommended
 If you find a bug or suspect that there is a problem with Consult,
 please carry out the following steps:
 
-  1. *Update all the relevant packages to the newest version*.  This
-     includes Consult, Vertico or other completion UIs, Marginalia,
-     Embark and Orderless.
-  2. Either use the default completion UI or ensure that exactly one of
-     ‘vertico-mode’, ‘mct-mode’, ‘selectrum-mode’, or ‘icomplete-mode’
-     is enabled.  The unsupported modes ‘ivy-mode’, ‘helm-mode’ and
-     ‘ido-ubiquitous-mode’ must be disabled.
-  3. Ensure that the ‘completion-styles’ variable is properly
+  1. *Search through the issue tracker* if your issue has been reported
+     before (and has been resolved eventually) in the meantime.
+  2. *Remove all packages involved in the suspected bug from your
+     installation.*
+  3. *Reinstall the newest version of all relevant packages*.  Updating
+     alone is not sufficient, since package.el is known to cause
+     miscompilation.  The list of packages includes Consult, Compat,
+     Vertico or other completion UIs, Marginalia, Embark and Orderless.
+  4. Either use the default completion UI or ensure that exactly one of
+     ‘vertico-mode’, ‘mct-mode’, or ‘icomplete-mode’ is enabled.  The
+     unsupported modes ‘selectrum-mode’, ‘ivy-mode’, ‘helm-mode’,
+     ‘ido-mode’ and ‘ido-ubiquitous-mode’ must be disabled.
+  5. Ensure that the ‘completion-styles’ variable is properly
      configured.  Try to set ‘completion-styles’ to a list including
      ‘substring’ or ‘orderless’.
-  4. Try to reproduce the issue by starting a bare bone Emacs instance
+  6. Try to reproduce the issue by starting a bare bone Emacs instance
      with ‘emacs -Q’ on the command line.  Execute the following minimal
      code snippets in the scratch buffer.  This way we can exclude side
      effects due to configuration settings.  If other packages are
@@ -1227,8 +1288,7 @@ please carry out the following steps:
 report:
 
    • The minimal configuration snippet used to reproduce the issue.
-   • Your completion UI (Default completion, Vertico, Mct, Selectrum or
-     Icomplete).
+   • Your completion UI (Default completion, Vertico, Mct or Icomplete).
    • A stack trace in case the bug triggers an exception.
    • Your Emacs version, since bugs may be fixed or introduced in newer
      versions.
@@ -1249,7 +1309,7 @@ lexical binding
 Consult often relies on lambdas and lexical closures.
 
 
-File: consult.info,  Node: Contributions,  Next: Acknowledgments,  Prev: Bug reports,  Up: Top
+File: docuMwWvw.info,  Node: Contributions,  Next: Acknowledgments,  Prev: Bug reports,  Up: Top
 
 7 Contributions
 ***************
@@ -1257,7 +1317,7 @@ File: consult.info,  Node: Contributions,  Next: Acknowledgments,  Prev: Bug rep
 Consult is a community effort, please participate in the discussions.
 Contributions are welcome, but you may want to discuss potential
 contributions first.  Since this package is part of GNU ELPA
-(http://elpa.gnu.org/packages/consult.html) contributions require a
+(https://elpa.gnu.org/packages/consult.html) contributions require a
 copyright assignment to the FSF.
 
    If you have a proposal, take a look at the Consult issue tracker
@@ -1269,23 +1329,21 @@ contribute to the Consult wiki (https://github.com/minad/consult/wiki),
 in case you want to share small configuration or command snippets.
 
 
-File: consult.info,  Node: Acknowledgments,  Next: Indices,  Prev: Contributions,  Up: Top
+File: docuMwWvw.info,  Node: Acknowledgments,  Next: Indices,  Prev: Contributions,  Up: Top
 
 8 Acknowledgments
 *****************
 
-You probably guessed from the name that this package took inspiration
-from Counsel (https://github.com/abo-abo/swiper#counsel) by Oleh Krehel.
-Some of the Consult commands originated in the Counsel package or the
-Selectrum wiki
-(https://github.com/raxod502/selectrum/wiki/Useful-Commands).  The
-commands have been rewritten and greatly enhanced in comparison to the
-original versions.
+This package took inspiration from Counsel
+(https://github.com/abo-abo/swiper#counsel) by Oleh Krehel.  Some of the
+Consult commands originated in the Counsel package or the wiki of the
+Selectrum package.  This package exists only thanks to the help of these
+great contributors and thanks to the feedback of many users.  Thank you!
 
    Code contributions:
    • Omar Antolín Camarena (https://github.com/oantolin/)
    • Sergey Kostyaev (https://github.com/s-kostyaev/)
-   • okamsn (https://github.com/okamsn/)
+   • Earl Hyatt (https://github.com/okamsn/)
    • Clemens Radermacher (https://github.com/clemera/)
    • Tom Fitzhenry (https://github.com/tomfitzhenry/)
    • jakanakaevangeli (https://github.com/jakanakaevangeli)
@@ -1298,6 +1356,12 @@ original versions.
    • Mohamed Abdelnour (https://github.com/mohamed-abdelnour)
    • Sylvain Rousseau (https://github.com/thisirs)
    • J.D.  Smith (https://github.com/jdtsmith)
+   • Mohsin Kaleem (https://github.com/mohkale)
+   • Jean-Philippe Bernardy (https://github.com/jyp)
+   • Aymeric Agon-Rambosson (https://github.com/aagon)
+   • Geoffrey Lessel (https://github.com/geolessel)
+   • Piotr Kwiecinski (https://github.com/piotrkwiecinski)
+   • Robert Weiner (https://github.com/rswgnu)
 
    Advice and useful discussions:
    • Clemens Radermacher (https://github.com/clemera/)
@@ -1314,6 +1378,7 @@ original versions.
    • Bruce d’Arcus (https://github.com/bdarcus)
    • J.D.  Smith (https://github.com/jdtsmith)
    • Enrique Kessler Martínez (https://github.com/Qkessler)
+   • Radon Rosborough (https://github.com/raxod502)
 
    Authors of supplementary ‘consult-*’ packages:
 
@@ -1326,7 +1391,8 @@ original versions.
    • Karthik Chikmagalur (https://github.com/karthink) (consult-dir
      (https://github.com/karthink/consult-dir))
    • Mohsin Kaleem (https://github.com/mohkale) (consult-company
-     (https://github.com/mohkale/consult-company), consult-eglot
+     (https://github.com/mohkale/consult-company), consult-compile-multi
+     (https://github.com/mohkale/consult-compile-multi), consult-eglot
      (https://github.com/mohkale/consult-eglot), consult-yasnippet
      (https://github.com/mohkale/consult-yasnippet))
    • Marco Pawłowski (https://gitlab.com/OlMon) (consult-flyspell
@@ -1341,9 +1407,20 @@ original versions.
      (https://github.com/yadex205/consult-ag))
    • Robin Joy (https://github.com/rcj) (consult-ls-git
      (https://github.com/rcj/consult-ls-git))
+   • Ravi R Kiran (https://codeberg.org/ravi) (consult-dash
+     (https://codeberg.org/ravi/consult-dash))
+   • Colin McLear (https://github.com/mclearc) (consult-notes
+     (https://github.com/mclear-tools/consult-notes))
+   • Yukinori Kitadai (https://github.com/Nyoho)
+     (consult-hatena-bookmark
+     (https://github.com/Nyoho/consult-hatena-bookmark))
+   • ghosty141 (https://github.com/ghosty141) (consult-git-log-grep
+     (https://github.com/ghosty141/consult-git-log-grep))
+   • YoungJoo Lee (https://github.com/youngker) (consult-codesearch
+     (https://github.com/youngker/consult-codesearch.el))
 
 
-File: consult.info,  Node: Indices,  Prev: Acknowledgments,  Up: Top
+File: docuMwWvw.info,  Node: Indices,  Prev: Acknowledgments,  Up: Top
 
 9 Indices
 *********
@@ -1354,7 +1431,7 @@ File: consult.info,  Node: Indices,  Prev: Acknowledgments,  Up: Top
 * Concept index::                List of all Consult-specific concepts
 
 
-File: consult.info,  Node: Function index,  Next: Concept index,  Up: Indices
+File: docuMwWvw.info,  Node: Function index,  Next: Concept index,  Up: Indices
 
 9.1 Function index
 ==================
@@ -1362,7 +1439,6 @@ File: consult.info,  Node: Function index,  Next: Concept index,  Up: Indices
  [index ]
 * Menu:
 
-* consult-apropos:                       Miscellaneous.         (line 6)
 * consult-bookmark:                      Virtual Buffers.       (line 6)
 * consult-buffer:                        Virtual Buffers.       (line 6)
 * consult-buffer-other-frame:            Virtual Buffers.       (line 6)
@@ -1370,7 +1446,6 @@ File: consult.info,  Node: Function index,  Next: Concept index,  Up: Indices
 * consult-compile-error:                 Compilation.           (line 6)
 * consult-completion-in-region:          Miscellaneous.         (line 6)
 * consult-complex-command:               Histories.             (line 6)
-* consult-file-externally:               Miscellaneous.         (line 6)
 * consult-find:                          Grep and Find.         (line 6)
 * consult-flymake:                       Compilation.           (line 6)
 * consult-focus-lines:                   Search.                (line 6)
@@ -1381,17 +1456,17 @@ File: consult.info,  Node: Function index,  Next: Concept index,  Up: Indices
 * consult-history:                       Histories.             (line 6)
 * consult-imenu:                         Navigation.            (line 6)
 * consult-imenu-multi:                   Navigation.            (line 6)
+* consult-info:                          Help.                  (line 6)
 * consult-isearch-history:               Histories.             (line 6)
 * consult-keep-lines:                    Search.                (line 6)
 * consult-kmacro:                        Editing.               (line 6)
 * consult-line:                          Search.                (line 6)
 * consult-line-multi:                    Search.                (line 6)
 * consult-locate:                        Grep and Find.         (line 6)
-* consult-man:                           Miscellaneous.         (line 6)
+* consult-man:                           Help.                  (line 6)
 * consult-mark:                          Navigation.            (line 6)
 * consult-minor-mode-menu:               Modes.                 (line 6)
 * consult-mode-command:                  Modes.                 (line 6)
-* consult-multi-occur:                   Search.                (line 6)
 * consult-org-agenda:                    Org Mode.              (line 6)
 * consult-org-heading:                   Org Mode.              (line 6)
 * consult-outline:                       Navigation.            (line 6)
@@ -1412,7 +1487,7 @@ File: consult.info,  Node: Function index,  Next: Concept index,  Up: Indices
 * consult-yank-replace:                  Editing.               (line 6)
 
 
-File: consult.info,  Node: Concept index,  Prev: Function index,  Up: Indices
+File: docuMwWvw.info,  Node: Concept index,  Prev: Function index,  Up: Indices
 
 9.2 Concept index
 =================
@@ -1429,7 +1504,6 @@ File: consult.info,  Node: Concept index,  Prev: Function index,  Up: Indices
 * find:                                  Grep and Find.         (line 6)
 * grep:                                  Grep and Find.         (line 6)
 * history:                               Histories.             (line 6)
-* introduction:                          Introduction.          (line 6)
 * locate:                                Grep and Find.         (line 6)
 * major mode:                            Modes.                 (line 6)
 * minor mode:                            Modes.                 (line 6)
@@ -1446,37 +1520,38 @@ File: consult.info,  Node: Concept index,  Prev: Function index,  Up: Indices
 
 
 Tag Table:
-Node: Top219
-Node: Introduction2617
-Node: Available commands5359
-Node: Virtual Buffers6887
-Node: Editing8543
-Node: Register9397
-Node: Navigation11107
-Node: Search12188
-Node: Grep and Find14079
-Node: Compilation16075
-Node: Histories16749
-Node: Modes17967
-Node: Org Mode18445
-Node: Miscellaneous18960
-Node: Special features21751
-Node: Live previews22878
-Node: Narrowing and grouping25890
-Node: Asynchronous search27891
-Node: Multiple sources30971
-Node: Embark integration36676
-Node: Configuration38869
-Node: Use-package example39968
-Node: Custom variables47005
-Node: Fine-tuning50606
-Node: Recommended packages53646
-Node: Bug reports59448
-Node: Contributions62225
-Node: Acknowledgments63132
-Node: Indices66681
-Node: Function index66917
-Node: Concept index70563
+Node: Top221
+Node: Available commands5119
+Node: Virtual Buffers6696
+Node: Editing8383
+Node: Register9239
+Node: Navigation10951
+Node: Search12194
+Node: Grep and Find14105
+Node: Compilation16236
+Node: Histories16912
+Node: Modes18132
+Node: Org Mode18612
+Node: Help19120
+Node: Miscellaneous20231
+Node: Special features22362
+Node: Live previews23491
+Node: Narrowing and grouping27430
+Node: Asynchronous search29433
+Node: Multiple sources32515
+Node: Embark integration38271
+Node: Configuration40466
+Node: Use-package example41568
+Node: Custom variables48667
+Node: Fine-tuning52404
+Node: Recommended packages55308
+Node: Auxiliary packages57143
+Node: Bug reports61994
+Node: Contributions65107
+Node: Acknowledgments66017
+Node: Indices70599
+Node: Function index70837
+Node: Concept index74339
 
 End Tag Table
 

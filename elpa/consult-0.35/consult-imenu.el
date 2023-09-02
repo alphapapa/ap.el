@@ -1,6 +1,6 @@
 ;;; consult-imenu.el --- Consult commands for imenu -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021, 2022  Free Software Foundation, Inc.
+;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
 ;; This file is part of GNU Emacs.
 
@@ -15,7 +15,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -35,10 +35,11 @@
                              (?v "Variables" font-lock-variable-name-face))))
   "Imenu configuration, faces and narrowing keys used by `consult-imenu'.
 
-For each type a narrowing key and a name must be specified. The face is
-optional. The imenu representation provided by the backend usually puts
-functions directly at the toplevel. `consult-imenu' moves them instead under the
-type specified by :toplevel."
+For each type a narrowing key and a name must be specified.  The
+face is optional.  The imenu representation provided by the
+backend usually puts functions directly at the toplevel.
+`consult-imenu' moves them instead under the type specified by
+:toplevel."
   :type '(repeat (cons symbol plist))
   :group 'consult)
 
@@ -50,55 +51,63 @@ type specified by :toplevel."
 (defvar consult-imenu--history nil)
 (defvar-local consult-imenu--cache nil)
 
-(defun consult-imenu--special (_name pos buf name fn &rest args)
-  "Wrapper function for special imenu items.
-
+(defun consult-imenu--switch-buffer (name pos buf fn &rest args)
+  "Switch buffer before invoking special menu items.
+NAME is the item name.
 POS is the position.
 BUF is the buffer.
-NAME is the item name.
 FN is the original special item function.
 ARGS are the arguments to the special item function."
   (funcall consult--buffer-display buf)
   (apply fn name pos args))
 
+(defun consult-imenu--normalize (pos)
+  "Return normalized imenu POS."
+  (pcase pos
+    ;; Simple marker item
+    ((pred markerp) nil)
+    ;; Simple integer item
+    ((pred integerp) (setq pos (copy-marker pos)))
+    ;; Semantic uses overlay for positions
+    ((pred overlayp) (setq pos (copy-marker (overlay-start pos))))
+    ;; Wrap special item
+    (`(,pos ,fn . ,args)
+     (setq pos `(,pos ,#'consult-imenu--switch-buffer ,(current-buffer)
+                      ,fn ,@args)))
+    (_ (error "Unknown imenu item: %S" pos)))
+  (if (or (consp pos)
+          (eq imenu-default-goto-function #'imenu-default-goto-function))
+      pos
+    (list pos #'consult-imenu--switch-buffer (current-buffer)
+          imenu-default-goto-function)))
+
 (defun consult-imenu--flatten (prefix face list types)
   "Flatten imenu LIST.
-
 PREFIX is prepended in front of all items.
 FACE is the item face.
 TYPES is the mode-specific types configuration."
   (mapcan
    (lambda (item)
      (if (imenu--subalist-p item)
-         (let ((name (car item))
-               (next-prefix prefix)
-               (next-face face))
+         (let* ((name (concat (car item)))
+                (next-prefix name)
+                (next-face face))
+           (add-face-text-property 0 (length name)
+                                   'consult-imenu-prefix 'append name)
            (if prefix
-               (setq next-prefix (concat prefix "/" (propertize name 'face 'consult-imenu-prefix)))
-             (if-let (type (cdr (assoc name types)))
-                 (setq next-prefix (propertize name
-                                               'face 'consult-imenu-prefix
-                                               'consult--type (car type))
-                       next-face (cadr type))
-               (setq next-prefix (propertize name 'face 'consult-imenu-prefix))))
+               (setq next-prefix (concat prefix "/" name))
+             (when-let (type (cdr (assoc name types)))
+               (put-text-property 0 (length name) 'consult--type (car type) name)
+               (setq next-face (cadr type))))
            (consult-imenu--flatten next-prefix next-face (cdr item) types))
-       (let* ((name (car item))
-              (key (if prefix (concat prefix " " (propertize name 'face face)) name))
-              (payload (cdr item)))
-         (list (cons key
-                     (pcase payload
-                       ;; Simple marker item
-                       ((pred markerp) payload)
-                       ;; Simple integer item
-                       ((pred integerp) (copy-marker payload))
-                       ;; Semantic uses overlay for positions
-                       ((pred overlayp) (copy-marker (overlay-start payload)))
-                       ;; Wrap special item
-                       (`(,pos ,fn . ,args)
-                        (nconc
-                         (list pos #'consult-imenu--special (current-buffer) name fn)
-                         args))
-                       (_ (error "Unknown imenu item: %S" item))))))))
+       (list (cons
+              (if prefix
+                  (let ((key (concat prefix " " (car item))))
+                    (add-face-text-property (1+ (length prefix)) (length key)
+                                            face 'append key)
+                    key)
+                (car item))
+              (consult-imenu--normalize (cdr item))))))
    list))
 
 (defun consult-imenu--compute ()
@@ -149,16 +158,30 @@ TYPES is the mode-specific types configuration."
 
 (defun consult-imenu--multi-items (buffers)
   "Return all imenu items from BUFFERS."
-  (apply #'append (consult--buffer-map buffers #'consult-imenu--items-safe)))
+  (consult--with-increased-gc
+   (let ((reporter (make-progress-reporter "Collecting" 0 (length buffers))))
+     (prog1
+         (apply #'append
+                (seq-map-indexed (lambda (buf idx)
+                                   (with-current-buffer buf
+                                     (prog1 (consult-imenu--items-safe)
+                                       (progress-reporter-update
+                                        reporter (1+ idx) (buffer-name)))))
+                                 buffers))
+       (progress-reporter-done reporter)))))
 
 (defun consult-imenu--jump (item)
   "Jump to imenu ITEM via `consult--jump'.
 In contrast to the builtin `imenu' jump function,
 this function can jump across buffers."
   (pcase item
-    (`(,name ,pos ,fn . ,args) (apply fn name pos args))
-    (`(,_ . ,pos) (consult--jump pos))
-    (_ (error "Unknown imenu item: %S" item))))
+    (`(,name ,pos ,fn . ,args)
+     (push-mark nil t)
+     (apply fn name pos args))
+    (`(,_ . ,pos)
+     (consult--jump pos))
+    (_ (error "Unknown imenu item: %S" item)))
+  (run-hooks 'imenu-after-jump-hook))
 
 (defun consult-imenu--narrow ()
   "Return narrowing configuration for the current buffer."
@@ -209,22 +232,25 @@ this function can jump across buffers."
 (defun consult-imenu ()
   "Select item from flattened `imenu' using `completing-read' with preview.
 
-The command supports preview and narrowing. See the variable
+The command supports preview and narrowing.  See the variable
 `consult-imenu-config', which configures the narrowing.
 The symbol at point is added to the future history.
 
 See also `consult-imenu-multi'."
   (interactive)
-  (consult-imenu--select "Go to item: " (consult-imenu--items)))
+  (consult-imenu--select
+   "Go to item: "
+   (consult--slow-operation "Building Imenu..."
+     (consult-imenu--items))))
 
 ;;;###autoload
 (defun consult-imenu-multi (&optional query)
   "Select item from the imenus of all buffers from the same project.
 
 In order to determine the buffers belonging to the same project, the
-`consult-project-function' is used. Only the buffers with the
-same major mode as the current buffer are used. See also
-`consult-imenu' for more details. In order to search a subset of buffers,
+`consult-project-function' is used.  Only the buffers with the
+same major mode as the current buffer are used.  See also
+`consult-imenu' for more details.  In order to search a subset of buffers,
 QUERY can be set to a plist according to `consult--buffer-query'."
   (interactive "P")
   (unless (keywordp (car-safe query))
