@@ -1,29 +1,29 @@
 ;;; async.el --- Asynchronous processing in Emacs -*- lexical-binding: t -*-
 
-;; Copyright (C) 2012-2019 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2022 Free Software Foundation, Inc.
 
 ;; Author: John Wiegley <jwiegley@gmail.com>
+;; Maintainer: Thierry Volpiatto <thievol@posteo.net>
+
 ;; Created: 18 Jun 2012
-;; Version: 1.9.5
+;; Version: 1.9.7
 ;; Package-Requires: ((emacs "24.4"))
 
 ;; Keywords: async
 ;; X-URL: https://github.com/jwiegley/emacs-async
 
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 2, or (at
-;; your option) any later version.
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -36,7 +36,7 @@
 
 (defgroup async nil
   "Simple asynchronous processing in Emacs"
-  :group 'emacs)
+  :group 'lisp)
 
 (defcustom async-variables-noprops-function #'async--purecopy
   "Default function to remove text properties in variables."
@@ -51,6 +51,9 @@
 (defvar async-callback-value-set nil)
 (defvar async-current-process nil)
 (defvar async--procvar nil)
+
+;; For emacs<29 (only exists in emacs-29+).
+(defvar print-symbols-bare)
 
 (defun async--purecopy (object)
   "Remove text properties in OBJECT.
@@ -206,7 +209,9 @@ It is intended to be used as follows:
   (let (print-level
         print-length
         (print-escape-nonascii t)
-        (print-circle t))
+        (print-circle t)
+        ;; Fix bug#153 in emacs-29 with symbol's positions.
+        (print-symbols-bare t))
     (prin1 sexp (current-buffer))
     ;; Just in case the string we're sending might contain EOF
     (encode-coding-region (point-min) (point-max) 'utf-8-auto)
@@ -225,19 +230,17 @@ It is intended to be used as follows:
   "Called from the child Emacs process' command line."
   ;; Make sure 'message' and 'prin1' encode stuff in UTF-8, as parent
   ;; process expects.
-  (let ((coding-system-for-write 'utf-8-auto))
+  (let ((coding-system-for-write 'utf-8-auto)
+        (args-left command-line-args-left))
     (setq async-in-child-emacs t
-          debug-on-error async-debug)
-    (if debug-on-error
+          debug-on-error async-debug
+          command-line-args-left nil)
+    (condition-case-unless-debug err
         (prin1 (funcall
                 (async--receive-sexp (unless async-send-over-pipe
-                                       command-line-args-left))))
-      (condition-case err
-          (prin1 (funcall
-                  (async--receive-sexp (unless async-send-over-pipe
-                                         command-line-args-left))))
-        (error
-         (prin1 (list 'async-signal err)))))))
+                                       args-left))))
+      (error
+       (prin1 (list 'async-signal err))))))
 
 (defun async-ready (future)
   "Query a FUTURE to see if it is ready.

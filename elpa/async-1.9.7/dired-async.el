@@ -3,25 +3,23 @@
 ;; Copyright (C) 2012-2019 Free Software Foundation, Inc.
 
 ;; Authors: John Wiegley <jwiegley@gmail.com>
-;;          Thierry Volpiatto <thierry.volpiatto@gmail.com>
+;;          Thierry Volpiatto <thievol@posteo.net>
 
 ;; Keywords: dired async network
 ;; X-URL: https://github.com/jwiegley/dired-async
 
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 2, or (at
-;; your option) any later version.
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
 
-;; This program is distributed in the hope that it will be useful, but
-;; WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-;; Boston, MA 02111-1307, USA.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -69,6 +67,19 @@ Should take same args as `message'."
   "Mode line lighter used for `dired-async-mode'."
   :risky t
   :type 'sexp)
+
+(defcustom dired-async-skip-fast t
+  "If non-nil, skip async for fast operations.
+Same device renames and copying and renaming files smaller than
+`dired-async-small-file-max' are considered fast."
+  :risky t
+  :type 'bool)
+
+(defcustom dired-async-small-file-max 5000000
+  "Files smaller than this in bytes are considered fast to copy
+or rename for `dired-async-skip-fast'."
+  :risky t
+  :type 'int)
 
 (defface dired-async-message
     '((t (:foreground "yellow")))
@@ -175,6 +186,60 @@ Should take same args as `message'."
                                        "\\`\\*ftp.*"
                                        (buffer-name b)) b))))
        (when buf (kill-buffer buf))))))
+
+(defsubst dired-async--directory-p (attributes)
+  "Return non-nil if ATTRIBUTES is for a directory.
+See `file-attributes'."
+  ;; Can also be a string for symlinks, so check for t explicitly.
+  (eq (file-attribute-type attributes) t))
+
+(defsubst dired-async--same-device-p (f1 f2)
+  "Return non-nil if F1 and F2 have the same device number."
+  (= (file-attribute-device-number (file-attributes f1))
+     (file-attribute-device-number (file-attributes f2))))
+
+(defun dired-async--small-file-p (file)
+  "Return non-nil if FILE is considered small.
+
+File is considered small if it size is smaller than
+`dired-async-small-file-max'."
+  (let ((a (file-attributes file)))
+    ;; Directories are always large since we can't easily figure out
+    ;; their total size.
+    (and (not (dired-async--directory-p a))
+         (< (file-attribute-size a) dired-async-small-file-max))))
+
+(defun dired-async--skip-async-p (file-creator file name-constructor)
+  "Return non-nil if we should skip async for FILE.
+See `dired-create-files' for FILE-CREATOR and NAME-CONSTRUCTOR."
+  ;; Skip async for small files.
+  (or (dired-async--small-file-p file)
+      ;; Also skip async for same device renames.
+      (and (eq file-creator 'dired-rename-file)
+           (let ((new (funcall name-constructor file)))
+             (dired-async--same-device-p file (file-name-directory new))))))
+
+(defun dired-async--smart-create-files (old-func file-creator
+                                        operation fn-list name-constructor
+                                        &optional marker-char)
+  "Around advice for `dired-create-files'.
+Uses async like `dired-async-create-files' but skips certain fast
+cases if `dired-async-skip-fast' is non-nil."
+  (let (async-list quick-list)
+    (if (or (eq file-creator 'backup-file)
+            (null dired-async-skip-fast))
+        (setq async-list fn-list)
+      (dolist (old fn-list)
+        (if (dired-async--skip-async-p file-creator old name-constructor)
+            (push old quick-list)
+          (push old async-list))))
+    (when async-list
+      (dired-async-create-files
+       file-creator operation (nreverse async-list)
+       name-constructor marker-char))
+    (when quick-list
+      (funcall old-func file-creator operation
+               (nreverse quick-list) name-constructor marker-char))))
 
 (defvar overwrite-query)
 (defun dired-async-create-files (file-creator operation fn-list name-constructor
@@ -342,10 +407,10 @@ ESC or `q' to not overwrite any of the remaining files,
   :global t
   (if dired-async-mode
       (progn
-        (advice-add 'dired-create-files :override #'dired-async-create-files)
+        (advice-add 'dired-create-files :around #'dired-async--smart-create-files)
         (advice-add 'wdired-do-renames :around #'dired-async-wdired-do-renames))
     (progn
-      (advice-remove 'dired-create-files #'dired-async-create-files)
+      (advice-remove 'dired-create-files #'dired-async--smart-create-files)
       (advice-remove 'wdired-do-renames #'dired-async-wdired-do-renames))))
 
 (defmacro dired-async--with-async-create-files (&rest body)
