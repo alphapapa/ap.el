@@ -528,6 +528,18 @@
   ;; TODO: Install `embark-consult'.
   :bind (("C-." . embark-act)))
 
+(use-package emacs
+  :init
+  (setq completion-ignore-case t)
+
+  :config
+  (defun ap/kill-this-buffer ()
+    "Kill current buffer."
+    (interactive)
+    (kill-buffer (current-buffer)))
+
+  :bind (("C-x C-k" . #'ap/kill-this-buffer)))
+
 (use-package eww
   :general
   (:keymaps 'eww-mode-map
