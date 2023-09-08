@@ -526,7 +526,11 @@
 
 (use-package embark
   ;; TODO: Install `embark-consult'.
-  :bind (("C-." . embark-act)))
+  :bind (("C-." . embark-act)
+         ("C-;" . embark-dwim))
+
+  :init
+  (setq prefix-help-command #'embark-prefix-help-command))
 
 (use-package emacs
   :init
