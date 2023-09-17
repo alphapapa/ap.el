@@ -1,7 +1,7 @@
 (define-package
   #("dogears" 0 7
     (face nil))
-  "20230607.2300" "Never lose your place again"
+  "20230915.1920" "Never lose your place again"
   '((emacs "26.3")
     (map "2.1"))
   :authors
@@ -10,7 +10,7 @@
   '("Adam Porter" . "adam@alphapapa.net")
   :keywords
   '("convenience")
-  :url ...)
+  :url "https://github.com/alphapapa/dogears.el")
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; End:

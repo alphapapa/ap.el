@@ -46,17 +46,24 @@ See documentation for details.
 ;;; Generated autoloads from bufler-workspace.el
 
 (autoload 'bufler-workspace-frame-set "bufler-workspace" "\
-Set workspace for the current frame to the one at PATH.
+Call `bufler-workspace-set' with `tab-bar-mode bound to nil." t)
+(autoload 'bufler-workspace-set "bufler-workspace" "\
+Set workspace for the current tab or frame to the one at PATH.
 Interactively, choose workspace path with completion.  If PATH is
 nil (interactively, with prefix), unset the frame's workspace.
-Return the workspace path.
+Sets tab's workspace if `tab-bar-mode' is active, otherwise the
+frame's.  If TITLE, use it as the tab's/frame's name (note that
+this is not the same as using a named workspace).  Return the
+workspace path.
 
-(fn &optional PATH)" t)
+(fn &optional PATH &key TITLE)" t)
 (autoload 'bufler-workspace-focus-buffer "bufler-workspace" "\
-Set current frame's workspace to BUFFER's workspace.
-Interactively, use current buffer.
+Set current tab's or frame's workspace to BUFFER's workspace.
+If TITLE, pass it to `bufler-workspace-set'.  If `tab-bar-mode'
+is active, set the tab's; otherwise, the frame's.  Interactively,
+use current buffer.
 
-(fn BUFFER)" t)
+(fn BUFFER &key TITLE)" t)
 (autoload 'bufler-workspace-switch-buffer "bufler-workspace" "\
 Switch to another buffer in the current group.
 Without any input, switch to the previous buffer, like
@@ -69,7 +76,10 @@ would otherwise be filtered by
 `bufler-workspace-switch-buffer-filter-fns'.
 
 If `bufler-workspace-switch-buffer-sets-workspace' is non-nil,
-act as if SET-WORKSPACE-P is non-nil.
+act as if SET-WORKSPACE-P is non-nil.  And if
+`bufler-workspace-switch-buffer-and-tab' is non-nil,
+automatically switch to the buffer's workspace's tab, if it has
+one.
 
 (fn &optional ALL-P SET-WORKSPACE-P NO-FILTER)" t)
 (autoload 'bufler-workspace-buffer-name-workspace "bufler-workspace" "\
@@ -108,6 +118,17 @@ The mode's hook is called both when the mode is enabled and when
 it is disabled.
 
 (fn &optional ARG)" t)
+(autoload 'bufler-workspace-save "bufler-workspace" "\
+Save current Bufler workspace as NAME.
+Also sets current tab/frame's workspace to the current buffer's.
+
+(fn NAME)" t)
+(autoload 'bufler-workspace-open "bufler-workspace" "\
+Open the workspace NAME.
+NAME should be the name of a bookmark (this just calls
+`bookmark-jump').  Interactively, prompt for a Bufler workspace.
+
+(fn NAME)" t)
 (register-definition-prefixes "bufler-workspace" '("bufler-workspace-"))
 
 

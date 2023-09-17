@@ -1,5 +1,6 @@
-(define-package "bufler" "20230830.17" "Group buffers into workspaces with programmable rules"
+(define-package "bufler" "20230917.1110" "Group buffers into workspaces with programmable rules"
   '((emacs "26.3")
+    (burly "0.4pre")
     (dash "2.18")
     (f "0.17")
     (pretty-hydra "0.2.2")

@@ -24,6 +24,15 @@
 ;; and `tab-line-mode' in Emacs 27+ to show Bufler workspaces and
 ;; buffers, respectively.
 
+;; NOTE: `bufler-workspace-tabs-mode' *OVERRIDES* some parts of
+;; `tab-bar-mode' and `tab-line-mode': It shows each top-level Bufler
+;; group as a `tab-bar' tab, and each buffer in a group as a
+;; `tab-line' tab, rather than allowing the user to make and delete
+;; tabs normally.  (The user can still effectively make a tab manually
+;; by adding a buffer to a named Bufler workspace.)  This
+;; functionality is still somewhat experimental, and it may not suit
+;; every user's taste.
+
 ;;; Code:
 
 ;;;; Requirements
@@ -43,7 +52,8 @@
   (declare-function bufler-format-path "bufler")
   (declare-function bufler-buffers "bufler")
   (declare-function bufler-group-tree-paths "bufler-group-tree")
-  (declare-function bufler-workspace-buffers "bufler-workspace"))
+  (declare-function bufler-workspace-buffers "bufler-workspace")
+  (declare-function bufler-workspace-set "bufler-workspace"))
 
 ;;;; Variables
 
@@ -125,7 +135,7 @@ ARG is the position of the tab in the tab bar."
       (let* ((_from-tab (tab-bar--tab))
              (to-tab (nth to-index tabs))
              (workspace-path (alist-get 'path to-tab)))
-        (bufler-workspace-frame-set workspace-path)
+        (bufler-workspace-set workspace-path)
         (force-mode-line-update 'all)))))
 
 ;;;; Functions
@@ -149,40 +159,41 @@ FRAME defaults to the selected frame.  Works as
   ;; the actual grouping logic, which may say more about me than the
   ;; code.
   (with-selected-frame (or frame (selected-frame))
-    (cl-labels ((tab-type
-                 (path) (if (equal path (frame-parameter nil 'bufler-workspace-path))
-                            'current-tab
-                          'tab))
-                (path-first ;; CAR, or CADR if CAR is nil.
-                 (path) (cl-typecase path
-                          (string (list path))
-                          (list (if (car path)
-                                    (list (car path))
-                                  (list (cadr path))))))
-                (workspace-to-tab
-                 (workspace &optional type) (-let* (((&plist :name :path) workspace))
-                                              (list (or type (tab-type path))
-                                                    (cons 'name (car name))
-                                                    (cons 'path path))))
-                (path-top-level
-                 (path) (pcase-exhaustive path
-                          (`(,(and first (guard (not first)))
-                             ,(and second (guard second)) . ,_rest)
-                           ;; If I use _ in the variable names, it complains that they are not
-                           ;; unused.  The test in (guard) doesn't count as using them, so it
-                           ;; complains either way.  So use `ignore'.  I hope it compiles out.
-                           (ignore first second)
-                           (cl-subseq path 0 2))
-                          ;; The path should always be a list!
-                          (`(,first . ,_rest)
-                           (list first))))
-                (path-to-workspace
-                 ;; This gets too complicated.  We need to preserve the real path, but
-                 ;; if the first element is nil, we need to ignore that and display
-                 ;; the string after the nil.  We sort-of cheat here by using
-                 ;; `path-first' in this function.
-                 (path) (list :name (path-first path)
-                              :path path)))
+    (cl-labels ((tab-type (path)
+                  (if (equal path (frame-parameter nil 'bufler-workspace-path))
+                      'current-tab
+                    'tab))
+                (path-first (path)
+                  ;; CAR, or CADR if CAR is nil.
+                  (cl-typecase path
+                    (string (list path))
+                    (list (if (car path)
+                              (list (car path))
+                            (list (cadr path))))))
+                (workspace-to-tab (workspace &optional type)
+                  (-let* (((&plist :name :path) workspace))
+                    (list (or type (tab-type path))
+                          (cons 'name (car name))
+                          (cons 'path path))))
+                (path-top-level (path)
+                  (pcase-exhaustive path
+                    (`(,(and first (guard (not first)))
+                       ,(and second (guard second)) . ,_rest)
+                     ;; If I use _ in the variable names, it complains that they are not
+                     ;; unused.  The test in (guard) doesn't count as using them, so it
+                     ;; complains either way.  So use `ignore'.  I hope it compiles out.
+                     (ignore first second)
+                     (cl-subseq path 0 2))
+                    ;; The path should always be a list!
+                    (`(,first . ,_rest)
+                     (list first))))
+                (path-to-workspace (path)
+                  ;; This gets too complicated.  We need to preserve the real path, but
+                  ;; if the first element is nil, we need to ignore that and display
+                  ;; the string after the nil.  We sort-of cheat here by using
+                  ;; `path-first' in this function.
+                  (list :name (path-first path)
+                        :path path)))
       ;; We bind all these lists to make understanding and debugging easier.  And because
       ;; Edebug seems somewhat broken in Emacs 28 in that breakpoints don't seem to work
       ;; at all, so stepping through to the relevant point is practically impossible.
