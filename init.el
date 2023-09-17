@@ -1283,6 +1283,16 @@ boundaries."
               (when (eq frame (selected-frame))
                 (pulse-momentary-highlight-one-line)))))
 
+(use-package tab-bar
+  :init
+  (setf mode-line-misc-info
+        ;; When the tab-bar is active, don't show global-mode-string
+        ;; in mode-line-misc-info, because we now show that in the
+        ;; tab-bar using `tab-bar-format-align-right' and
+        ;; `tab-bar-format-global'.
+        (remove '(global-mode-string ("" global-mode-string))
+                mode-line-misc-info)))
+
 (use-package taxy
   :quelpa
   (taxy :fetcher github :repo "alphapapa/taxy.el"))
