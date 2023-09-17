@@ -1,0 +1,2 @@
+;;; Generated package description from org-notely.el  -*- no-byte-compile: t -*-
+(define-package #("org-notely" 0 10 (face nil)) "20220815.1920" "Pop to new Org headings for quick notetaking" '((emacs "26.1") (org "9.0")) :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("convenience" "outlines") :url "https://github.com/alphapapa/org-notely")
