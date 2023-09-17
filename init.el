@@ -1033,6 +1033,11 @@ org-agenda to deny bulk actions."
   :quelpa (org-make-toc :fetcher github :repo "alphapapa/org-make-toc"
 			:branch "wip/rewrite"))
 
+(use-package org-notely
+  :quelpa (org-notely :fetcher github :repo "alphapapa/org-notely")
+  :general
+  ("M-g N" #'org-notely))
+
 (use-package org-now
   :quelpa (org-now :fetcher github :repo "alphapapa/org-now")
   :general
