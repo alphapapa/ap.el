@@ -1320,11 +1320,15 @@ boundaries."
   ;; try it.
   :init (vertico-mode)
   :bind (:map vertico-map
-	      ("TAB" . vertico-next)
-	      ("<backtab>" . vertico-previous)))
+              ("TAB" . vertico-next)
+              ("<backtab>" . vertico-previous)
+              ;; NOTE: Not completely satisfied with this binding.
+              ("M-i" . vertico-insert)))
 
 (use-package window
-  :general ("C-x s" #'window-toggle-side-windows)
+  :general ("C-x s" #'window-toggle-side-windows
+            "C-x q" #'bury-buffer
+            "C-x Q" #'unbury-buffer)
   :config
   (cl-defun ap/display-buffer-in-side-window (&optional (buffer (current-buffer))
                                                         &key (side 'right) (slot 0))
