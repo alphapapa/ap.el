@@ -1021,7 +1021,25 @@ org-agenda to deny bulk actions."
              "ocg" #'org-clock-goto
              "oci" #'org-clock-in
              "oco" #'org-clock-out
-             "ocl" #'org-clock-in-last))
+             "ocl" #'org-clock-in-last
+             "ocz" #'ap/org-clock-add-note)
+  :config
+  (defun ap/org-clock-add-note ()
+    "Call `org-add-note' on currently clocked item."
+    (interactive)
+    (save-window-excursion
+      (org-clock-goto)
+      (add-hook 'org-log-buffer-setup-hook 'ap/org-clock-add-note--setup)
+      (org-add-note)))
+
+  (defun ap/org-clock-add-note--setup ()
+    (remove-hook 'org-log-buffer-setup-hook 'ap/org-clock-add-note--setup)
+    ;; TODO: Fix this.
+    ;; (setq-local header-line-format
+    ;;             (org-with-wide-buffer
+    ;;              (format "Adding note to: %S in %S"
+    ;;                      (org-entry-get nil "ITEM") (buffer-name))))
+    ))
 
 (use-package org-bookmark-heading
   :quelpa (org-bookmark-heading :fetcher github :repo "alphapapa/org-bookmark-heading"))
