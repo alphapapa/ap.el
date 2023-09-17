@@ -104,8 +104,9 @@
      for elt = (org-element-lineage (org-element-context) embark-org--types t)
      then (org-element-lineage elt embark-org--types)
      while elt
-     for begin = (org-element-property :begin elt)
-     for end = (org-element-property :end elt)
+     ;; clip bounds to narrowed portion of buffer
+     for begin = (max (org-element-property :begin elt) (point-min))
+     for end = (min (org-element-property :end elt) (point-max))
      for target = (buffer-substring begin end)
       ;; Adjust table-cell to exclude final |. (Why is that there?)
       ;; Note: We are not doing this is an embark transformer because we
@@ -117,7 +118,10 @@
                end (1- end))
       collect `(,(intern (format "org-%s" (car elt))) ,target ,begin . ,end))))
 
-(add-to-list 'embark-target-finders 'embark-org-target-element-context)
+(if-let (((not (memq 'embark-org-target-element-context embark-target-finders)))
+         (tail (memq 'embark-target-active-region embark-target-finders)))
+    (push 'embark-org-target-element-context (cdr tail))
+  (push 'embark-org-target-element-context embark-target-finders))
 
 ;;; Custom Org actions
 
@@ -318,11 +322,10 @@ bound to i."
 
 ;; The reason for this is left as an exercise to the reader.
 ;; Solution: Na ryvfc gnetrg znl cebzcg gur hfre sbe fbzrguvat!
-(push 'embark--ignore-target
-      (alist-get 'org-open-at-point embark-target-injection-hooks))
-
-(push 'embark--ignore-target
-      (alist-get 'org-insert-link embark-target-injection-hooks))
+(cl-pushnew 'embark--ignore-target
+            (alist-get 'org-open-at-point embark-target-injection-hooks))
+(cl-pushnew 'embark--ignore-target
+            (alist-get 'org-insert-link embark-target-injection-hooks))
 
 (add-to-list 'embark-keymap-alist
              '(org-link embark-org-link-map))
@@ -335,22 +338,84 @@ bound to i."
 (add-to-list 'embark-keymap-alist
              '(org-expression-link embark-org-link-map embark-expression-map))
 
+;;; Org headings
+
+(defun embark-org--refine-heading (type target)
+  "Refine TYPE of heading TARGET in Org buffers."
+  (cons
+   (if (derived-mode-p 'org-mode) 'org-heading type)
+   target))
+
+(add-to-list 'embark-transformer-alist '(heading . embark-org--refine-heading))
+
+(defvar-keymap embark-org-heading-map
+  :doc "Keymap for actions on Org headings."
+  :parent embark-heading-map
+  "RET" #'org-todo
+  "t" #'org-todo
+  "," #'org-priority
+  ":" #'org-set-tags-command
+  "k" #'org-cut-subtree
+  "N" #'org-narrow-to-subtree
+  "l" #'org-metaleft
+  "r" #'org-metaright
+  "S" #'org-sort
+  "R" #'org-refile
+  "a" #'org-archive-subtree-default-with-confirmation
+  "h" #'org-insert-heading-respect-content
+  "H" #'org-insert-todo-heading-respect-content
+  "L" #'org-store-link)
+
+(dolist (cmd '(org-todo org-metaright org-metaleft org-metaup org-metadown
+               org-shiftmetaleft org-shiftmetaright org-cycle org-shifttab))
+  (cl-pushnew cmd embark-repeat-actions))
+
+(cl-pushnew 'embark--ignore-target
+            (alist-get 'org-set-tags-command embark-target-injection-hooks))
+
+(cl-pushnew '(org-heading . embark-org-heading-map) embark-keymap-alist)
+
 ;;; Source blocks and babel calls
+
+(defun embark-org-copy-block-contents ()
+  "Save contents of source block at point to the `kill-ring'."
+  (interactive)
+  (when (org-in-src-block-p)
+    (let ((contents (nth 2 (org-src--contents-area (org-element-at-point)))))
+    (with-temp-buffer
+      (insert contents)
+      (org-do-remove-indentation)
+      (kill-new (buffer-substring (point-min) (point-max)))))))
 
 (defvar-keymap embark-org-src-block-map
   :doc "Keymap for actions on Org source blocks."
   :parent embark-general-map
   "RET" #'org-babel-execute-src-block
-  "c" #'org-babel-check-src-block
+  "SPC" #'org-babel-mark-block
+  "TAB" #'org-indent-block
+  "c" #'embark-org-copy-block-contents
+  "h" #'org-babel-check-src-block
   "k" #'org-babel-remove-result-one-or-many
   "p" #'org-babel-previous-src-block
   "n" #'org-babel-next-src-block
   "t" #'org-babel-tangle
   "s" #'org-babel-switch-to-session
   "l" #'org-babel-load-in-session
-  "'" #'org-edit-special)
+  "'" #'org-edit-special
+  "/" #'org-babel-demarcate-block
+  "N" #'org-narrow-to-block)
 
-(dolist (motion '(org-babel-next-src-blockorg-babel-previous-src-block))
+(cl-defun embark-org--at-block-head (&rest rest &key run &allow-other-keys)
+  "Save excursion and RUN the action at the head of the current block.
+Applies RUN to the REST of the arguments."
+  (save-excursion
+    (org-babel-goto-src-block-head)
+    (apply run rest)))
+
+(cl-pushnew #'embark-org--at-block-head
+            (alist-get 'org-indent-block embark-around-action-hooks))
+
+(dolist (motion '(org-babel-next-src-block org-babel-previous-src-block))
   (add-to-list 'embark-repeat-actions motion))
 
 (add-to-list 'embark-keymap-alist '(org-src-block . embark-org-src-block-map))
