@@ -1083,8 +1083,14 @@ org-agenda to deny bulk actions."
 (use-package org-sticky-header
   :hook (org-mode . org-sticky-header-mode))
 
-(use-package org-superstar
-  :hook (org-mode . org-superstar-mode))
+;; (use-package org-superstar
+;;   ;; FIXME: This needs to be activated after org-indent-mode to
+;;   ;; prevent `org-superstar-leading-bullet' from being shown.  Weird.
+;; [2023-05-08 Mon] Replacing with org-modern.
+;;   :hook (org-mode . org-superstar-mode))
+
+(use-package org-modern
+  :hook (org-mode . org-modern-mode))
 
 (use-package prism
   :quelpa (prism :fetcher github :repo "alphapapa/prism.el")
