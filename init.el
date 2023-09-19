@@ -996,8 +996,9 @@ selected instead of creating a new buffer."
 
     ;; Put the non-indirect buffer at the bottom of the prev-buffers
     ;; list so it won't be selected when the indirect buffer is killed
-    (set-window-prev-buffers nil (append (cdr (window-prev-buffers))
-                                         (car (window-prev-buffers)))))
+    (let ((prev-buffers (window-prev-buffers)))
+      (cl-rotatef prev-buffers)
+      (set-window-prev-buffers nil prev-buffers)))
 
   (defun ap/org-agenda-switch-to-heading-in-indirect-buffer ()
     (interactive)
