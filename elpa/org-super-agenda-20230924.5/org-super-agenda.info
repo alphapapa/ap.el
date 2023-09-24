@@ -1,4 +1,4 @@
-This is README.info, produced by makeinfo version 5.2 from README.texi.
+This is README.info, produced by makeinfo version 6.7 from README.texi.
 
 GPLv3+
 INFO-DIR-SECTION Emacs
@@ -50,14 +50,15 @@ FAQ
 
 Changelog
 
-* 1.3-pre: 13-pre. 
-* 1.2: 12. 
-* 1.1.1: 111. 
-* 1.1: 11. 
-* 1.0.3: 103. 
-* 1.0.2: 102. 
-* 1.0.1: 101. 
-* 1.0.0: 100. 
+* 1.4-pre: 14-pre.
+* 1.3: 13.
+* 1.2: 12.
+* 1.1.1: 111.
+* 1.1: 11.
+* 1.0.3: 103.
+* 1.0.2: 102.
+* 1.0.1: 101.
+* 1.0.0: 100.
 
 Development
 
@@ -546,22 +547,34 @@ File: README.info,  Node: Changelog,  Next: Development,  Prev: FAQ,  Up: Top
 
 * Menu:
 
-* 1.3-pre: 13-pre. 
-* 1.2: 12. 
-* 1.1.1: 111. 
-* 1.1: 11. 
-* 1.0.3: 103. 
-* 1.0.2: 102. 
-* 1.0.1: 101. 
-* 1.0.0: 100. 
+* 1.4-pre: 14-pre.
+* 1.3: 13.
+* 1.2: 12.
+* 1.1.1: 111.
+* 1.1: 11.
+* 1.0.3: 103.
+* 1.0.2: 102.
+* 1.0.1: 101.
+* 1.0.0: 100.
 
 
-File: README.info,  Node: 13-pre,  Next: 12,  Up: Changelog
+File: README.info,  Node: 14-pre,  Next: 13,  Up: Changelog
 
-7.1 1.3-pre
+7.1 1.4-pre
 ===========
 
-*Added*
+*Additions*
+   • Option ‘org-super-agenda-show-message’ allows disabling of the
+     message shown when the mode is enabled.  (Thanks to Liam Hupfer
+     (https://github.com/hpfr).)
+
+
+File: README.info,  Node: 13,  Next: 12,  Prev: 14-pre,  Up: Changelog
+
+7.2 1.3
+=======
+
+*Additions*
    • Selector ‘:property’, which groups items with a property,
      optionally also matching a value or predicate.  (Thanks to Per
      Weijnitz (https://github.com/weipe).)
@@ -580,10 +593,20 @@ File: README.info,  Node: 13-pre,  Next: 12,  Up: Changelog
      separator inserted after the final agenda group.  (Thanks to Tyler
      Funnell (https://github.com/funnell).)
 
-
-File: README.info,  Node: 12,  Next: 111,  Prev: 13-pre,  Up: Changelog
+   *Fixes*
+   • Widen buffers when collecting parent headers.  (#231
+     (https://github.com/alphapapa/org-super-agenda/issues/231).  Thanks
+     to Abdul-Lateef Haji-Ali (https://github.com/haji-ali) for
+     reporting.)
+   • Showing names of empty sections.  (#236
+     (https://github.com/alphapapa/org-super-agenda/issues/236).  Thanks
+     to Patrick Duncan (https://github.com/PaddyPatPat) and Christian
+     Schwarzgruber (https://github.com/cslux).)
 
-7.2 1.2
+
+File: README.info,  Node: 12,  Next: 111,  Prev: 13,  Up: Changelog
+
+7.3 1.2
 =======
 
 *Added*
@@ -642,7 +665,7 @@ File: README.info,  Node: 12,  Next: 111,  Prev: 13-pre,  Up: Changelog
 
 File: README.info,  Node: 111,  Next: 11,  Prev: 12,  Up: Changelog
 
-7.3 1.1.1
+7.4 1.1.1
 =========
 
 *Fixed*
@@ -651,7 +674,7 @@ File: README.info,  Node: 111,  Next: 11,  Prev: 12,  Up: Changelog
 
 File: README.info,  Node: 11,  Next: 103,  Prev: 111,  Up: Changelog
 
-7.4 1.1
+7.5 1.1
 =======
 
 *Additions*
@@ -686,7 +709,7 @@ File: README.info,  Node: 11,  Next: 103,  Prev: 111,  Up: Changelog
 
 File: README.info,  Node: 103,  Next: 102,  Prev: 11,  Up: Changelog
 
-7.5 1.0.3
+7.6 1.0.3
 =========
 
 *Fixed*
@@ -696,7 +719,7 @@ File: README.info,  Node: 103,  Next: 102,  Prev: 11,  Up: Changelog
 
 File: README.info,  Node: 102,  Next: 101,  Prev: 103,  Up: Changelog
 
-7.6 1.0.2
+7.7 1.0.2
 =========
 
 *Fixed*
@@ -705,7 +728,7 @@ File: README.info,  Node: 102,  Next: 101,  Prev: 103,  Up: Changelog
 
 File: README.info,  Node: 101,  Next: 100,  Prev: 102,  Up: Changelog
 
-7.7 1.0.1
+7.8 1.0.1
 =========
 
 *Fixes*
@@ -717,7 +740,7 @@ File: README.info,  Node: 101,  Next: 100,  Prev: 102,  Up: Changelog
 
 File: README.info,  Node: 100,  Prev: 101,  Up: Changelog
 
-7.8 1.0.0
+7.9 1.0.0
 =========
 
 First tagged version.
@@ -784,35 +807,36 @@ File: README.info,  Node: Credits,  Prev: Development,  Up: Top
 
 Tag Table:
 Node: Top222
-Node: Introduction987
-Node: Contents2395
-Node: Screenshots2552
-Node: Installation2789
-Node: MELPA2950
-Node: Manual installation3103
-Node: Usage3552
-Node: Examples4528
-Node: Group selectors8013
-Node: Keywords8975
-Node: Special selectors9704
-Node: Normal selectors13983
-Node: Tips18863
-Node: FAQ19744
-Node: Why are some items not displayed even though I used group selectors for them?19994
-Node: Why did a group disappear when I moved it to the end of the list?20889
-Node: Changelog21470
-Node: 13-pre21705
-Node: 1222797
-Node: 11125471
-Node: 1125646
-Node: 10327230
-Node: 10227441
-Node: 10127575
-Node: 10027913
-Node: Development28018
-Node: Bugs28420
-Node: Tests29114
-Node: Credits29451
+Node: Introduction990
+Node: Contents2398
+Node: Screenshots2555
+Node: Installation2792
+Node: MELPA2953
+Node: Manual installation3106
+Node: Usage3555
+Node: Examples4531
+Node: Group selectors8016
+Node: Keywords8978
+Node: Special selectors9707
+Node: Normal selectors13986
+Node: Tips18866
+Node: FAQ19747
+Node: Why are some items not displayed even though I used group selectors for them?19997
+Node: Why did a group disappear when I moved it to the end of the list?20892
+Node: Changelog21473
+Node: 14-pre21711
+Node: 1321988
+Node: 1223551
+Node: 11126221
+Node: 1126396
+Node: 10327980
+Node: 10228191
+Node: 10128325
+Node: 10028663
+Node: Development28768
+Node: Bugs29170
+Node: Tests29864
+Node: Credits30201
 
 End Tag Table
 

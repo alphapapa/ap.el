@@ -2,9 +2,11 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: http://github.com/alphapapa/org-super-agenda
-;; Version: 1.3-pre
-;; Package-Requires: ((emacs "26.1") (s "1.10.0") (dash "2.13") (org "9.0") (ht "2.2") (ts "0.2"))
+;; Version: 1.4-pre
+;; Package-Requires: ((emacs "26.1") (compat "29.1.4.1") (s "1.10.0") (dash "2.13") (org "9.0") (ht "2.2") (ts "0.2"))
 ;; Keywords: hypermedia, outlines, Org, agenda
+
+;; TODO(v1.4): Require Emacs 27.1 in v1.4-pre.  (Some dependency seems to require it now, and 26.3 is old, anyway.)
 
 ;;; Commentary:
 
@@ -65,7 +67,7 @@
 ;;          (:todo "WAITING" :order 8) ; Set order of this section
 ;;          (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
 ;;                 ;; Show this group at the end of the agenda (since it has the
-;;                 ;; highest number). If you specified this group last, items
+;;                 ;; highest number).  If you specified this group last, items
 ;;                 ;; with these todo keywords that e.g. have priority A would be
 ;;                 ;; displayed in that group instead, because items are grouped
 ;;                 ;; out in the order the groups are listed.
@@ -162,6 +164,10 @@ origin (e.g. Org QL's link-handling code).")
   :group 'org
   :link '(url-link "http://github.com/alphapapa/org-super-agenda"))
 
+(defcustom org-super-agenda-show-message t
+  "Show a message when `org-super-agenda-mode' is toggled."
+  :type 'boolean)
+
 (defcustom org-super-agenda-groups nil
   "List of groups to apply to agenda views.
 See readme for information."
@@ -185,7 +191,7 @@ disabled.  This sets the INHERIT argument to `org-entry-get'."
   :type 'string)
 
 (defcustom org-super-agenda-unmatched-order 99
-  "Default order setting for agenda section containing items unmatched by any filter."
+  "Default order for section containing items unmatched by any filter."
   :type 'integer)
 
 (defcustom org-super-agenda-header-separator "\n"
@@ -210,8 +216,7 @@ See `format-time-string'."
   :type 'string)
 
 (defcustom org-super-agenda-header-properties
-  '(face org-super-agenda-header
-         org-agenda-structural-header t)
+  '(org-agenda-structural-header t)
   "Text properties added to group headers."
   :type 'plist)
 
@@ -237,15 +242,13 @@ considerable, depending on the number of items."
 ;;;; Macros
 
 (defmacro org-super-agenda--when-with-marker-buffer (form &rest body)
-  "When FORM is a marker, run BODY in the marker's buffer, with point starting at it."
+  "When FORM is a marker, eval BODY wrapped in `org-with-point-at'."
   (declare (indent defun) (debug (form body)))
   (org-with-gensyms (marker)
     `(let ((,marker ,form))
        (when (markerp ,marker)
-         (with-current-buffer (marker-buffer ,marker)
-           (save-excursion
-             (goto-char ,marker)
-             ,@body))))))
+         (org-with-point-at ,marker
+           ,@body)))))
 
 (cl-defmacro org-super-agenda--map-children (&key form any)
   "Return FORM mapped across child entries of entry at point, if it has any.
@@ -272,8 +275,8 @@ If ANY is non-nil, return as soon as FORM returns non-nil."
 A and B are Org timestamp elements."
   ;; Copied from `org-ql'.
   (cl-macrolet ((ts (ts)
-                    `(when ,ts
-                       (org-timestamp-format ,ts "%s"))))
+                  `(when ,ts
+                     (org-timestamp-format ,ts "%s"))))
     (let* ((a-ts (ts a))
            (b-ts (ts b)))
       (cond ((and a-ts b-ts)
@@ -310,8 +313,9 @@ of `org-super-agenda-header-map', which see."
                                     "\n"))
                  (string org-super-agenda-header-separator))))
          (set-text-properties 0 (length header) properties header)
-         (add-face-text-property 0 (length header) 'org-super-agenda-header t header)
          (org-add-props header org-super-agenda-header-properties
+           'face 'org-super-agenda-header
+           'org-super-agenda-header t
            'keymap org-super-agenda-header-map
            ;; NOTE: According to the manual, only `keymap' should be necessary, but in my
            ;; testing, it only takes effect in Agenda buffers when `local-map' is set, so
@@ -338,7 +342,7 @@ marker."
 
 ;;;###autoload
 (define-minor-mode org-super-agenda-mode
-  "Global minor mode to group items in Org agenda views according to `org-super-agenda-groups'.
+  "Group items in Org agenda views according to `org-super-agenda-groups'.
 With prefix argument ARG, turn on if positive, otherwise off."
   :global t
   (let ((advice-function-filter-return (if org-super-agenda-mode
@@ -369,9 +373,10 @@ With prefix argument ARG, turn on if positive, otherwise off."
         (add-to-list 'org-agenda-local-vars 'org-super-agenda-groups)
       (setq org-agenda-local-vars (remove 'org-super-agenda-groups org-agenda-local-vars)))
     ;; Display message
-    (message (if org-super-agenda-mode
-                 "org-super-agenda-mode enabled."
-               "org-super-agenda-mode disabled."))))
+    (when org-super-agenda-show-message
+      (message (if org-super-agenda-mode
+                   "org-super-agenda-mode enabled."
+                 "org-super-agenda-mode disabled.")))))
 
 ;;;; Group selectors
 
@@ -387,10 +392,10 @@ with the function, which is used by the dispatcher.
 
 DOCSTRING is a string used for the function's docstring.
 
-:SECTION-NAME is a string or a lisp form that is run once, with
+:SECTION-NAME is a string or a Lisp form that is run once, with
 the variable `items' available.
 
-:TEST is a lisp form that is run for each item, with the variable
+:TEST is a Lisp form that is run for each item, with the variable
 `item' available.  Items passing this test are filtered into a
 separate list.
 
@@ -550,6 +555,8 @@ COMPARISON should be a symbol, one of: `past' or `before',
 ;;;;; Effort
 
 (cl-defmacro org-super-agenda--defeffort-group (name docstring &key comparator)
+  "Define an `org-super-agenda' effort group.
+Uses NAME, DOCSTRING, and COMPARATOR."
   (declare (indent defun))
   `(org-super-agenda--defgroup ,(intern (concat "effort" (symbol-name name)))
      ,(concat docstring "\nArgument is a time-duration string, like \"5\" or \"0:05\" for 5 minutes.")
@@ -689,11 +696,11 @@ available."
                     (error "Unsafe groups disallowed (:pred): %s" args))
                   (concat "Predicate: "
                           (cl-labels ((to-string (arg)
-                                                 (pcase-exhaustive arg
-                                                   ;; FIXME: What if the lambda's byte-compiled?
-                                                   (`(lambda . ,_) "Lambda")
-                                                   ((pred functionp) (symbol-name arg))
-                                                   ((pred listp) (s-join " OR " (-map #'to-string arg))))))
+                                        (pcase-exhaustive arg
+                                          ;; FIXME: What if the lambda's byte-compiled?
+                                          (`(lambda . ,_) "Lambda")
+                                          ((pred functionp) (symbol-name arg))
+                                          ((pred listp) (s-join " OR " (-map #'to-string arg))))))
                             (to-string args))))
   :test (pcase args
           ((pred functionp) (funcall args item))
@@ -717,13 +724,13 @@ test the value."
 				     (car-safe args)
 				     org-super-agenda-properties-inherit)))
            (pcase args
-             ((or (and property (pred stringp))
-                  `(,(and property (pred stringp)) . nil))
+             ((or (and _property (pred stringp))
+                  `(,(and _property (pred stringp)) . nil))
               ;; Only property, no value given.
               t)
-             (`(,property ,(and value (pred stringp)))
+             (`(,_property ,(and value (pred stringp)))
               (string= value found-value))
-             (`(,property ,(and predicate (pred functionp)))
+             (`(,_property ,(and predicate (pred functionp)))
               (funcall predicate found-value))
              (_ ;; Oops
               (signal 'org-super-agenda-invalid-selector (list (cons :property args)))))))
@@ -790,6 +797,8 @@ e.g. \"A\" or (\"B\" \"C\")."
   :test (cl-member (org-super-agenda--get-priority-cookie item) args :test 'string=))
 
 (cl-defmacro org-super-agenda--defpriority-group (name docstring &key comparator)
+  "Define a priority group.
+Uses NAME, DOCSTRING, and COMPARATOR."
   (declare (indent defun))
   `(org-super-agenda--defgroup ,(intern (concat "priority" (symbol-name name)))
      ,(concat docstring "\nArgument is a string; it may also be a list of
@@ -907,11 +916,14 @@ The string should be the priority cookie letter, e.g. \"A\".")
                                                     (header-form 'key) (key-sort-fn #'string<))
   "Define an auto-grouping function.
 
-The function will be named `org-super-agenda--auto-group-NAME'.
+The function will be named `org-super-agenda--auto-group-NAME',
+according to NAME.
 
-The docstring will be, \"Divide ALL-ITEMS into groups based on DOCSTRING_ENDING.\".
+The docstring will be,
+\"Divide ALL-ITEMS into groups based on DOCSTRING-ENDING.\".
 
-The selector keyword will be `:auto-NAME'.
+The selector keyword will be KEYWORD, or `:auto-NAME' if KEYWORD
+is nil.
 
 Items will be grouped by the value of KEY-FORM evaluated for each
 item, with the variable `item' bound to the string from the
@@ -929,10 +941,10 @@ bound to all agenda items being grouped, and `args' to the rest
 of the arguments to the function."
   (declare (indent defun))
   (cl-labels ((form-contains (form symbol)
-                             (cl-typecase form
-                               (atom (eq form symbol))
-                               (list (or (form-contains (car form) symbol)
-                                         (form-contains (cdr form) symbol))))))
+                (cl-typecase form
+                  (atom (eq form symbol))
+                  (list (or (form-contains (car form) symbol)
+                            (form-contains (cdr form) symbol))))))
     (let* ((fn-name (intern (format "org-super-agenda--auto-group-%s" name)))
            (docstring (format "Divide ALL-ITEMS into groups based on %s." docstring-ending))
            (keyword (or keyword (intern (format ":auto-%s" name))))
@@ -963,7 +975,8 @@ of the arguments to the function."
 ;; auto-week, etc.  Maybe also auto-next-7-days, something like that.
 
 (org-super-agenda--def-auto-group planning
-  "their earliest deadline or scheduled date (formatted according to `org-super-agenda-date-format', which see)"
+  "their earliest deadline or scheduled date.
+Formatted according to `org-super-agenda-date-format', which see."
   :keyword :auto-planning
   ;; This is convoluted, mainly because dates and times in Emacs are kind of
   ;; insane.  Good luck parsing a simple "%e %B %Y"-formatted time back to a
@@ -973,14 +986,14 @@ of the arguments to the function."
   ;; properties of the formatted time.
   ;; TODO: Use `ts' for this.
   :key-form (cl-flet ((get-date-type (type)
-                                     (when-let* ((date-string (org-entry-get (point) type)))
-                                       (with-temp-buffer
-                                         ;; FIXME: Hack: since we're using (org-element-property
-                                         ;; :type date-element) below, we need this date parsed
-                                         ;; into an org-element element.
-                                         (insert date-string)
-                                         (goto-char 0)
-                                         (org-element-timestamp-parser)))))
+                        (when-let* ((date-string (org-entry-get (point) type)))
+                          (with-temp-buffer
+                            ;; FIXME: Hack: since we're using (org-element-property
+                            ;; :type date-element) below, we need this date parsed
+                            ;; into an org-element element.
+                            (insert date-string)
+                            (goto-char 0)
+                            (org-element-timestamp-parser)))))
               (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
                 ;; MAYBE: Also check CLOSED date.
                 (let ((earliest-ts (car (sort (list (get-date-type "SCHEDULED")
@@ -1004,7 +1017,8 @@ of the arguments to the function."
   :key-sort-fn string<)
 
 (org-super-agenda--def-auto-group ts
-  "the date of their latest timestamp anywhere in the entry (formatted according to `org-super-agenda-date-format', which see)"
+  "the date of latest timestamp in the entry.
+Formatted according to `org-super-agenda-date-format', which see."
   :keyword :auto-ts
   :key-form (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
               (ignore args)
@@ -1037,7 +1051,9 @@ of the arguments to the function."
               (org-get-category))
   :header-form (concat "Category: " key))
 
-(org-super-agenda--def-auto-group map "the value returned by calling function ARGS with each item.  The function should return a string to be used as the grouping key and as the header for its group"
+(org-super-agenda--def-auto-group map "the value of ARGS called with each item.
+The function should return a string to be used as the grouping
+key and as the header for its group."
   :key-form (progn
               (unless org-super-agenda-allow-unsafe-groups
                 ;; This check gets run for every item because the `def-auto-group' macro
@@ -1162,7 +1178,7 @@ see."
 (setq org-super-agenda-group-types (plist-put org-super-agenda-group-types
                                               :not 'org-super-agenda--group-dispatch-not))
 
-(cl-defun org-super-agenda--group-dispatch-take (items (n &rest group))
+(cl-defun org-super-agenda--group-dispatch-take (items (n group))
   "Take N ITEMS that match selectors in GROUP.
 If N is positive, take the first N items, otherwise take the last N items.
 Note: the ordering of entries is not guaranteed to be preserved, so this may
@@ -1239,37 +1255,37 @@ Should be done after `org-agenda-finalize' or
   (cl-labels ((header-p () (org-get-at-bol 'org-super-agenda-header))
               (grid-p () (not (cl-intersection
                                '(org-agenda-structural-header org-agenda-date-header org-super-agenda-header type)
-                               (text-properties-at (point-at-bol)))))
+                               (text-properties-at (pos-bol)))))
               (group-item-visible-p () (and (org-get-at-bol 'type) (not (org-get-at-bol 'invisible))))
               (next-header
-               () (let ((hide-p t) header grid-end)
-                    (while (not (or (bobp) header))
-                      (cond ((header-p)
-                             (setq header (list (1- (or (previous-single-property-change
-                                                         (point-at-eol) 'org-super-agenda-header)
-                                                        (1+ (point-min))))
-                                                (or grid-end (point-at-eol))
-                                                hide-p)))
-                            ((group-item-visible-p)
-                             (setq hide-p nil))
-                            ((and (grid-p) (not grid-end))
-                             (setq grid-end (point-at-eol))))
-                      (beginning-of-line 0))
-                    header))
+                () (let ((hide-p t) header grid-end)
+                     (while (not (or (bobp) header))
+                       (cond ((header-p)
+                              (setq header (list (1- (or (previous-single-property-change
+                                                          (pos-eol) 'org-super-agenda-header)
+                                                         (1+ (point-min))))
+                                                 (or grid-end (pos-eol))
+                                                 hide-p)))
+                             ((group-item-visible-p)
+                              (setq hide-p nil))
+                             ((and (grid-p) (not grid-end))
+                              (setq grid-end (pos-eol))))
+                       (beginning-of-line 0))
+                     header))
               (hide-or-show-header
-               (header) (when header
-                          (cl-loop
-                           with (start end hide-p) = header
-                           with props = '(invisible org-filtered org-filter-type org-super-agenda-filtered)
-                           initially do (goto-char end)
-                           while (and start (> (point) start))
-                           do (when (or (grid-p) (header-p))
-                                (let ((beg (1- (point-at-bol)))
-                                      (end (point-at-eol)))
-                                  (if hide-p
-                                      (add-text-properties beg end props)
-                                    (remove-text-properties beg end props))))
-                           (beginning-of-line 0)))))
+                (header) (when header
+                           (cl-loop
+                            with (start end hide-p) = header
+                            with props = '(invisible org-filtered org-filter-type org-super-agenda-filtered)
+                            initially do (goto-char end)
+                            while (and start (> (point) start))
+                            do (when (or (grid-p) (header-p))
+                                 (let ((beg (1- (pos-bol)))
+                                       (end (pos-eol)))
+                                   (if hide-p
+                                       (add-text-properties beg end props)
+                                     (remove-text-properties beg end props))))
+                            (beginning-of-line 0)))))
     (let ((inhibit-read-only t))
       (save-excursion
         (goto-char (point-max))
