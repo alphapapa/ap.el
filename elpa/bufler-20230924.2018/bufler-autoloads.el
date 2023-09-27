@@ -69,10 +69,10 @@ Switch to another buffer in the current group.
 Without any input, switch to the previous buffer, like
 `switch-to-buffer'.  If ALL-P (interactively, with universal
 prefix) or if the frame has no workspace, select from all
-buffers.  If SET-WORKSPACE-P (with two universal prefixes),
-select from all buffers and set the frame's workspace.  If
-NO-FILTER (with three universal prefixes), include buffers that
-would otherwise be filtered by
+buffers.  If SWITCH-WORKSPACE-P (disable with two universal
+prefixes), select from all buffers and switch to that buffer's
+workspace.  If NO-FILTER (with three universal prefixes), include
+buffers that would otherwise be filtered by
 `bufler-workspace-switch-buffer-filter-fns'.
 
 If `bufler-workspace-switch-buffer-sets-workspace' is non-nil,
@@ -81,7 +81,7 @@ act as if SET-WORKSPACE-P is non-nil.  And if
 automatically switch to the buffer's workspace's tab, if it has
 one.
 
-(fn &optional ALL-P SET-WORKSPACE-P NO-FILTER)" t)
+(fn &key ALL-P NO-FILTER (SWITCH-WORKSPACE-P t))" t)
 (autoload 'bufler-workspace-buffer-name-workspace "bufler-workspace" "\
 Set current buffer's workspace to NAME.
 If NAME is nil (interactively, with prefix), unset the buffer's
@@ -129,40 +129,16 @@ NAME should be the name of a bookmark (this just calls
 `bookmark-jump').  Interactively, prompt for a Bufler workspace.
 
 (fn NAME)" t)
-(register-definition-prefixes "bufler-workspace" '("bufler-workspace-"))
+(autoload 'bufler-workspace-bookmark-handler "bufler-workspace" "\
+Handler function for `bufler-workspace' BOOKMARK.
+
+(fn BOOKMARK)")
+(register-definition-prefixes "bufler-workspace" '("bufler-w"))
 
 
 ;;; Generated autoloads from bufler-workspace-tabs.el
 
-(defvar bufler-workspace-tabs-mode nil "\
-Non-nil if Bufler-Workspace-Tabs mode is enabled.
-See the `bufler-workspace-tabs-mode' command
-for a description of this minor mode.
-Setting this variable directly does not take effect;
-either customize it (see the info node `Easy Customization')
-or call the function `bufler-workspace-tabs-mode'.")
-(custom-autoload 'bufler-workspace-tabs-mode "bufler-workspace-tabs" nil)
-(autoload 'bufler-workspace-tabs-mode "bufler-workspace-tabs" "\
-Use Bufler workspaces for `tab-bar-mode' and `tab-line-mode'.
-
-This is a global minor mode.  If called interactively, toggle the
-`Bufler-Workspace-Tabs mode' mode.  If the prefix argument is
-positive, enable the mode, and if it is zero or negative, disable
-the mode.
-
-If called from Lisp, toggle the mode if ARG is `toggle'.  Enable
-the mode if ARG is nil, omitted, or is a positive number.
-Disable the mode if ARG is a negative number.
-
-To check whether the minor mode is enabled in the current buffer,
-evaluate `(default-value \\='bufler-workspace-tabs-mode)'.
-
-The mode's hook is called both when the mode is enabled and when
-it is disabled.
-
-(fn &optional ARG)" t)
-(defalias 'bufler-tabs-mode #'bufler-workspace-tabs-mode)
-(register-definition-prefixes "bufler-workspace-tabs" '("bufler-workspace-tabs"))
+(register-definition-prefixes "bufler-workspace-tabs" '("bufler-workspace-"))
 
 ;;; End of scraped data
 

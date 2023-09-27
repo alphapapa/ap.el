@@ -35,6 +35,9 @@
 ;;;; Variables
 
 (defvar bufler-mode)
+(defvar burly-tabs-mode)
+
+(declare-function burly-tabs-mode "burly-tabs")
 
 ;;;; Customization
 
@@ -51,21 +54,13 @@
 Applied when saving a workspace."
   :type 'string)
 
-(defcustom bufler-workspace-switch-buffer-and-tab t
-  "Automatically change to a buffer's associated workspace tab.
-When using `bufler-workspace-mode' and `tab-bar-mode',
-`bufler-switch-buffer' will automatically switch to a buffer's
-associated workspace tab, if it has one.
-
-To some, this option may be the one that binds them all
-together..."
-  :type 'boolean)
-
-(defcustom bufler-workspace-switch-buffer-sets-workspace nil
-  "Whether to always set the workspace when using `bufler-switch-buffer'.
-This setting overrides whether `bufler-switch-buffer' is called
-with prefix arguments."
-  :type 'boolean)
+(defcustom bufler-workspace-prefix-abbreviation (cons (rx bos "Workspace: ") "𝕎: ")
+  "How to abbreviate workspace names.
+Applied to tab/frame names.  The regular expression is replaced
+with the string."
+  :type '(choice (cons (regexp :tag "Removal regexp" "\\`Workspace: ")
+                       (string :tag "Replacement string"  "𝕎: "))
+                 (const :tag "Don't abbreviate" nil)))
 
 (defcustom bufler-workspace-set-hook
   (list #'bufler-workspace-set-frame-name)
@@ -97,6 +92,18 @@ May be customized to, e.g. only return the last element of a path."
 (defvar burly-buffer-local-variables)
 
 ;;;; Macros
+
+(defmacro bufler-without-mode (mode &rest body)
+  "Evaluate BODY without MODE enabled.
+Re-enable MODE afterward if it was already enabled."
+  (declare (indent defun))
+  `(let (was-enabled-p)
+     (when ,mode
+       (setf was-enabled-p t)
+       (,mode -1))
+     ,@body
+     (when was-enabled-p
+       (,mode 1))))
 
 ;; These follow the examples in `tab-bar'.
 
@@ -176,15 +183,15 @@ use current buffer."
   (bufler-workspace-set (bufler-buffer-workspace-path buffer) :title title))
 
 ;;;###autoload
-(defun bufler-workspace-switch-buffer (&optional all-p set-workspace-p no-filter)
+(cl-defun bufler-workspace-switch-buffer (&key all-p no-filter (switch-workspace-p t))
   "Switch to another buffer in the current group.
 Without any input, switch to the previous buffer, like
 `switch-to-buffer'.  If ALL-P (interactively, with universal
 prefix) or if the frame has no workspace, select from all
-buffers.  If SET-WORKSPACE-P (with two universal prefixes),
-select from all buffers and set the frame's workspace.  If
-NO-FILTER (with three universal prefixes), include buffers that
-would otherwise be filtered by
+buffers.  If SWITCH-WORKSPACE-P (disable with two universal
+prefixes), select from all buffers and switch to that buffer's
+workspace.  If NO-FILTER (with three universal prefixes), include
+buffers that would otherwise be filtered by
 `bufler-workspace-switch-buffer-filter-fns'.
 
 If `bufler-workspace-switch-buffer-sets-workspace' is non-nil,
@@ -192,11 +199,12 @@ act as if SET-WORKSPACE-P is non-nil.  And if
 `bufler-workspace-switch-buffer-and-tab' is non-nil,
 automatically switch to the buffer's workspace's tab, if it has
 one."
-  (interactive (list current-prefix-arg
-                     (and current-prefix-arg
-                          (>= (car current-prefix-arg) 16))
-                     (and current-prefix-arg
-                          (>= (car current-prefix-arg) 64))))
+  (interactive
+   (list :all-p current-prefix-arg
+         :no-filter (and current-prefix-arg
+                         (>= (car current-prefix-arg) 64))
+         :switch-workspace-p (not (and current-prefix-arg
+                                       (>= (car current-prefix-arg) 16)))))
   (let* ((bufler-vc-state nil)
          (completion-ignore-case bufler-workspace-ignore-case)
          (path (unless all-p
@@ -209,32 +217,24 @@ one."
          (other-buffer-path (bufler-group-tree-leaf-path
                              (bufler-buffers) (other-buffer (current-buffer))))
          (other-buffer-cons (cons (buffer-name (-last-item other-buffer-path))
-                                  other-buffer-path))
+                                  (other-buffer (current-buffer))))
+         (buffers (cons other-buffer-cons buffers))
          (buffer-name (completing-read "Buffer: " (mapcar #'car buffers)
                                        nil nil nil nil other-buffer-cons))
          (selected-buffer (alist-get buffer-name buffers nil nil #'string=)))
-    (when (and (or bufler-workspace-switch-buffer-sets-workspace
-                   set-workspace-p)
-               selected-buffer)
-      (bufler-workspace-set
-       ;; FIXME: Ideally we wouldn't call `bufler-buffers' again
-       ;; here, but `bufler-buffer-alist-at' returns a slightly
-       ;; different structure, and `bufler-group-tree-leaf-path'
-       ;; doesn't accept it.  Maybe the issue is related to using
-       ;; `map-nested-elt' in `bufler-buffer-alist-at'.  Maybe
-       ;; that difference has been the source of some other
-       ;; confusion too...
-       (bufler-buffer-workspace-path selected-buffer)))
     ;; TODO: If selected-buffer has no associated workspace tab, try
     ;; to use a tab that has a window that most recently displayed it.
-    (when-let ((bufler-workspace-switch-buffer-and-tab)
-               (workspace-tab (cl-find (bufler-buffer-workspace-path selected-buffer) (tab-bar-tabs)
+    (when-let ((switch-workspace-p)
+               (workspace-path (bufler-buffer-workspace-path selected-buffer))
+               (workspace-tab (cl-find workspace-path (tab-bar-tabs) :test #'equal
                                        :key (lambda (tab)
-                                              (bufler-workspace--tab-parameter 'bufler-workspace-path tab))
-                                       :test #'equal))
+                                              (bufler-workspace--tab-parameter 'bufler-workspace-path tab))))
                (tab-name (bufler-workspace--tab-parameter 'name workspace-tab)))
+      ;; TODO: Try to switch to a frame when not using tab-bar-mode
+      ;; (or just ignore frames and focus on supporting tab-bar best).
       (tab-bar-switch-to-tab tab-name))
-    (if-let ((window (get-buffer-window selected-buffer)))
+    (if-let ((selected-buffer)
+             (window (get-buffer-window selected-buffer)))
         (select-window window)
       (switch-to-buffer (or selected-buffer buffer-name)))))
 
@@ -274,7 +274,7 @@ Also sets current tab/frame's workspace to the current buffer's."
                                       nil nil bufler-workspace-prefix)))
   (let ((burly-buffer-local-variables '(bufler-workspace-name)))
     (let ((record (list (cons 'url (burly-windows-url))
-                        (cons 'handler #'burly-bookmark-handler)
+                        (cons 'handler #'bufler-workspace-bookmark-handler)
                         (cons 'bufler-workspace-name name))))
       (bookmark-store name record nil)))
   (bufler-workspace-set (bufler-buffer-workspace-path (current-buffer))
@@ -286,15 +286,40 @@ Also sets current tab/frame's workspace to the current buffer's."
 NAME should be the name of a bookmark (this just calls
 `bookmark-jump').  Interactively, prompt for a Bufler workspace."
   (interactive (list (completing-read "Open workspace: " (bufler-workspace-names :active nil))))
-  (bookmark-jump name)
+  (bookmark-jump name))
+
+(defun bufler-workspace-reset ()
+  "Reset the current tab's workspace."
+  (interactive)
+  (cl-assert tab-bar-mode nil "Only supported for `tab-bar-mode'")
+  (if-let ((name (bufler-workspace--tab-parameter 'bufler-workspace-bookmark-name (tab-bar--current-tab-find))))
+      (bufler-workspace-open name)
+    (error "Current tab has no Bufler workspace name")))
+
+;;;; Functions
+
+;;;###autoload
+(defun bufler-workspace-bookmark-handler (bookmark)
+  "Handler function for `bufler-workspace' BOOKMARK."
+  (bufler-without-mode burly-tabs-mode
+    (let ((name (bufler-workspace--abbreviate-name (car bookmark))))
+      (when tab-bar-mode
+        (if-let ((tab (cl-find name (tab-bar-tabs) :test #'equal
+                               :key (apply-partially #'bufler-workspace--tab-parameter 'name))))
+            (tab-bar-select-tab-by-name name)
+          (tab-new)))
+      ;; TODO: Also do this for frames when not using tab-bar?
+      (setf (bufler-workspace--tab-parameter
+             'bufler-workspace-bookmark-name (tab-bar--current-tab-find))
+            (car bookmark))
+      (burly-bookmark-handler bookmark)))
   ;; HACK: Use an immediate timer for this so that, e.g. the
   ;; `burly-tabs-mode' advice has a chance to run first, otherwise the
   ;; newly opened tab won't be active when this happens.
-  (run-at-time nil nil
-               (lambda ()
-                 (bufler-workspace-set (bufler-buffer-workspace-path (current-buffer)) :title name))))
-
-;;;; Functions
+  (let ((name (bookmark-prop-get bookmark 'bufler-workspace-name)))
+    (run-at-time nil nil
+                 (lambda ()
+                   (bufler-workspace-set (bufler-buffer-workspace-path (current-buffer)) :title name)))))
 
 (cl-defun bufler-workspace-names (&key (saved t) (active t))
   "Return list of workspace names.
@@ -305,7 +330,7 @@ include names of active ones."
    (append (when saved
              (cl-loop for bookmark in bookmark-alist
                       for (_name . params) = bookmark
-                      when (and (equal #'burly-bookmark-handler (alist-get 'handler params))
+                      when (and (equal #'bufler-workspace-bookmark-handler (alist-get 'handler params))
                                 (alist-get 'bufler-workspace-name params))
                       collect (car bookmark)))
            (when active
@@ -316,8 +341,8 @@ include names of active ones."
 (cl-defun bufler-workspace-buffers (&optional (frame (selected-frame)))
   "Return list of buffers for FRAME's workspace.
 Works as `tab-line-tabs-function'."
-  ;; This is specifically for `bufler-workspace-tabs-mode', but it
-  ;; needn't be only for that, so it probably belongs here.
+  ;; This is specifically for `bufler-workspace-workspaces-as-tabs-mode',
+  ;; but it needn't be only for that, so it probably belongs here.
   (let (buffers)
     (--tree-map-nodes (bufferp it)
                       (push it buffers)
@@ -336,8 +361,11 @@ Works as `tab-line-tabs-function'."
 
 (defun bufler-workspace-set-frame-name (name)
   "Set current frame's name according to NAME.
-But if `tab-bar-mode' is active, do nothing."
+But if `tab-bar-mode' is active, do nothing.  Abbreviates NAME
+according to `bufler-workspace-prefix-abbreviation'."
   ;; TODO: Rename this function?
+  (when bufler-workspace-prefix-abbreviation
+    (setf name (bufler-workspace--abbreviate-name name)))
   (if tab-bar-mode
       (tab-rename (or name ""))
     (set-frame-name name)))
@@ -365,6 +393,13 @@ steps when descending into branches."
       (cl-typecase path
         (list path)
         (atom (list path))))))
+
+(defun bufler-workspace--abbreviate-name (name)
+  "Return NAME having been abbreviated.
+Abbreviates according to `bufler-workspace-prefix-abbreviation'."
+  (replace-regexp-in-string
+   (car bufler-workspace-prefix-abbreviation) (cdr bufler-workspace-prefix-abbreviation)
+   name))
 
 ;;;; Footer
 
