@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/hammy.el
-;; Package-Version: 20230903.2020
+;; Package-Version: 20230927.30
 ;; Version: 0.3-pre
 ;; Package-Requires: ((emacs "28.1") (svg-lib "0.2.5") (ts "0.2.2"))
 ;; Keywords: convenience
@@ -402,6 +402,11 @@ Called with the hammy, and optionally a message."
 (defcustom hammy-sound-end-work nil
   "Play this sound when a work interval ends."
   :type '(choice file (const :tag "No sound" nil)))
+
+(defcustom hammy-mode-lighter-seconds-format "%x%hh%mm%z"
+  "Format string passed to `format-seconds', which see.
+Used when remaining time is greater than one minute."
+  :type 'string)
 
 ;;;; Commands
 
@@ -933,7 +938,9 @@ appropriate face to ensure proper appearance.")
                                ;; We use the negative sign when counting down to
                                ;; the end of an interval (i.e. "T-minus...") .
                                "+" "-")
-                           (ts-human-format-duration remaining 'abbr))))))
+                           (format-seconds (if (< remaining 60)
+                                               "%2ss" hammy-mode-lighter-seconds-format)
+                                           remaining))))))
     (if hammy-active
         (concat (propertize hammy-mode-lighter-prefix
                             'face 'hammy-mode-lighter-prefix-active)
