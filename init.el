@@ -94,6 +94,7 @@
  '(objed-cursor-color "#ff665c")
  '(org-agenda-files '("~/org/inbox.org"))
  '(org-attach-use-inheritance nil)
+ '(org-blank-before-new-entry '((heading . t) (plain-list-item . auto)))
  '(org-bookmark-heading-make-ids
    '(lambda nil
       (and
