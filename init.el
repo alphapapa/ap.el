@@ -701,85 +701,98 @@ Includes \"%s\" format spec for length of playlist in minutes."
       (setq ap/hammy-mpc-enabled (not ap/hammy-mpc-enabled))
       (message "Hammy MPC playback %s." (if ap/hammy-mpc-enabled "enabled" "disabled")))
 
-    (defmacro ap/hammy-mpc-before (minutes)
-      ;; A macro so that the `run' function expanded by `hammy-define' will work.
-      "Play/pause MPC, or run `ap/hammy-mpc-before-command' for MINUTES."
-      `(progn
-         (mpc-status-refresh)
-         (pcase (map-elt mpc-status 'state)
-           ("play" nil)
-           ("pause" (mpc-play))
-           (_ (run (format ap/hammy-mpc-before-command ,minutes))))))
+    ;; (defmacro ap/hammy-mpc-before (minutes)
+    ;;   ;; A macro so that the `run' function expanded by `hammy-define' will work.
+    ;;   "Play/pause MPC, or run `ap/hammy-mpc-before-command' for MINUTES."
+    ;;   `(progn
+    ;;      (mpc-status-refresh)
+    ;;      (pcase (map-elt mpc-status 'state)
+    ;;        ("play" nil)
+    ;;        ("pause" (mpc-play))
+    ;;        (_ (run (format ap/hammy-mpc-before-command ,minutes))))))
 
-    (hammy-define (propertize "🍅𝅘𝅥𝅮" 'face '(:foreground "tomato"))
-      :documentation "The classic pomodoro timer, enhanced (with MPC)."
-      :intervals
-      (list
-       (interval :name "Working"
-                 :duration "25 minutes"
-                 :before (do (announce "Starting work time.")
-                             (notify "Starting work time.")
-                             ;; TODO: Get the duration from the interval itself.
-                             (when ap/hammy-mpc-enabled
-                               (ap/hammy-mpc-before (/ current-duration 60))))
-                 :advance (remind "10 minutes"
-                                  (do (announce "Break time!")
-                                      (notify "Break time!")
-                                      (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_coin.wav"))))))
-       (interval :name "Resting"
-                 :duration (do (if (and (not (zerop cycles))
-                                        (zerop (mod cycles 3)))
-                                   ;; If a multiple of three cycles have
-                                   ;; elapsed, the fourth work period was
-                                   ;; just completed, so take a longer break.
-                                   "30 minutes"
-                                 "5 minutes"))
-                 :before (do (announce "Starting break time.")
-                             (notify "Starting break time.")
-                             (when ap/hammy-mpc-enabled
-                               (mpc-pause)))
-                 :advance (remind "10 minutes"
-                                  (do (announce "Break time is over!")
-                                      (notify "Break time is over!")
-                                      (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_princess_help.wav"))))))))
+    (cl-macrolet ((ap/hammy-mpc-before (minutes)
+                    ;; A macro so that the `run' function expanded by
+                    ;; `hammy-define' will work.  NOTE: This doesn't
+                    ;; work correctly as a defmacro macro: I have to
+                    ;; re-evaluate the hammy definition after Emacs
+                    ;; starts.  Maybe using macrolet will fix it...?
+                    "Play/pause MPC, or run `ap/hammy-mpc-before-command' for MINUTES."
+                    `(progn
+                       (mpc-status-refresh)
+                       (pcase (map-elt mpc-status 'state)
+                         ("play" nil)
+                         ("pause" (mpc-play))
+                         (_ (run (format ap/hammy-mpc-before-command ,minutes)))))))
+      (hammy-define (propertize "🍅𝅘𝅥𝅮" 'face '(:foreground "tomato"))
+        :documentation "The classic pomodoro timer, enhanced (with MPC)."
+        :intervals
+        (list
+         (interval :name "Working"
+                   :duration "25 minutes"
+                   :before (do (announce "Starting work time.")
+                               (notify "Starting work time.")
+                               ;; TODO: Get the duration from the interval itself.
+                               (when ap/hammy-mpc-enabled
+                                 (ap/hammy-mpc-before (/ current-duration 60))))
+                   :advance (remind "10 minutes"
+                                    (do (announce "Break time!")
+                                        (notify "Break time!")
+                                        (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_coin.wav"))))))
+         (interval :name "Resting"
+                   :duration (do (if (and (not (zerop cycles))
+                                          (zerop (mod cycles 3)))
+                                     ;; If a multiple of three cycles have
+                                     ;; elapsed, the fourth work period was
+                                     ;; just completed, so take a longer break.
+                                     "30 minutes"
+                                   "5 minutes"))
+                   :before (do (announce "Starting break time.")
+                               (notify "Starting break time.")
+                               (when ap/hammy-mpc-enabled
+                                 (mpc-pause)))
+                   :advance (remind "10 minutes"
+                                    (do (announce "Break time is over!")
+                                        (notify "Break time is over!")
+                                        (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_princess_help.wav"))))))))
 
-    (defcustom ap/hammy-flywheel-rest-duration "5 minutes"
-      "Duration of Hammy flywheel rest intervals."
-      :type 'string)
+      (defcustom ap/hammy-flywheel-rest-duration "5 minutes"
+        "Duration of Hammy flywheel rest intervals."
+        :type 'string)
 
-    (hammy-define (propertize "🎡𝅘𝅥𝅮" 'face '(:foreground "orange"))
-      :documentation "Get your momentum going! (with MPC)"
-      :intervals (list
-                  (interval :name "Rest"
-                            :face 'font-lock-type-face
-                            :duration (lambda (&rest _ignore)
-                                        ap/hammy-flywheel-rest-duration)
-                            :before (do (announce "Rest time!")
-                                        (notify "Rest time!")
-                                        (when ap/hammy-mpc-enabled
-                                          (mpc-pause)))
-                            :advance (remind "10 minutes"
-                                             (do (announce "Rest time is over!")
-                                                 (notify "Rest time is over!")
-                                                 (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_princess_help.wav"))))))
-                  (interval :name "Work"
-                            :face 'font-lock-builtin-face
-                            :duration (climb "5 minutes" "45 minutes"
-                                             :descend t :step "5 minutes")
-                            :before (do (announce "Work time!")
-                                        (notify "Work time!")
-                                        (when ap/hammy-mpc-enabled
-                                          (ap/hammy-mpc-before (/ current-duration 60))))
-                            :advance (remind "10 minutes"
-                                             (do (announce "Work time is over!")
-                                                 (notify "Work time is over!")
-                                                 (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_coin.wav")))))))
-      :after (do (announce "Flywheel session complete!")
-                 (notify "Flywheel session complete!"))
-      :complete-p (do (and (> cycles 1)
-                           interval
-                           (equal "Work" interval-name)
-                           (equal (duration "5 minutes") current-duration)))))
+      (hammy-define (propertize "🎡𝅘𝅥𝅮" 'face '(:foreground "orange"))
+        :documentation "Get your momentum going! (with MPC)"
+        :intervals (list
+                    (interval :name "Rest"
+                              :face 'font-lock-type-face
+                              :duration (lambda (&rest _ignore)
+                                          ap/hammy-flywheel-rest-duration)
+                              :before (do (announce "Rest time!")
+                                          (notify "Rest time!")
+                                          (when ap/hammy-mpc-enabled
+                                            (mpc-pause)))
+                              :advance (remind "10 minutes"
+                                               (do (announce "Rest time is over!")
+                                                   (notify "Rest time is over!")
+                                                   (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_princess_help.wav"))))))
+                    (interval :name "Work"
+                              :face 'font-lock-builtin-face
+                              :duration (climb "5 minutes" "45 minutes"
+                                               :descend t :step "5 minutes")
+                              :before (do (announce "Work time!")
+                                          (notify "Work time!")
+                                          (when ap/hammy-mpc-enabled
+                                            (ap/hammy-mpc-before (/ current-duration 60))))
+                              :advance (remind "10 minutes"
+                                               (do (announce "Work time is over!")
+                                                   (notify "Work time is over!")
+                                                   (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_coin.wav")))))))
+        :after (do (announce "Flywheel session complete!")
+                   (notify "Flywheel session complete!"))
+        :complete-p (do (and (> cycles 1)
+                             interval
+                             (equal "Work" interval-name)
+                             (equal (duration "5 minutes") current-duration))))))
 
   (hammy-define "🐮"
     :documentation "Don't forget to stretch your legs."
