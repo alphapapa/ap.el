@@ -64,6 +64,7 @@
  '(global-tab-line-mode t)
  '(indent-tabs-mode nil)
  '(inhibit-startup-screen t)
+ '(isearch-lazy-count t)
  '(ivy-sort-matches-functions-alist
    '((t . ivy--shorter-matches-first)
      (ivy-completion-in-region . ivy--shorter-matches-first)
@@ -72,6 +73,8 @@
  '(jdee-db-active-breakpoint-face-colors (cons "#1c1f24" "#51afef"))
  '(jdee-db-requested-breakpoint-face-colors (cons "#1c1f24" "#7bc275"))
  '(jdee-db-spec-breakpoint-face-colors (cons "#1c1f24" "#484854"))
+ '(lazy-count-prefix-format nil)
+ '(lazy-count-suffix-format " [%s of %s]")
  '(list-directory-brief-switches "-CFh")
  '(list-directory-verbose-switches "-lh")
  '(load-prefer-newer t)
