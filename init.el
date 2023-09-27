@@ -886,6 +886,11 @@ Includes \"%s\" format spec for length of playlist in minutes."
 
 (use-package org
   :general
+  ("C-c c" #'org-capture
+   "C-c l" #'org-store-link)
+  (:keymaps 'org-mode-map
+            "C-c c" #'org-capture
+            "C-c l" #'org-store-link)
   (:keymaps 'org-agenda-mode-map
             "RET" #'ap/org-agenda-switch-to-heading-in-indirect-buffer)
   :hook
