@@ -21,10 +21,14 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'compat-macs))
+(eval-when-compile (load "compat-macs.el" nil t t))
 (compat-require compat-27 "27.1")
 
 (compat-version "28.1")
+
+;;;; Defined in comp.c
+
+(compat-defalias native-comp-available-p ignore) ;; <compat-tests:native-comp-available-p>
 
 ;;;; Defined in fns.c
 
@@ -132,7 +136,7 @@ inserted before contatenating."
       (setf (nthcdr count files) nil))
     files))
 
-(compat-defun directory-files-and-attributes (directory &optional full match nosort id-format count) ;; <compat-tests:directory-files-and-attributs>
+(compat-defun directory-files-and-attributes (directory &optional full match nosort id-format count) ;; <compat-tests:directory-files-and-attributes>
   "Handle additional optional argument COUNT."
   :extended t
   (let ((files (directory-files-and-attributes directory full match nosort id-format)))
@@ -221,9 +225,11 @@ and BLUE, is normalized to have its value in [0,65535]."
 (compat-defun make-separator-line (&optional length) ;; <compat-tests:make-separator-line>
   "Make a string appropriate for usage as a visual separator line.
 If LENGTH is nil, use the window width."
-    (concat (propertize (make-string (or length (1- (window-width))) ?-)
-                        'face 'separator-line)
-            "\n"))
+  (if (display-graphic-p)
+      (if length
+          (concat (propertize (make-string length ?\s) 'face '(:underline t)) "\n")
+        (propertize "\n" 'face '(:extend t :height 0.1 :inverse-video t)))
+    (concat (make-string (or length (1- (window-width))) ?-) "\n")))
 
 ;;;; Defined in subr.el
 
@@ -832,6 +838,17 @@ function will never return nil."
 
 ;; Obsolete Alias since 29
 (compat-defalias button-buttonize buttonize :obsolete t) ;; <compat-tests:button-buttonize>
+
+;;;; Defined in wid-edit.el
+
+(compat-guard t ;; <compat-tests:widget-natnum>
+  :feature wid-edit
+  (define-widget 'natnum 'restricted-sexp
+    "A nonnegative integer."
+    :tag "Integer (positive)"
+    :value 0
+    :type-error "This field should contain a nonnegative integer"
+    :match-alternatives '(natnump)))
 
 (provide 'compat-28)
 ;;; compat-28.el ends here

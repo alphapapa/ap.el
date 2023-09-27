@@ -4,10 +4,10 @@
 
 ;; Author: Philip Kaludercic <philipk@posteo.net>, Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>, Compat Development <~pkal/compat-devel@lists.sr.ht>
-;; Version: 29.1.3.4
+;; Version: 29.1.4.2
 ;; URL: https://github.com/emacs-compat/compat
 ;; Package-Requires: ((emacs "24.4") (seq "2.3"))
-;; Keywords: lisp
+;; Keywords: lisp, maint
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@
 ;; time and runtime, but only if needed.
 (eval-when-compile
   (defmacro compat--maybe-require-29 ()
-    (when (< emacs-major-version 29)
+    (when (version< emacs-version "29.1")
       (require 'compat-29)
       '(require 'compat-29))))
 (compat--maybe-require-29)

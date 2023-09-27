@@ -21,15 +21,21 @@
 
 ;;; Code:
 
-(eval-when-compile (require 'compat-macs))
+(eval-when-compile (load "compat-macs.el" nil t t))
 (compat-require compat-28 "28.1")
 
 ;; Preloaded in loadup.el
-;; TODO Update to 29.1 as soon as the Emacs emacs-29 branch version bumped
-(compat-require seq "29.0") ;; <compat-tests:seq>
+(compat-require seq "29.1") ;; <compat-tests:seq>
 
-;; TODO Update to 29.1 as soon as the Emacs emacs-29 branch version bumped
-(compat-version "29.0")
+(compat-version "29.1")
+
+;;;; Defined in startup.el
+
+(compat-defvar lisp-directory ;; <compat-tests:lisp-directory>
+    (file-truename
+     (file-name-directory
+      (locate-file "simple" load-path (get-load-suffixes))))
+  "Directory where Emacs's own *.el and *.elc Lisp files are installed.")
 
 ;;;; Defined in xdisp.c
 
@@ -278,7 +284,7 @@ in order to restore the state of the local variables set via this macro.
      (,(if (fboundp 'compat--setq-local) 'compat--setq-local 'setq-local)
       ,@pairs)))
 
-(compat-defun list-of-strings-p (object) ;; <compat-tests:lists-of-strings-p>
+(compat-defun list-of-strings-p (object) ;; <compat-tests:list-of-strings-p>
   "Return t if OBJECT is nil or a list of strings."
   (declare (pure t) (side-effect-free t))
   (while (and (consp object) (stringp (car object)))
@@ -294,22 +300,39 @@ in order to restore the state of the local variables set via this macro.
   "Delete the current line."
   (delete-region (pos-bol) (pos-bol 2)))
 
-(compat-defmacro with-narrowing (start end &rest rest) ;; <compat-tests:with-narrowing>
+(compat-defmacro with-restriction (start end &rest rest) ;; <compat-tests:with-restriction>
   "Execute BODY with restrictions set to START and END.
 
 The current restrictions, if any, are restored upon return.
 
-With the optional :locked TAG argument, inside BODY,
-`narrow-to-region' and `widen' can be used only within the START
-and END limits, unless the restrictions are unlocked by calling
-`narrowing-unlock' with TAG.  See `narrowing-lock' for a more
-detailed description.
+When the optional :label LABEL argument is present, in which
+LABEL is a symbol, inside BODY, `narrow-to-region' and `widen'
+can be used only within the START and END limits.  To gain access
+to other portions of the buffer, use `without-restriction' with the
+same LABEL argument.
 
-\(fn START END [:locked TAG] BODY)"
+\(fn START END [:label LABEL] BODY)"
+  (declare (indent 0) (debug t))
   `(save-restriction
      (narrow-to-region ,start ,end)
      ;; Locking is ignored
-     ,@(if (eq (car rest) :locked) (cddr rest) rest)))
+     ,@(if (eq (car rest) :label) (cddr rest) rest)))
+
+(compat-defmacro without-restriction (&rest rest) ;; <compat-tests:without-restriction>
+  "Execute BODY without restrictions.
+
+The current restrictions, if any, are restored upon return.
+
+When the optional :label LABEL argument is present, the
+restrictions set by `with-restriction' with the same LABEL argument
+are lifted.
+
+\(fn [:label LABEL] BODY)"
+  (declare (indent 0) (debug t))
+  `(save-restriction
+     (widen)
+     ;; Locking is ignored
+     ,@(if (eq (car rest) :label) (cddr rest) rest)))
 
 (compat-defmacro with-memoization (place &rest code) ;; <compat-tests:with-memoization>
   "Return the value of CODE and stash it in PLACE.
@@ -605,6 +628,31 @@ The variable list SPEC is the same as in `if-let*'."
            (throw ',done nil))))))
 
 ;;;; Defined in files.el
+
+(compat-defun directory-abbrev-make-regexp (directory) ;; <compat-tests:directory-abbrev-make-regexp>
+  "Create a regexp to match DIRECTORY for `directory-abbrev-alist'."
+  (let ((regexp
+         ;; We include a slash at the end, to avoid spurious
+         ;; matches such as `/usr/foobar' when the home dir is
+         ;; `/usr/foo'.
+         (concat "\\`" (regexp-quote directory) "\\(/\\|\\'\\)")))
+    ;; The value of regexp could be multibyte or unibyte.  In the
+    ;; latter case, we need to decode it.
+    (if (multibyte-string-p regexp)
+        regexp
+      (decode-coding-string regexp
+                            (if (eq system-type 'windows-nt)
+                                'utf-8
+                              locale-coding-system)))))
+
+(compat-defun directory-abbrev-apply (filename) ;; <compat-tests:directory-abbrev-apply>
+  "Apply the abbreviations in `directory-abbrev-alist' to FILENAME.
+Note that when calling this, you should set `case-fold-search' as
+appropriate for the filesystem used for FILENAME."
+  (dolist (dir-abbrev directory-abbrev-alist filename)
+    (when (string-match (car dir-abbrev) filename)
+         (setq filename (concat (cdr dir-abbrev)
+                                (substring filename (match-end 0)))))))
 
 (compat-defun file-name-split (filename) ;; <compat-tests:file-name-split>
   "Return a list of all the components of FILENAME.
@@ -1167,14 +1215,17 @@ value can also be a property list with properties `:enter' and
      :repeat (:enter (commands ...) :exit (commands ...))
 
 `:enter' specifies the list of additional commands that only
-enter `repeat-mode'.  When the list is empty, then by default all
-commands in the map enter `repeat-mode'.  This is useful when
-there is a command that has the `repeat-map' symbol property, but
-doesn't exist in this specific map.  `:exit' is a list of
-commands that exit `repeat-mode'.  When the list is empty, no
-commands in the map exit `repeat-mode'.  This is useful when a
-command exists in this specific map, but it doesn't have the
-`repeat-map' symbol property on its symbol.
+enter `repeat-mode'.  When the list is empty, then only the
+commands defined in the map enter `repeat-mode'.  Specifying a
+list of commands is useful when there are commands that have the
+`repeat-map' symbol property, but don't exist in this specific
+map.
+
+`:exit' is a list of commands that exit `repeat-mode'.  When the
+list is empty, no commands in the map exit `repeat-mode'.
+Specifying a list of commands is useful when those commands exist
+in this specific map, but should not have the `repeat-map' symbol
+property.
 
 \(fn VARIABLE-NAME &key DOC FULL PARENT SUPPRESS NAME PREFIX KEYMAP REPEAT &rest [KEY DEFINITION]...)"
   (declare (indent 1))
@@ -1346,6 +1397,13 @@ Also see `buttonize'."
           (setq sentences (1- sentences)))
         sentences))))
 
+;;;; Defined in cl-lib.el
+
+(compat-defun cl-constantly (value) ;; <compat-tests:cl-constantly>
+  "Return a function that takes any number of arguments, but returns VALUE."
+  :feature cl-lib
+  (lambda (&rest _) value))
+
 ;;;; Defined in cl-macs.el
 
 (compat-defmacro cl-with-gensyms (names &rest body) ;; <compat-tests:cl-with-gensyms>
@@ -1498,6 +1556,30 @@ The same keyword arguments are supported as in
   `(ert-with-temp-file ,name
      :directory t
      ,@body))
+
+;;;; Defined in wid-edit.el
+
+(compat-guard (not (fboundp 'widget-key-validate)) ;; <compat-tests:widget-key>
+  :feature wid-edit
+  (defvar widget-key-prompt-value-history nil
+    "History of input to `widget-key-prompt-value'.")
+  (define-widget 'key 'editable-field
+    "A key sequence."
+    :prompt-value 'widget-field-prompt-value
+    :match 'widget-key-valid-p
+    :format "%{%t%}: %v"
+    :validate 'widget-key-validate
+    :keymap widget-key-sequence-map
+    :help-echo "C-q: insert KEY, EVENT, or CODE; RET: enter value"
+    :tag "Key")
+  (defun widget-key-valid-p (_widget value)
+    (key-valid-p value))
+  (defun widget-key-validate (widget)
+    (unless (and (stringp (widget-value widget))
+                 (key-valid-p (widget-value widget)))
+      (widget-put widget :error (format "Invalid key: %S"
+                                        (widget-value widget)))
+      widget)))
 
 (provide 'compat-29)
 ;;; compat-29.el ends here
