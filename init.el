@@ -271,6 +271,7 @@
  '(standard-themes-mixed-fonts t)
  '(standard-themes-mode-line-accented t)
  '(standard-themes-prompts '(background bold))
+ '(tab-bar-auto-width nil)
  '(tab-bar-close-button-show nil)
  '(tab-bar-format
    '(tab-bar-format-history tab-bar-format-tabs-groups tab-bar-separator tab-bar-format-add-tab))
