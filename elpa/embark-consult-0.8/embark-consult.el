@@ -5,7 +5,7 @@
 ;; Author: Omar Antolín Camarena <omar@matem.unam.mx>
 ;; Maintainer: Omar Antolín Camarena <omar@matem.unam.mx>
 ;; Keywords: convenience
-;; Version: 0.7
+;; Version: 0.8
 ;; Homepage: https://github.com/oantolin/embark
 ;; Package-Requires: ((emacs "27.1") (embark "0.20") (consult "0.17"))
 
@@ -157,13 +157,20 @@ This function is meant to be added to `embark-collect-mode-hook'."
 
 (defvar grep-mode-line-matches)
 (defvar grep-num-matches-found)
-(defvar wgrep-header/footer-parser)
+(defvar wgrep-header&footer-parser)
 (declare-function wgrep-setup "ext:wgrep")
 
 (defvar-keymap embark-consult-revert-map
   :doc "A keymap with a binding for revert-buffer."
   :parent nil
   "g" #'revert-buffer)
+
+(defun embark-consult--wgrep-prepare ()
+  "Mark header as read-only."
+  (goto-char (point-min))
+  (forward-line 2)
+  (add-text-properties (point-min) (point)
+                       '(read-only t wgrep-header t front-sticky t)))
 
 (defun embark-consult-export-grep (lines)
   "Create a grep mode buffer listing LINES."
@@ -193,23 +200,14 @@ This function is meant to be added to `embark-collect-mode-hook'."
       (use-local-map (make-composed-keymap
                       embark-consult-revert-map
                       (current-local-map)))
-      (setq-local wgrep-header/footer-parser #'ignore)
+      (setq-local wgrep-header&footer-parser #'embark-consult--wgrep-prepare)
       (when (fboundp 'wgrep-setup) (wgrep-setup)))
     (pop-to-buffer buf)))
 
 (defun embark-consult-goto-grep (location)
   "Go to LOCATION, which should be a string with a grep match."
-  ;; Actions are run in the target window, so in this case whatever
-  ;; window was selected when the command that produced the
-  ;; xref-location candidates ran.  In particular, we inherit the
-  ;; default-directory of the buffer in that window, but we really
-  ;; want the default-directory of the minibuffer or collect window we
-  ;; call the action from, which is the previous window, since the
-  ;; location is given relative to that directory.
-  (let ((default-directory (with-selected-window (previous-window)
-                             default-directory)))
-    (consult--jump (consult--grep-position location))
-    (pulse-momentary-highlight-one-line (point))))
+  (consult--jump (consult--grep-position location))
+  (pulse-momentary-highlight-one-line (point)))
 
 (setf (alist-get 'consult-grep embark-default-action-overrides)
       #'embark-consult-goto-grep)
@@ -262,15 +260,17 @@ This function is meant to be added to `embark-collect-mode-hook'."
 
 ;;; Support for consult-find and consult-locate
 
-(setf (alist-get '(file . consult-find) embark-default-action-overrides)
+(setf (alist-get '(file . consult-find) embark-default-action-overrides
+                 nil nil #'equal)
       #'find-file)
 
-(setf (alist-get '(file . consult-locate) embark-default-action-overrides)
+(setf (alist-get '(file . consult-locate) embark-default-action-overrides
+                 nil nil #'equal)
       #'find-file)
 
-;;; Support for consult-isearch
+;;; Support for consult-isearch-history
 
-(setf (alist-get 'consult-isearch embark-transformer-alist)
+(setf (alist-get 'consult-isearch-history embark-transformer-alist)
       #'embark-consult--target-strip)
 
 ;;; Support for consult-man and consult-info
@@ -336,6 +336,8 @@ This function is meant to be added to `embark-collect-mode-hook'."
 
 (map-keymap
  (lambda (_key cmd)
+   (cl-pushnew 'embark--unmark-target
+               (alist-get cmd embark-pre-action-hooks))
    (cl-pushnew 'embark--allow-edit
                (alist-get cmd embark-target-injection-hooks)))
  embark-consult-search-map)
@@ -379,9 +381,22 @@ for any action that is a Consult async command."
       (goto-char (point-max))
       (insert separator))))
 
+(cl-defun embark-consult--projectless
+    (&rest rest &key run target type &allow-other-keys)
+  "Run action with nil `consult-project-function', if TARGET has an directory.
+The values of TYPE which are considered to have an associated
+directory are: file, buffer, bookmark and library.  The REST of
+the arguments are also passed to RUN."
+  (if (embark--associated-directory target type)
+      (let (consult-project-function)
+        (apply run :target target :type type rest))
+    (apply run :target target :type type rest)))
+
 (map-keymap
  (lambda (_key cmd)
    (cl-pushnew #'embark--cd (alist-get cmd embark-around-action-hooks))
+   (cl-pushnew #'embark-consult--projectless
+               (alist-get cmd embark-around-action-hooks))
    (cl-pushnew #'embark-consult--prep-async
                (alist-get cmd embark-target-injection-hooks)))
  embark-consult-async-search-map)

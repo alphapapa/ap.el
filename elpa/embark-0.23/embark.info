@@ -1,4 +1,4 @@
-This is docJMGGb8.info, produced by makeinfo version 6.7 from
+This is docqhme6w.info, produced by makeinfo version 6.8 from
 embark.texi.
 
 INFO-DIR-SECTION Emacs misc features
@@ -7,7 +7,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docJMGGb8.info,  Node: Top,  Next: Overview,  Up: (dir)
+File: docqhme6w.info,  Node: Top,  Next: Overview,  Up: (dir)
 
 Embark: Emacs Mini-Buffer Actions Rooted in Keymaps
 ***************************************************
@@ -19,6 +19,7 @@ Embark: Emacs Mini-Buffer Actions Rooted in Keymaps
 * Advanced configuration::
 * How does Embark call the actions?::
 * Embark, Marginalia and Consult: Embark Marginalia and Consult.
+* Related Packages::
 * Resources::
 * Contributions::
 * Acknowledgments::
@@ -63,7 +64,7 @@ Embark, Marginalia and Consult
 
 
 
-File: docJMGGb8.info,  Node: Overview,  Next: Quick start,  Prev: Top,  Up: Top
+File: docqhme6w.info,  Node: Overview,  Next: Quick start,  Prev: Top,  Up: Top
 
 1 Overview
 **********
@@ -92,7 +93,7 @@ set of buffers, or customize for a set of variables.
 * Switching to a different command without losing what you've typed::
 
 
-File: docJMGGb8.info,  Node: Acting on targets,  Next: The default action on a target,  Up: Overview
+File: docqhme6w.info,  Node: Acting on targets,  Next: The default action on a target,  Up: Overview
 
 1.1 Acting on targets
 =====================
@@ -192,7 +193,7 @@ read about the default actions and their key bindings
 project wiki.
 
 
-File: docJMGGb8.info,  Node: The default action on a target,  Next: Working with sets of possible targets,  Prev: Acting on targets,  Up: Overview
+File: docqhme6w.info,  Node: The default action on a target,  Next: Working with sets of possible targets,  Prev: Acting on targets,  Up: Overview
 
 1.2 The default action on a target
 ==================================
@@ -232,7 +233,7 @@ Embark’s default configuration it will:
    • Find the file corresponding to an Emacs Lisp library at point.
 
 
-File: docJMGGb8.info,  Node: Working with sets of possible targets,  Next: Switching to a different command without losing what you've typed,  Prev: The default action on a target,  Up: Overview
+File: docqhme6w.info,  Node: Working with sets of possible targets,  Next: Switching to a different command without losing what you've typed,  Prev: The default action on a target,  Up: Overview
 
 1.3 Working with sets of possible targets
 =========================================
@@ -253,17 +254,19 @@ sets:
    • The ‘embark-collect’ command produces a buffer listing all the
      current candidates, for you to peruse and run actions on at your
      leisure.  The candidates are displayed as a list showing additional
-     annotations.
+     annotations.  If any of the candidates contain newlines, then
+     horizontal lines are used to separate candidates.
 
      The Embark Collect buffer is somewhat “dired-like”: you can select
-     and deselect candidates through the ‘embark-select’ action (bound
-     to ‘SPC’).  In an Embark Collect buffer ‘embark-act’ is bound to
-     ‘a’ and ‘embark-act-all’ is bound to ‘A’; ‘embark-act-all’ will act
-     on all currently marked candidates if there any, and will act on
-     all candidates if none are marked.  In particular, this means that
-     ‘a SPC’ will toggle whether the candidate at point is selected, and
-     ‘A SPC’ will select all candidates if none are selected, or
-     deselect all selected candidates if there are some.
+     and deselect candidates through ‘embark-select’ (available as an
+     action in ‘embark-act’, bound to ‘SPC’; but you could also give it
+     a global key binding).  In an Embark Collect buffer ‘embark-act’ is
+     bound to ‘a’ and ‘embark-act-all’ is bound to ‘A’; ‘embark-act-all’
+     will act on all currently marked candidates if there any, and will
+     act on all candidates if none are marked.  In particular, this
+     means that ‘a SPC’ will toggle whether the candidate at point is
+     selected, and ‘A SPC’ will select all candidates if none are
+     selected, or deselect all selected candidates if there are some.
 
    • The ‘embark-export’ command tries to open a buffer in an
      appropriate major mode for the set of candidates.  If the
@@ -308,7 +311,7 @@ updated buffer.
 * embark-live a live-updating variant of embark-collect::
 
 
-File: docJMGGb8.info,  Node: Selecting some targets to make an ad hoc candidate set,  Next: embark-live a live-updating variant of embark-collect,  Up: Working with sets of possible targets
+File: docqhme6w.info,  Node: Selecting some targets to make an ad hoc candidate set,  Next: embark-live a live-updating variant of embark-collect,  Up: Working with sets of possible targets
 
 1.3.1 Selecting some targets to make an ad hoc candidate set
 ------------------------------------------------------------
@@ -321,14 +324,16 @@ dired buffer they work on all marked files (or all files if none are
 marked).  Embark also has a notion of _selection_, where you can
 accumulate an ad hoc list of targets for these commands to work on.
 
-   The selection is controlled by using the ‘embark-select’ action
-(which must be run as an action through ‘embark-act’), bound to ‘SPC’ in
-‘embark-general-map’ so that it is always available.  Calling this
-action on a target toggles its membership in the current buffer’s Embark
-selection; that is, it adds it to selection if not selected and removes
-it from the selection if it was selected.  Whenever the selection for a
-buffer is non-empty, the commands ‘embark-act-all’, ‘embark-export’ and
-‘embark-collect’ will act on the selection.
+   The selection is controlled by using the ‘embark-select’ action,
+bound to ‘SPC’ in ‘embark-general-map’ so that it is always available
+(you can also give ‘embark-select’ a global key binding if you wish;
+when called directly, not as an action for ‘embark-act’, it will select
+the first target at point).  Calling this action on a target toggles its
+membership in the current buffer’s Embark selection; that is, it adds it
+to selection if not selected and removes it from the selection if it was
+selected.  Whenever the selection for a buffer is non-empty, the
+commands ‘embark-act-all’, ‘embark-export’ and ‘embark-collect’ will act
+on the selection.
 
    To deselect all selected targets, you can use the ‘embark-select’
 action through ‘embark-act-all’, since this will run ‘embark-select’ on
@@ -337,7 +342,12 @@ selected and you are in a minibuffer completion session, running
 ‘embark-select’ from ‘embark-act-all’ will select all the current
 completion candidates.
 
-   This functionality is supported everywhere:
+   By default, whenever some targets are selected in the current buffer,
+a count of selected targets appears in the mode line.  This can be
+turned off or customized through the ‘embark-selection-indicator’ user
+option.
+
+   The selection functionality is supported in every buffer:
 
    • In the minibuffer this gives a convenient way to act on several
      completion candidates that don’t follow any simple pattern: just go
@@ -361,7 +371,7 @@ completion candidates.
      finally delete all of them (from their original locations).
 
 
-File: docJMGGb8.info,  Node: embark-live a live-updating variant of embark-collect,  Prev: Selecting some targets to make an ad hoc candidate set,  Up: Working with sets of possible targets
+File: docqhme6w.info,  Node: embark-live a live-updating variant of embark-collect,  Prev: Selecting some targets to make an ad hoc candidate set,  Up: Working with sets of possible targets
 
 1.3.2 ‘embark-live’ a live-updating variant of ‘embark-collect’
 ---------------------------------------------------------------
@@ -389,7 +399,7 @@ as used by ‘outline-minor-mode’.  Those collectors really do give
 ‘embark-live’ a table-of-contents feel.
 
 
-File: docJMGGb8.info,  Node: Switching to a different command without losing what you've typed,  Prev: Working with sets of possible targets,  Up: Overview
+File: docqhme6w.info,  Node: Switching to a different command without losing what you've typed,  Prev: Working with sets of possible targets,  Up: Overview
 
 1.4 Switching to a different command without losing what you’ve typed
 =====================================================================
@@ -430,7 +440,7 @@ others that also contain a binding for ‘switch-to-buffer’).  The end
 result is that I can type ‘C-. B f’ to switch to ‘find-file’.
 
 
-File: docJMGGb8.info,  Node: Quick start,  Next: Advanced configuration,  Prev: Overview,  Up: Top
+File: docqhme6w.info,  Node: Quick start,  Next: Advanced configuration,  Prev: Overview,  Up: Top
 
 2 Quick start
 *************
@@ -527,7 +537,7 @@ minibuffer completion candidates.  (Embark does come with Ivy
 integration despite this.)
 
 
-File: docJMGGb8.info,  Node: Advanced configuration,  Next: How does Embark call the actions?,  Prev: Quick start,  Up: Top
+File: docqhme6w.info,  Node: Advanced configuration,  Next: How does Embark call the actions?,  Prev: Quick start,  Up: Top
 
 3 Advanced configuration
 ************************
@@ -543,7 +553,7 @@ File: docJMGGb8.info,  Node: Advanced configuration,  Next: How does Embark call
 * Defining actions for new categories of targets::
 
 
-File: docJMGGb8.info,  Node: Showing information about available targets and actions,  Next: Selecting commands via completions instead of key bindings,  Up: Advanced configuration
+File: docqhme6w.info,  Node: Showing information about available targets and actions,  Next: Selecting commands via completions instead of key bindings,  Up: Advanced configuration
 
 3.1 Showing information about available targets and actions
 ===========================================================
@@ -594,7 +604,7 @@ customize the ‘embark-indicators’ user option to exclude the mixed and
 verbose indicators and to include ‘embark-which-key-indicator’.
 
 
-File: docJMGGb8.info,  Node: Selecting commands via completions instead of key bindings,  Next: Quitting the minibuffer after an action,  Prev: Showing information about available targets and actions,  Up: Advanced configuration
+File: docqhme6w.info,  Node: Selecting commands via completions instead of key bindings,  Next: Quitting the minibuffer after an action,  Prev: Showing information about available targets and actions,  Up: Advanced configuration
 
 3.2 Selecting commands via completions instead of key bindings
 ==============================================================
@@ -621,7 +631,7 @@ embark to always prompt you for actions by setting the variable
 ‘embark-prompter’ to ‘embark-completing-read-prompter’.
 
 
-File: docJMGGb8.info,  Node: Quitting the minibuffer after an action,  Next: Running some setup after injecting the target,  Prev: Selecting commands via completions instead of key bindings,  Up: Advanced configuration
+File: docqhme6w.info,  Node: Quitting the minibuffer after an action,  Next: Running some setup after injecting the target,  Prev: Selecting commands via completions instead of key bindings,  Up: Advanced configuration
 
 3.3 Quitting the minibuffer after an action
 ===========================================
@@ -667,7 +677,7 @@ non-quitting version as follows:
          (embark-act)))
 
 
-File: docJMGGb8.info,  Node: Running some setup after injecting the target,  Next: Running hooks before after or around an action,  Prev: Quitting the minibuffer after an action,  Up: Advanced configuration
+File: docqhme6w.info,  Node: Running some setup after injecting the target,  Next: Running hooks before after or around an action,  Prev: Quitting the minibuffer after an action,  Up: Advanced configuration
 
 3.4 Running some setup after injecting the target
 =================================================
@@ -733,7 +743,7 @@ typically do _not_ want the target, that is the contents of the region,
 to be entered at that prompt!
 
 
-File: docJMGGb8.info,  Node: Running hooks before after or around an action,  Next: Creating your own keymaps,  Prev: Running some setup after injecting the target,  Up: Advanced configuration
+File: docqhme6w.info,  Node: Running hooks before after or around an action,  Next: Creating your own keymaps,  Prev: Running some setup after injecting the target,  Up: Advanced configuration
 
 3.5 Running hooks before, after or around an action
 ===================================================
@@ -830,7 +840,7 @@ used in the default values of ‘embark-pre-action-hooks’,
      configuration doesn’t use this but it is available for users.
 
 
-File: docJMGGb8.info,  Node: Creating your own keymaps,  Next: Defining actions for new categories of targets,  Prev: Running hooks before after or around an action,  Up: Advanced configuration
+File: docqhme6w.info,  Node: Creating your own keymaps,  Next: Defining actions for new categories of targets,  Prev: Running hooks before after or around an action,  Up: Advanced configuration
 
 3.6 Creating your own keymaps
 =============================
@@ -852,7 +862,7 @@ default Embark actions.  Note that ‘embark-collect’ and ‘embark-export’
 are also made available via ‘embark-general-map’.
 
 
-File: docJMGGb8.info,  Node: Defining actions for new categories of targets,  Prev: Creating your own keymaps,  Up: Advanced configuration
+File: docqhme6w.info,  Node: Defining actions for new categories of targets,  Prev: Creating your own keymaps,  Up: Advanced configuration
 
 3.7 Defining actions for new categories of targets
 ==================================================
@@ -870,7 +880,7 @@ situations where the easiest option is not available.
 * New target example in regular buffers - short Wikipedia links::
 
 
-File: docJMGGb8.info,  Node: New minibuffer target example - tab-bar tabs,  Next: New target example in regular buffers - short Wikipedia links,  Up: Defining actions for new categories of targets
+File: docqhme6w.info,  Node: New minibuffer target example - tab-bar tabs,  Next: New target example in regular buffers - short Wikipedia links,  Up: Defining actions for new categories of targets
 
 3.7.1 New minibuffer target example - tab-bar tabs
 --------------------------------------------------
@@ -983,7 +993,7 @@ and configure Embark so it knows that’s the keymap you want.
           described in the previous section.
 
 
-File: docJMGGb8.info,  Node: New target example in regular buffers - short Wikipedia links,  Prev: New minibuffer target example - tab-bar tabs,  Up: Defining actions for new categories of targets
+File: docqhme6w.info,  Node: New target example in regular buffers - short Wikipedia links,  Prev: New minibuffer target example - tab-bar tabs,  Up: Defining actions for new categories of targets
 
 3.7.2 New target example in regular buffers - short Wikipedia links
 -------------------------------------------------------------------
@@ -1024,7 +1034,7 @@ documentation for ‘embark-target-finders’ for details.)
      (add-to-list 'embark-target-finders 'my-short-wikipedia-link)
 
 
-File: docJMGGb8.info,  Node: How does Embark call the actions?,  Next: Embark Marginalia and Consult,  Prev: Advanced configuration,  Up: Top
+File: docqhme6w.info,  Node: How does Embark call the actions?,  Next: Embark Marginalia and Consult,  Prev: Advanced configuration,  Up: Top
 
 4 How does Embark call the actions?
 ***********************************
@@ -1109,7 +1119,7 @@ in the default configuration, such as ‘embark-shell-command-on-buffer’.
 * Non-interactive functions as actions::
 
 
-File: docJMGGb8.info,  Node: Non-interactive functions as actions,  Up: How does Embark call the actions?
+File: docqhme6w.info,  Node: Non-interactive functions as actions,  Up: How does Embark call the actions?
 
 4.1 Non-interactive functions as actions
 ========================================
@@ -1141,7 +1151,7 @@ actions:
      non-string target.
 
 
-File: docJMGGb8.info,  Node: Embark Marginalia and Consult,  Next: Resources,  Prev: How does Embark call the actions?,  Up: Top
+File: docqhme6w.info,  Node: Embark Marginalia and Consult,  Next: Related Packages,  Prev: How does Embark call the actions?,  Up: Top
 
 5 Embark, Marginalia and Consult
 ********************************
@@ -1162,7 +1172,7 @@ does for Embark, and what Embark can do for Consult.
 * Consult::
 
 
-File: docJMGGb8.info,  Node: Marginalia,  Next: Consult,  Up: Embark Marginalia and Consult
+File: docqhme6w.info,  Node: Marginalia,  Next: Consult,  Up: Embark Marginalia and Consult
 
 5.1 Marginalia
 ==============
@@ -1194,7 +1204,7 @@ Embark collect buffer are also provided by the Marginalia package:
      characters in ‘C-x 8 RET’).
 
 
-File: docJMGGb8.info,  Node: Consult,  Prev: Marginalia,  Up: Embark Marginalia and Consult
+File: docqhme6w.info,  Node: Consult,  Prev: Marginalia,  Up: Embark Marginalia and Consult
 
 5.2 Consult
 ===========
@@ -1276,9 +1286,33 @@ integrations between Embark and Consult.  Some examples are:
      leave the minibuffer open so you can navigate among the matches.
 
 
-File: docJMGGb8.info,  Node: Resources,  Next: Contributions,  Prev: Embark Marginalia and Consult,  Up: Top
+File: docqhme6w.info,  Node: Related Packages,  Next: Resources,  Prev: Embark Marginalia and Consult,  Up: Top
 
-6 Resources
+6 Related Packages
+******************
+
+There are several packages that offer functionality similar to Embark’s.
+
+Acting on minibuffer completion candidates
+     The popular Ivy and Helm packages have support for acting on the
+     completion candidates of commands written using their APIs, and
+     there is an extensive ecosystem of packages meant for Helm and for
+     Ivy (the Ivy ones usually have “counsel” in the name) providing
+     commands and appropriate actions.
+Acting on things at point
+     The built-in ‘context-menu-mode’ provides a mouse-driven
+     context-sensitive configurable menu.  The ‘do-at-point’ package by
+     Philip Kaludercic (available on GNU ELPA), on the other hand is
+     keyboard-driven.
+Collecting completion candidates into a buffer
+     The Ivy package has the command ‘ivy-occur’ which is similar to
+     ‘embark-collect’.  As with Ivy actions, ‘ivy-occur’ only works for
+     commands written using the Ivy API.
+
+
+File: docqhme6w.info,  Node: Resources,  Next: Contributions,  Prev: Related Packages,  Up: Top
+
+7 Resources
 ***********
 
 If you want to learn more about how others have used Embark here are
@@ -1305,9 +1339,9 @@ some links to read:
    • Marginalia, Consult and Embark by Mike Zamansky.
 
 
-File: docJMGGb8.info,  Node: Contributions,  Next: Acknowledgments,  Prev: Resources,  Up: Top
+File: docqhme6w.info,  Node: Contributions,  Next: Acknowledgments,  Prev: Resources,  Up: Top
 
-7 Contributions
+8 Contributions
 ***************
 
 Contributions to Embark are very welcome.  There is a wish list
@@ -1323,9 +1357,9 @@ GNU ELPA, copyright assignment to the FSF is required before you can
 contribute code.
 
 
-File: docJMGGb8.info,  Node: Acknowledgments,  Prev: Contributions,  Up: Top
+File: docqhme6w.info,  Node: Acknowledgments,  Prev: Contributions,  Up: Top
 
-8 Acknowledgments
+9 Acknowledgments
 *****************
 
 While I, Omar Antolín Camarena, have written most of the Embark code and
@@ -1369,34 +1403,35 @@ important features, and providing a lot of useful advice.
 
 Tag Table:
 Node: Top223
-Node: Overview1710
-Node: Acting on targets3019
-Node: The default action on a target8564
-Node: Working with sets of possible targets10474
-Node: Selecting some targets to make an ad hoc candidate set14562
-Node: embark-live a live-updating variant of embark-collect17662
-Node: Switching to a different command without losing what you've typed19360
-Node: Quick start21937
-Node: Advanced configuration26676
-Node: Showing information about available targets and actions27261
-Node: Selecting commands via completions instead of key bindings29873
-Node: Quitting the minibuffer after an action31480
-Node: Running some setup after injecting the target33936
-Node: Running hooks before after or around an action37552
-Node: Creating your own keymaps42431
-Node: Defining actions for new categories of targets43338
-Node: New minibuffer target example - tab-bar tabs44110
-Ref: Telling Embark about commands that prompt for tabs by name45016
-Ref: Defining and configuring a keymap for tab actions47879
-Node: New target example in regular buffers - short Wikipedia links49670
-Node: How does Embark call the actions?51933
-Node: Non-interactive functions as actions56276
-Node: Embark Marginalia and Consult57633
-Node: Marginalia58357
-Node: Consult59864
-Node: Resources64045
-Node: Contributions65192
-Node: Acknowledgments65905
+Node: Overview1731
+Node: Acting on targets3040
+Node: The default action on a target8585
+Node: Working with sets of possible targets10495
+Node: Selecting some targets to make an ad hoc candidate set14774
+Node: embark-live a live-updating variant of embark-collect18230
+Node: Switching to a different command without losing what you've typed19928
+Node: Quick start22505
+Node: Advanced configuration27244
+Node: Showing information about available targets and actions27829
+Node: Selecting commands via completions instead of key bindings30441
+Node: Quitting the minibuffer after an action32048
+Node: Running some setup after injecting the target34504
+Node: Running hooks before after or around an action38120
+Node: Creating your own keymaps42999
+Node: Defining actions for new categories of targets43906
+Node: New minibuffer target example - tab-bar tabs44678
+Ref: Telling Embark about commands that prompt for tabs by name45584
+Ref: Defining and configuring a keymap for tab actions48447
+Node: New target example in regular buffers - short Wikipedia links50238
+Node: How does Embark call the actions?52501
+Node: Non-interactive functions as actions56844
+Node: Embark Marginalia and Consult58201
+Node: Marginalia58932
+Node: Consult60439
+Node: Related Packages64620
+Node: Resources65717
+Node: Contributions66851
+Node: Acknowledgments67564
 
 End Tag Table
 

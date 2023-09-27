@@ -35,17 +35,18 @@ user for a KEYMAP variable.
 
 (fn KEYMAP)" t)
 (autoload 'embark-bindings "embark" "\
-Explore all current command key bindings with `completing-read'.
+Explore current command key bindings with `completing-read'.
 The selected command will be executed.
 
-If NO-GLOBAL is non-nil (interactively, if called with a prefix
-argument) omit global key bindings; this leaves key bindings from
-minor mode maps and the local map (usually set by the major
-mode), but also less common keymaps such as those from a text
-property or overlay, or the overriding maps:
-`overriding-terminal-local-map' and `overriding-local-map'.
+This shows key bindings from minor mode maps and the local
+map (usually set by the major mode), but also less common keymaps
+such as those from a text property or overlay, or the overriding
+maps: `overriding-terminal-local-map' and `overriding-local-map'.
 
-(fn NO-GLOBAL)" t)
+Additionally, if GLOBAL is non-nil (interactively, if called with
+a prefix argument), this command includes global key bindings.
+
+(fn GLOBAL)" t)
 (autoload 'embark-bindings-at-point "embark" "\
 Explore all key bindings at point with `completing-read'.
 The selected command will be executed.
@@ -55,7 +56,7 @@ text properties `keymap' or `local-map', from either buffer text
 or an overlay.  These are not widely used in Emacs, and when they
 are used can be somewhat hard to discover.  Examples of locations
 that have such a keymap are links and images in `eww' buffers,
-attachment links in `gnus' article buffers, and the 'Stash' line
+attachment links in `gnus' article buffers, and the stash line
 in a `vc-dir' buffer." t)
 (autoload 'embark-prefix-help-command "embark" "\
 Prompt for and run a command bound in the prefix used for this command.
@@ -92,9 +93,12 @@ target.
 (fn &optional ARG)" t)
 (autoload 'embark-act-all "embark" "\
 Prompt the user for an action and perform it on each candidate.
-The candidates are chosen by `embark-candidate-collectors'.
-By default, if called from a minibuffer the candidates are the
-completion candidates.
+The candidates are chosen by `embark-candidate-collectors'.  By
+default, if `embark-select' has been used to select some
+candidates, then `embark-act-all' will act on those candidates;
+otherwise, if the selection is empty and `embark-act-all' is
+called from a minibuffer, then the candidates are the completion
+candidates.
 
 This command uses `embark-prompter' to ask the user to specify an
 action, and calls it injecting the target at the first minibuffer
@@ -179,6 +183,11 @@ minibuffer contents restored.  You can then interact normally
 with the command, perhaps editing the minibuffer contents, and,
 if you wish, you can rerun `embark-export' to get an updated
 buffer." t)
+(autoload 'embark-select "embark" "\
+Add or remove the target from the current buffer's selection.
+You can act on all selected targets at once with `embark-act-all'.
+When called from outside `embark-act' this command will select
+the first target at point." t)
 (register-definition-prefixes "embark" '("embark-"))
 
 

@@ -34,9 +34,10 @@
 
 ;; There are very many org element and objects types, we'll only
 ;; recognize those for which there are specific actions we can put in
-;; a keymap, or for even if there aren't any specific actions, if it's
-;; import to be able to kill, delete or duplicate (embark-insert) them
-;; conveniently.  I'll start conservatively and we can add more later
+;; a keymap, or even if there aren't any specific actions, if it's
+;; important to be able to kill, delete or duplicate (embark-insert)
+;; them conveniently.  I'll start conservatively and we can add more
+;; later
 
 (defconst embark-org--types
   '(
@@ -62,7 +63,7 @@
     ;; headline ; the bounds include the entire subtree!
     ;; horizontal-rule
     ;; inline-babel-call
-    ;; inline-src-block
+    inline-src-block
     ;; inlinetask
     ;; italic
     item
@@ -145,20 +146,33 @@
 ;;; Tables
 
 (dolist (motion '(org-table-move-cell-up org-table-move-cell-down
-                  org-table-move-cell-left org-table-move-cell-right))
+                  org-table-move-cell-left org-table-move-cell-right
+                  org-table-move-row org-table-move-column
+                  org-table-move-row-up org-table-move-row-down
+                  org-table-move-column-left org-table-move-column-right))
   (add-to-list 'embark-repeat-actions motion))
 
-(push 'embark--ignore-target
-      (alist-get 'org-table-edit-field embark-target-injection-hooks))
+(dolist (cmd '(org-table-eval-formula org-table-edit-field))
+  (push 'embark--ignore-target (alist-get cmd embark-target-injection-hooks)))
 
 (defvar-keymap embark-org-table-cell-map
   :doc "Keymap for actions the current cells, column or row of an Org table."
   :parent embark-general-map
-  ;; TODO: default action?
+  "RET" #'org-table-align ; harmless default
   "<up>"    #'org-table-move-cell-up
   "<down>"  #'org-table-move-cell-down
   "<left>"  #'org-table-move-cell-left
   "<right>" #'org-table-move-cell-right
+  "d" #'org-table-kill-row
+  "c" #'org-table-copy-down
+  "D" #'org-table-delete-column ; capital = column
+  "^" #'org-table-move-row-up
+  "v" #'org-table-move-row-down
+  "<" #'org-table-move-column-left
+  ">" #'org-table-move-column-right
+  "o" #'org-table-insert-row
+  "O" #'org-table-insert-column ; capital = column
+  "h" #'org-table-insert-hline
   "=" #'org-table-eval-formula
   "e" #'org-table-edit-field
   "g" #'org-table-recalculate)
@@ -166,7 +180,7 @@
 (defvar-keymap embark-org-table-map
   :doc "Keymap for actions on entire Org table."
   :parent embark-general-map
-  ;; TODO: default action?
+  "RET" #'org-table-align ; harmless default
   "=" #'org-table-edit-formulas
   "s" #'org-table-sort-lines
   "t" #'org-table-transpose-table-at-point
@@ -174,15 +188,16 @@
   "f" #'org-table-follow-field-mode
   "y" #'org-table-paste-rectangle
   "d" #'org-table-toggle-formula-debugger
-  "i" #'org-table-iterate
+  "o" #'org-table-toggle-coordinate-overlays
+  "g" #'org-table-iterate
   "e" #'org-table-export)
 
 (push 'embark--ignore-target            ; prompts for file name
       (alist-get 'org-table-export embark-target-injection-hooks))
 
-(add-to-list 'embark-keymap-alist '(org-table . embark-org-table-map))
+(add-to-list 'embark-keymap-alist '(org-table embark-org-table-map))
 
-(add-to-list 'embark-keymap-alist '(org-table-cell . embark-org-table-cell-map))
+(add-to-list 'embark-keymap-alist '(org-table-cell embark-org-table-cell-map))
 
 ;;; Links
 
@@ -352,30 +367,42 @@ bound to i."
   :doc "Keymap for actions on Org headings."
   :parent embark-heading-map
   "RET" #'org-todo
+  "TAB" #'org-cycle
   "t" #'org-todo
+  "s" #'org-schedule
+  "d" #'org-deadline
   "," #'org-priority
   ":" #'org-set-tags-command
+  "P" #'org-set-property
+  "D" #'org-delete-property
   "k" #'org-cut-subtree
   "N" #'org-narrow-to-subtree
-  "l" #'org-metaleft
-  "r" #'org-metaright
-  "S" #'org-sort
-  "R" #'org-refile
+  "T" #'org-tree-to-indirect-buffer
+  "<left>" #'org-do-promote
+  "<right>" #'org-do-demote
+  "^" #'org-sort
+  "r" #'org-refile
+  "R" #'embark-org-refile-here
+  "I" #'org-clock-in
+  "O" #'org-clock-out
   "a" #'org-archive-subtree-default-with-confirmation
   "h" #'org-insert-heading-respect-content
   "H" #'org-insert-todo-heading-respect-content
-  "L" #'org-store-link)
+  "l" #'org-store-link
+  "j" #'embark-org-insert-link-to)
 
 (dolist (cmd '(org-todo org-metaright org-metaleft org-metaup org-metadown
                org-shiftmetaleft org-shiftmetaright org-cycle org-shifttab))
   (cl-pushnew cmd embark-repeat-actions))
 
-(cl-pushnew 'embark--ignore-target
-            (alist-get 'org-set-tags-command embark-target-injection-hooks))
+(dolist (cmd '(org-set-tags-command org-set-property
+               org-delete-property org-refile org-schedule))
+  (cl-pushnew 'embark--ignore-target
+              (alist-get cmd embark-target-injection-hooks)))
 
-(cl-pushnew '(org-heading . embark-org-heading-map) embark-keymap-alist)
+(add-to-list 'embark-keymap-alist '(org-heading embark-org-heading-map))
 
-;;; Source blocks and babel calls
+;;; Source blocks
 
 (defun embark-org-copy-block-contents ()
   "Save contents of source block at point to the `kill-ring'."
@@ -391,7 +418,7 @@ bound to i."
   :doc "Keymap for actions on Org source blocks."
   :parent embark-general-map
   "RET" #'org-babel-execute-src-block
-  "SPC" #'org-babel-mark-block
+  "C-SPC" #'org-babel-mark-block
   "TAB" #'org-indent-block
   "c" #'embark-org-copy-block-contents
   "h" #'org-babel-check-src-block
@@ -405,10 +432,14 @@ bound to i."
   "/" #'org-babel-demarcate-block
   "N" #'org-narrow-to-block)
 
-(cl-defun embark-org--at-block-head (&rest rest &key run &allow-other-keys)
+(cl-defun embark-org--at-block-head
+    (&rest rest &key run bounds &allow-other-keys)
   "Save excursion and RUN the action at the head of the current block.
-Applies RUN to the REST of the arguments."
+If BOUNDS are given, use them to locate the block (useful for
+when acting on a selection of blocks).  Applies RUN to the REST
+of the arguments."
   (save-excursion
+    (when bounds (goto-char (car bounds)))
     (org-babel-goto-src-block-head)
     (apply run rest)))
 
@@ -418,7 +449,39 @@ Applies RUN to the REST of the arguments."
 (dolist (motion '(org-babel-next-src-block org-babel-previous-src-block))
   (add-to-list 'embark-repeat-actions motion))
 
-(add-to-list 'embark-keymap-alist '(org-src-block . embark-org-src-block-map))
+(dolist (cmd '(org-babel-execute-maybe
+               org-babel-lob-execute-maybe
+               org-babel-execute-src-block
+               org-babel-execute-src-block-maybe
+               org-babel-execute-buffer
+               org-babel-execute-subtree))
+  (cl-pushnew #'embark--ignore-target
+              (alist-get cmd embark-target-injection-hooks)))
+
+(add-to-list 'embark-keymap-alist '(org-src-block embark-org-src-block-map))
+
+;;; Inline source blocks
+
+(defvar-keymap embark-org-inline-src-block-map
+  :doc "Keymap for actions on Org inline source blocks."
+  :parent embark-general-map
+  "RET" #'org-babel-execute-src-block
+  "'" #'org-edit-inline-src-code
+  "k" #'org-babel-remove-inline-result)
+
+(add-to-list 'embark-keymap-alist
+             '(org-inline-src-block embark-org-inline-src-block-map))
+
+;;; Babel calls
+
+(defvar-keymap embark-org-babel-call-map
+  :doc "Keymap for actions on Org babel calls."
+  :parent embark-general-map
+  "RET" #'org-babel-lob-execute-maybe
+  "k" #'org-babel-remove-result)
+
+(add-to-list 'embark-keymap-alist
+             '(org-babel-call embark-org-babel-call-map))
 
 ;;; List items
 
@@ -449,7 +512,7 @@ Applies RUN to the REST of the arguments."
                org-outdent-item-tree))
   (add-to-list 'embark-repeat-actions cmd))
 
-(add-to-list 'embark-keymap-alist '(org-item . embark-org-item-map))
+(add-to-list 'embark-keymap-alist '(org-item embark-org-item-map))
 
 ;;; Org plain lists
 
@@ -465,7 +528,7 @@ Applies RUN to the REST of the arguments."
 
 (add-to-list 'embark-repeat-actions 'org-cycle-list-bullet)
 
-(add-to-list 'embark-keymap-alist '(org-plain-list . embark-org-plain-list-map))
+(add-to-list 'embark-keymap-alist '(org-plain-list embark-org-plain-list-map))
 
 (cl-defun embark-org--toggle-checkboxes
     (&rest rest &key run type &allow-other-keys)
@@ -492,6 +555,134 @@ REST are the remaining arguments."
 (fset 'embark-org-export-in-place-map embark-org-export-in-place-map)
 
 (keymap-set embark-encode-map "o" 'embark-org-export-in-place-map)
+
+;;; References to Org headings, such as agenda items
+
+;; These are targets that represent an org heading but not in the
+;; current buffer, instead they have a text property named
+;; `org-marker' that points to the actual heading.
+
+(defun embark-org-target-agenda-item ()
+  "Target Org agenda item at point."
+  (when (and (derived-mode-p 'org-agenda-mode)
+             (get-text-property (line-beginning-position) 'org-marker))
+    (let ((start (+ (line-beginning-position) (current-indentation)))
+          (end (line-end-position)))
+      `(org-heading ,(buffer-substring start end) ,start . ,end))))
+
+(let ((tail (memq 'embark-org-target-element-context embark-target-finders)))
+  (cl-pushnew 'embark-org-target-agenda-item (cdr tail)))
+
+(cl-defun embark-org--at-heading
+    (&rest rest &key run target &allow-other-keys)
+  "RUN the action at the location of the heading TARGET refers to.
+The location is given by the `org-marker' text property of
+target.  Applies RUN to the REST of the arguments."
+  (if-let ((marker (get-text-property 0 'org-marker target)))
+      (org-with-point-at marker
+        (apply run :target target rest))
+    (apply run :target target rest)))
+
+(cl-defun embark-org-goto-heading (&key target &allow-other-keys)
+  "Jump to the org heading TARGET refers to."
+  (when-let ((marker (get-text-property 0 'org-marker target)))
+    (pop-to-buffer (marker-buffer marker))
+    (widen)
+    (goto-char marker)
+    (org-fold-reveal)
+    (pulse-momentary-highlight-one-line)))
+
+(defun embark-org-heading-default-action (target)
+  "Default action for Org headings.
+There are two types of heading TARGETs: the heading at point in a
+normal org buffer, and references to org headings in some other
+buffer (for example, org agenda items).  For references the
+default action is to jump to the reference, and for the heading
+at point, the default action is whatever is bound to RET in
+`embark-org-heading-map', or `org-todo' if RET is unbound."
+  (if (get-text-property 0 'org-marker target)
+      (embark-org-goto-heading :target target)
+    (command-execute
+     (or (keymap-lookup embark-org-heading-map "RET") #'org-todo))))
+
+(defconst embark-org--invisible-jump-to-heading
+  '(org-tree-to-indirect-buffer
+    org-refile
+    org-clock-in
+    org-clock-out
+    org-archive-subtree-default-with-confirmation
+    org-store-link)
+  "Org heading actions which won't display the heading's buffer.")
+
+(setf (alist-get 'org-heading embark-default-action-overrides)
+      #'embark-org-heading-default-action)
+
+(map-keymap
+ (lambda (_key cmd)
+   (unless (or (where-is-internal cmd (list embark-general-map))
+               (memq cmd embark-org--invisible-jump-to-heading))
+     (cl-pushnew 'embark-org-goto-heading
+                 (alist-get cmd embark-pre-action-hooks))))
+ embark-org-heading-map)
+
+(dolist (cmd embark-org--invisible-jump-to-heading)
+  (cl-pushnew 'embark-org--at-heading
+              (alist-get cmd embark-around-action-hooks)))
+
+(defun embark-org--in-source-window (target function)
+  "Call FUNCTION, in the source window, on TARGET's `org-marker'.
+
+If TARGET does not have an `org-marker' property a `user-error'
+is signaled.  In case the TARGET comes from an org agenda buffer
+and the `other-window-for-scrolling' is an org mode buffer, then
+the FUNCTION is called with that other window temporarily
+selected; otherwise the FUNCTION is called in the selected
+window."
+  (if-let ((marker (get-text-property 0 'org-marker target)))
+      (with-selected-window
+          (or (and (derived-mode-p 'org-agenda-mode)
+                   (let ((window (ignore-errors (other-window-for-scrolling))))
+                     (with-current-buffer (window-buffer window)
+                       (when (derived-mode-p 'org-mode) window))))
+              (selected-window))
+        (funcall function marker))
+    (user-error "The target is an org heading rather than a reference to one")))
+
+(defun embark-org-refile-here (target)
+  "Refile the heading at point in the source window to TARGET.
+
+If TARGET is an agenda item and `other-window-for-scrolling' is
+displaying an org mode buffer, then that is the source window.
+If TARGET is a minibuffer completion candidate, then the source
+window is the window selected before the command that opened the
+minibuffer ran."
+  (embark-org--in-source-window target
+    (lambda (marker)
+      (org-refile nil nil
+                  ;; The RFLOC argument:
+                  (list
+                   ;; Name
+                   (org-with-point-at marker
+                     (nth 4 (org-heading-components)))
+                   ;; File
+                   (buffer-file-name (marker-buffer marker))
+                   ;; nil
+                   nil
+                   ;; Position
+                   marker)))))
+
+(defun embark-org-insert-link-to (target)
+  "Insert a link to the TARGET in the source window.
+
+If TARGET is an agenda item and `other-window-for-scrolling' is
+displaying an org mode buffer, then that is the source window.
+If TARGET is a minibuffer completion candidate, then the source
+window is the window selected before the command that opened the
+minibuffer ran."
+  (embark-org--in-source-window target
+    (lambda (marker)
+      (org-with-point-at marker (org-store-link nil t))
+      (org-insert-all-links 1 "" ""))))
 
 (provide 'embark-org)
 ;;; embark-org.el ends here
