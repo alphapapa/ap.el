@@ -92,7 +92,7 @@ NARROW corresponds to the `org-ql-select' argument NARROW.
 ;;; Generated autoloads from org-ql-completing-read.el
 
 (autoload 'org-ql-completing-read "org-ql-completing-read" "\
-Return marker at Org entry in BUFFERS-FILES selected with `org-ql'.
+Return marker at entry in BUFFERS-FILES selected with `org-ql'.
 PROMPT is shown to the user.
 
 QUERY-PREFIX may be a string to prepend to the query entered by
@@ -106,7 +106,7 @@ with commas to turn multiple tokens, which would normally be
 treated as multiple predicates, into multiple arguments to a
 single predicate).
 
-(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (PROMPT \"Find entry: \"))")
+(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (ACTION #\\='org-ql-completing-read-action) (ANNOTATE #\\='org-ql-completing-read-snippet) (SNIPPET #\\='org-ql-completing-read-snippet) (PATH #\\='org-ql-completing-read-path) (ACTION-FILTER #\\='list) (PROMPT \"Find entry: \"))")
 (function-put 'org-ql-completing-read 'lisp-indent-function 'defun)
 (register-definition-prefixes "org-ql-completing-read" '("org-ql-completing-read-"))
 
@@ -139,6 +139,10 @@ which see (but only the files are used).
 Call `org-ql-find' on `org-agenda-files'." t)
 (autoload 'org-ql-find-in-org-directory "org-ql-find" "\
 Call `org-ql-find' on files in `org-directory'." t)
+(autoload 'org-ql-find-link "org-ql-find" "\
+FIXME: Docstring.
+
+(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (PROMPT \"Open link: \"))" t)
 (register-definition-prefixes "org-ql-find" '("org-ql-find-"))
 
 
