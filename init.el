@@ -366,12 +366,15 @@
 (use-package bufler
   :quelpa
   (bufler :fetcher github :repo "alphapapa/bufler.el"
-	  :files (:defaults (:exclude "helm-bufler.el")))
-  
+          :files (:defaults (:exclude "helm-bufler.el")))
+
   :general
   ("C-x b" #'bufler-switch-buffer
    "C-x B" #'bufler-workspace-focus-buffer
    "C-x C-b" #'bufler)
+  ("C-x w o" #'bufler-workspace-open
+   "C-x w r" #'bufler-workspace-reset
+   "C-x w s" #'bufler-workspace-save)
 
   :custom
   (bufler-groups
