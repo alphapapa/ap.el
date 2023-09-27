@@ -266,6 +266,11 @@
      (magit-todos-exclude-globs "makem.sh" "Makefile")
      (magit-todos-update)))
  '(scroll-bar-mode nil)
+ '(standard-themes-bold-constructs t)
+ '(standard-themes-italic-constructs t)
+ '(standard-themes-mixed-fonts t)
+ '(standard-themes-mode-line-accented t)
+ '(standard-themes-prompts '(background bold))
  '(tab-bar-close-button-show nil)
  '(tab-bar-format
    '(tab-bar-format-history tab-bar-format-tabs-groups tab-bar-separator tab-bar-format-add-tab))
