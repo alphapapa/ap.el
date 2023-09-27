@@ -11,22 +11,22 @@
 
 ;;; Generated autoloads from modus-operandi-deuteranopia-theme.el
 
-(put 'modus-operandi-deuteranopia 'theme-properties '(:background-mode light :kind color-scheme :family modus))
+(put 'modus-operandi-deuteranopia 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'modus))
 
 
 ;;; Generated autoloads from modus-operandi-theme.el
 
-(put 'modus-operandi 'theme-properties '(:background-mode light :kind color-scheme :family modus))
+(put 'modus-operandi 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'modus))
 
 
 ;;; Generated autoloads from modus-operandi-tinted-theme.el
 
-(put 'modus-operandi-tinted 'theme-properties '(:background-mode light :kind color-scheme :family modus))
+(put 'modus-operandi-tinted 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'modus))
 
 
 ;;; Generated autoloads from modus-operandi-tritanopia-theme.el
 
-(put 'modus-operandi-tritanopia 'theme-properties '(:background-mode light :kind color-scheme :family modus))
+(put 'modus-operandi-tritanopia 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'modus))
 
 
 ;;; Generated autoloads from modus-themes.el
@@ -68,22 +68,22 @@ corresponding entries.
 
 ;;; Generated autoloads from modus-vivendi-deuteranopia-theme.el
 
-(put 'modus-vivendi-deuteranopia 'theme-properties '(:background-mode dark :kind color-scheme :family modus))
+(put 'modus-vivendi-deuteranopia 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'modus))
 
 
 ;;; Generated autoloads from modus-vivendi-theme.el
 
-(put 'modus-vivendi 'theme-properties '(:background-mode dark :kind color-scheme :family modus))
+(put 'modus-vivendi 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'modus))
 
 
 ;;; Generated autoloads from modus-vivendi-tinted-theme.el
 
-(put 'modus-vivendi-tinted 'theme-properties '(:background-mode dark :kind color-scheme :family modus))
+(put 'modus-vivendi-tinted 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'modus))
 
 
 ;;; Generated autoloads from modus-vivendi-tritanopia-theme.el
 
-(put 'modus-vivendi-tritanopia 'theme-properties '(:background-mode dark :kind color-scheme :family modus))
+(put 'modus-vivendi-tritanopia 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'modus))
 
 ;;; End of scraped data
 
