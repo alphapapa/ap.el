@@ -380,6 +380,7 @@
   (bufler-groups
    (bufler-defgroups
      (group (auto-workspace))
+     (group (mode-match "Ement" (rx bos "ement-")))
      (group (group-or "Elfeed"
                       (mode-match "*Elfeed*" (rx bos "elfeed-"))
                       (name-match "elfeed config" (rx bos "elfeed." (or "el" "org")))))
