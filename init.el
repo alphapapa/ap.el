@@ -473,15 +473,15 @@
         ;; should work.
         (lambda ()
           (when (buffer-file-name)
-	    (string-prefix-p (or compilation-directory default-directory)
-			     (file-truename (buffer-file-name)))))))
+            (string-prefix-p (or compilation-directory default-directory)
+                             (file-truename (buffer-file-name)))))))
 
 (use-package consult
   :bind (:map global-map
-	      ("M-g i" . consult-imenu)
-	      ("M-g M-i" . consult-imenu-multi)
-	      ("M-g l" . consult-line)
-	      ("M-g M-l" . consult-line-multi))
+              ("M-g i" . consult-imenu)
+              ("M-g M-i" . consult-imenu-multi)
+              ("M-g l" . consult-line)
+              ("M-g M-l" . consult-line-multi))
   :config
   (add-hook 'emacs-lisp-mode-hook
             (lambda ()
@@ -497,29 +497,29 @@
     "Disable active themes and load THEME."
     (interactive
      (list (intern (completing-read "Theme: "
-				    (->> (custom-available-themes)
+                                    (->> (custom-available-themes)
                                          (-map #'symbol-name))))))
     (mapc #'disable-theme custom-enabled-themes)
     (load-theme theme 'no-confirm)))
 
 (use-package deffy
   :quelpa (deffy :fetcher github :repo "alphapapa/taxy.el"
-	    :files ("examples/deffy.el"))
+            :files ("examples/deffy.el"))
   :bind (:map global-map
-	      ("C-x p d" . deffy-project)
-	      ("M-g d" . deffy-jump)))
+              ("C-x p d" . deffy-project)
+              ("M-g d" . deffy-jump)))
 
 (use-package dired
   :bind (:map dired-mode-map
-	      ([mouse-2]
-	       ;; I don't understand how or why mouse-1 is translated
-	       ;; into mouse-2 in Dired, but it is, and this works.
-	       . dired-mouse-find-file))
+              ([mouse-2]
+               ;; I don't understand how or why mouse-1 is translated
+               ;; into mouse-2 in Dired, but it is, and this works.
+               . dired-mouse-find-file))
   :hook
   (dired-mode . auto-revert-mode)
   (dired-mode . dired-omit-mode)
   (dired-mode . (lambda ()
-		  (toggle-truncate-lines 1))))
+                  (toggle-truncate-lines 1))))
 
 (use-package dogears
   :init (dogears-mode)
@@ -567,8 +567,8 @@
 (use-package eww
   :general
   (:keymaps 'eww-mode-map
-	    [mouse-8] #'eww-back-url
-	    [mouse-9] #'eww-forward-url))
+            [mouse-8] #'eww-back-url
+            [mouse-9] #'eww-forward-url))
 
 (use-package faces
   :config
@@ -609,7 +609,7 @@ frame-font, or a cons cell in (FRAME-FONT . VARIABLE-PITCH-FONT)
 format."
     (interactive
      (list (let ((choice (completing-read "Font: " ap/random-fonts)))
-	     (assoc choice ap/random-fonts))))
+             (assoc choice ap/random-fonts))))
     (let ((frame-font (car font))
           (variable-font (or (cdr font) "DejaVu Sans")))
       (set-frame-font frame-font t)
@@ -617,11 +617,11 @@ format."
       (set-face-font 'variable-pitch variable-font)
       ;; Set org faces
       (dolist (face '(org-block org-block-begin-line org-meta-line))
-	(when (facep face)
+        (when (facep face)
           (set-face-attribute face nil :font frame-font)))
       ;; Set buffer-face for org buffers
       (when (symbol-function 'org-buffer-list)
-	(dolist (buffer (org-buffer-list))
+        (dolist (buffer (org-buffer-list))
           (with-current-buffer buffer
             (buffer-face-set :family (face-attribute 'variable-pitch :family)
                              :height (face-attribute 'variable-pitch :height)))))
@@ -814,7 +814,7 @@ Includes \"%s\" format spec for length of playlist in minutes."
 
 (use-package helm-org-ql
   :quelpa (helm-org-ql :fetcher github :repo "alphapapa/org-ql"
-		       :files ("helm-org-ql.el")))
+                       :files ("helm-org-ql.el")))
 
 (use-package highlight-function-calls
   :hook
@@ -841,7 +841,7 @@ Includes \"%s\" format spec for length of playlist in minutes."
 (use-package ivy
   :general
   (:keymaps 'ivy-minibuffer-map
-	    "TAB" #'ivy-next-line)
+            "TAB" #'ivy-next-line)
   ;; :custom
   ;; (ivy-mode t)
   )
@@ -887,7 +887,7 @@ Includes \"%s\" format spec for length of playlist in minutes."
 (use-package org
   :general
   (:keymaps 'org-agenda-mode-map
-	    "RET" #'ap/org-agenda-switch-to-heading-in-indirect-buffer)
+            "RET" #'ap/org-agenda-switch-to-heading-in-indirect-buffer)
   :hook
   (org-mode . org-indent-mode)
   (org-mode . auto-revert-mode)
@@ -1063,7 +1063,7 @@ org-agenda to deny bulk actions."
 
 (use-package org-make-toc
   :quelpa (org-make-toc :fetcher github :repo "alphapapa/org-make-toc"
-			:branch "wip/rewrite"))
+                        :branch "wip/rewrite"))
 
 (use-package org-notely
   :quelpa (org-notely :fetcher github :repo "alphapapa/org-notely")
@@ -1134,8 +1134,8 @@ org-agenda to deny bulk actions."
   (defun ap/prism-spacemacs-dark ()
     (interactive)
     (prism-set-colors :colors '(font-lock-keyword-face
-				font-lock-constant-face
-				font-lock-string-face)
+                                font-lock-constant-face
+                                font-lock-string-face)
       :desaturations '(10 15 20 25 30 35)
       :lightens '(5 10 15 20 25 30)))
   (defun ap/prism-solarized-dark1 ()
@@ -1332,7 +1332,7 @@ boundaries."
 (use-package taxy-magit-section
   :quelpa
   (taxy-magit-section :fetcher github :repo "alphapapa/taxy.el"
-		      :branch "package/taxy-magit-section"))
+                      :branch "package/taxy-magit-section"))
 
 (use-package topsy
   :hook (prog-mode . topsy-mode))
