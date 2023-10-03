@@ -911,7 +911,7 @@ Includes \"%s\" format spec for length of playlist in minutes."
   (org-mode . org-indent-mode)
   (org-mode . auto-revert-mode)
   (org-mode . visual-line-mode)
-  
+
   :custom
   (org-todo-keywords
    (quote
@@ -1430,7 +1430,7 @@ Also set its `no-delete-other-windows' parameter to match."
     (interactive)
     (set-window-dedicated-p window (not (window-dedicated-p window)))
     (set-window-parameter window 'no-delete-other-windows
-			  (window-dedicated-p window))
+                          (window-dedicated-p window))
     (message "Dedicated: %s" (window-dedicated-p window)))
 
   (defun ap/set-window-parameter (window parameter value)
