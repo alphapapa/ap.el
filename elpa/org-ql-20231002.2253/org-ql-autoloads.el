@@ -115,8 +115,11 @@ single predicate).
 
 (autoload 'org-ql-find "org-ql-find" "\
 Go to an Org entry in BUFFERS-FILES selected by searching entries with `org-ql'.
-Interactively, with universal prefix, select multiple buffers to
-search with completion and PROMPT.
+Interactively, search the buffers and files relevant to the
+current buffer (i.e. in `org-agenda-mode', the value of
+`org-ql-view-buffers-files' or `org-agenda-contributing-files';
+in `org-mode', that buffer).  With universal prefix, select
+multiple buffers to search with completion and PROMPT.
 
 QUERY-PREFIX may be a string to prepend to the query (e.g. use
 \"heading:\" to only search headings, easily creating a custom
