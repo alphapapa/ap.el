@@ -1342,7 +1342,24 @@ boundaries."
         ;; tab-bar using `tab-bar-format-align-right' and
         ;; `tab-bar-format-global'.
         (remove '(global-mode-string ("" global-mode-string))
-                mode-line-misc-info)))
+                mode-line-misc-info))
+
+  :config
+  (defun ap/tab-bar-tab-name-function ()
+    "Return project name or tab bar name."
+    (cl-labels ((buffer-project (buffer)
+                  (if-let ((file-name (buffer-file-name buffer)))
+                      (bufler-project-current nil (file-name-directory file-name))
+                    (bufler-project-current nil (buffer-local-value 'default-directory buffer))))
+                (window-prev-buffers-last-project (windows)
+                  (cl-loop for (buffer _ _) in windows
+                           when (buffer-project buffer)
+                           return it)))
+      (if-let ((project (or (buffer-project (window-buffer (minibuffer-selected-window)))
+                            (window-prev-buffers-last-project (window-prev-buffers (minibuffer-selected-window))))))
+          (project-name project)
+        (tab-bar-tab-name-current-with-count))))
+  (setopt tab-bar-tab-name-function #'ap/tab-bar-tab-name-function))
 
 (use-package taxy
   :quelpa
