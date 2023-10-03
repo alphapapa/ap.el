@@ -37,6 +37,7 @@
  '(async-bytecomp-package-mode t)
  '(async-shell-command-buffer 'new-buffer)
  '(avy-timeout-seconds 0.25)
+ '(bookmark-save-flag 1)
  '(browse-url-browser-function 'eww-browse-url)
  '(bufler-columns '("Name" "Size" "Mode" "VC" "Path"))
  '(bufler-filter-buffer-modes
