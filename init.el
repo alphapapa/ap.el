@@ -1384,7 +1384,7 @@ boundaries."
   :config
   (cl-defun ap/display-buffer-in-side-window (&optional (buffer (current-buffer))
                                                         &key (side 'right) (slot 0))
-    "Display BUFFER in dedicated side window.
+    "Display BUFFER in preserved, dedicated side window.
 With universal prefix, use left SIDE instead of right.  With two
 universal prefixes, prompt for side and slot (which allows
 setting up an IDE-like layout)."
@@ -1398,12 +1398,14 @@ setting up an IDE-like layout)."
                                ('(0) 0)
                                (_ (read-number "Slot: ")))))
     (let ((display-buffer-mark-dedicated t))
-      (display-buffer buffer
-                      `(display-buffer-in-side-window
-                        (side . ,side)
-                        (slot . ,slot)
-                        (window-parameters
-			 (no-delete-other-windows . t))))))
+      (thread-first buffer
+                    (display-buffer
+                     `(display-buffer-in-side-window
+                       (side . ,side)
+                       (slot . ,slot)
+                       (window-parameters
+                        (no-delete-other-windows . t))))
+                    (window-preserve-size t t))))
 
   (defun ap/toggle-window-dedicated-p (&optional window)
     "Toggle WINDOW's dedicated flag.
