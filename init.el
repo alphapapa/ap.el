@@ -1378,6 +1378,7 @@ boundaries."
 
 (use-package window
   :general ("C-x s" #'window-toggle-side-windows
+            "C-x S" #'ap/display-buffer-in-side-window
             "C-x q" #'bury-buffer
             "C-x Q" #'unbury-buffer)
   :config
