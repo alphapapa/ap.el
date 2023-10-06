@@ -107,6 +107,7 @@
  '(org-catch-invisible-edits 'error)
  '(org-clock-mode-line-total 'current)
  '(org-clock-report-include-clocking-task t)
+ '(org-ctags-open-link-functions nil)
  '(org-ctrl-k-protect-subtree t)
  '(org-ellipsis "↵")
  '(org-fontify-quote-and-verse-blocks t)
