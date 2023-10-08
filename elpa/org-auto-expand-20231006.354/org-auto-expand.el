@@ -1,13 +1,12 @@
 ;;; org-auto-expand.el --- Automatically expand certain headings  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2019  Adam Porter
+;; Copyright (C) 2019-2023  Adam Porter
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/org-auto-expand
-;; Package-Version: 20210923.243
-;; Package-Commit: edc27b155befab5626dcf6ceec7938126f7e31d4
-;; Version: 0.1
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Version: 20231006.354
+;; Version: 0.2-pre
+;; Package-Requires: ((emacs "26.1") (org "9.6"))
 ;; Keywords: convenience, outlines, org
 
 ;;; License:
@@ -65,14 +64,17 @@ WHAT argument to the function `org-auto-expand-node'.")
 ;; because that prevents them from being available in functions called by `eval'
 ;; lines, like `org-auto-expand'.  This seems both messy and elegant.
 
-;; TODO: Figure out if there's an alternative to a variable watcher.
+;; TODO: Figure out if there's an alternative to a variable watcher (or just remove this and use the properties).
 
 ;;;###autoload
 (define-minor-mode org-auto-expand-mode
   "Automatically expand certain headings when `org-mode' is activated."
   :global t
   (if org-auto-expand-mode
-      (add-variable-watcher 'org-auto-expand-nodes #'org-auto-expand-watcher)
+      (progn
+        (add-hook 'org-mode-hook #'org-auto-expand)
+        (add-variable-watcher 'org-auto-expand-nodes #'org-auto-expand-watcher))
+    (remove-hook 'org-mode-hook #'org-auto-expand)
     (remove-variable-watcher 'org-auto-expand-nodes #'org-auto-expand-watcher)))
 
 (defun org-auto-expand-watcher (_symbol newval operation where)
@@ -87,27 +89,32 @@ with `org-auto-expand-nodes' bound to NEWVAL."
 ;;;; Commands
 
 ;;;###autoload
-(defun org-auto-expand (&optional startup)
+(defun org-auto-expand ()
   "Set current buffer's outline visibility accordingly.
-If STARTUP is non-nil (interactively, with prefix), call
+If `org-startup-folded' is non-nil, call
 `org-set-startup-visibility' first."
-  (interactive "P")
+  (interactive)
   (unless (derived-mode-p 'org-mode)
     (user-error "Not an Org buffer: %s" (current-buffer)))
-  (when startup
-    (org-set-startup-visibility))
-  (when org-auto-expand-nodes
-    (cl-loop for (olp . how) in org-auto-expand-nodes
-             do (when-let ((pos (org-find-olp olp 'this-buffer)))
-                  (org-with-point-at pos
-                    (org-auto-expand-node how)))))
-  (org-with-wide-buffer
-   (goto-char (point-min))
-   (let ((re (org-re-property org-auto-expand-property)))
-     (while (re-search-forward re nil t)
-       (save-excursion
-         (org-back-to-heading)
-         (org-auto-expand-node))))))
+  (let ((re (org-re-property org-auto-expand-property)))
+    ;; Do nothing unless we're going to do something.
+    (when (or org-auto-expand-nodes
+              (org-with-wide-buffer
+               (goto-char (point-min))
+               (re-search-forward re nil t)))
+      (when org-startup-folded
+        (org-cycle-set-startup-visibility))
+      (when org-auto-expand-nodes
+        (cl-loop for (olp . how) in org-auto-expand-nodes
+                 do (when-let ((pos (org-find-olp olp 'this-buffer)))
+                      (org-with-point-at pos
+                        (org-auto-expand-node how)))))
+      (org-with-wide-buffer
+       (goto-char (point-min))
+       (while (re-search-forward re nil t)
+         (save-excursion
+           (org-back-to-heading 'invisible-ok)
+           (org-auto-expand-node)))))))
 
 ;;;; Functions
 
@@ -136,13 +143,13 @@ of the choices above."
                (symbol (list what))))
   (dolist (thing what)
     (pcase thing
-      ('heading (org-show-context 'minimal))
+      ('heading (org-fold-show-context 'minimal))
       ((or 'body)
-       (org-show-context 'minimal)
+       (org-fold-show-context 'minimal)
        (org-cycle))
-      ('children (org-show-children 1))
-      ((pred numberp) (org-show-children thing))
-      (else (org-show-context else)))))
+      ('children (org-fold-show-children 1))
+      ((pred numberp) (org-fold-show-children thing))
+      (else (org-fold-show-context else)))))
 
 ;;;; Footer
 
