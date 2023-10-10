@@ -1059,6 +1059,23 @@ org-agenda to deny bulk actions."
              "ocl" #'org-clock-in-last
              "ocz" #'ap/org-clock-add-note)
   :config
+  (defun ap/org-clock-heading-function ()
+    (truncate-string-to-width
+     (substring-no-properties
+      (org-link-display-format
+       (org-entry-get nil "ITEM")))
+     25 nil nil t))
+  (setopt org-clock-heading-function #'ap/org-clock-heading-function)
+  (defun ap/org-clock-get-clock-string ()
+    "Like `org-clock-get-clock-string', but nicer.
+Also, ignores effort, because it's not useful for this purpose."
+    (format (propertize "🦄:⏲(%s:%s)" 'face 'org-mode-line-clock)
+	    org-clock-heading
+            (pcase (* 60 (org-clock-get-clocked-time))
+              ((pred (> 60)) "0m")
+              (it (format-seconds "%x%hh%z%mm" it)))))
+  (advice-add #'org-clock-get-clock-string :override #'ap/org-clock-get-clock-string)
+
   (defun ap/org-clock-add-note ()
     "Call `org-add-note' on currently clocked item."
     (interactive)
