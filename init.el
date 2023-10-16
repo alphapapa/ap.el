@@ -419,18 +419,23 @@
        (mode-match "*Helm*" (rx bos "helm-")))
       (auto-mode))
      (group
-      (group-or "Org"
-                (dir "~/org")
-                (name-match "*Org QL*" (rx bos "*Org QL")))
+      (dir "~/work")
+      (dir "~/work" 1)
+      (group (auto-indirect))
+      (auto-parent-project))
+     (group
+      (dir "~/org")
       (group (name-match "*Org QL*" (rx bos "*Org QL")))
       (group (auto-indirect)
              (auto-file)))
-     (group-or "Emacs"
-               (dir "/usr/share/emacs")
-               (dir "~/.emacs.d")
-               (dir "~/src/emacs")
-               (dir "~/src/emacs/emacs")
-               (dir "~/src/archive/emacs"))
+     (group
+      (group-or "Emacs"
+                (dir "/usr/share/emacs")
+                (dir "~/.emacs.d")
+                (dir "~/src/emacs")
+                (dir "~/src/emacs/emacs")
+                (dir "~/src/archive/emacs"))
+      (auto-parent-project))
      (group-or "Home"
                (dir '("~/.config" "~/.homesick/repos/main"))
                (dir "~/.bin"))
