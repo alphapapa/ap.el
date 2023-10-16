@@ -133,6 +133,8 @@
  '(org-modern-checkbox '((88 . "✓") (45 . "□–") (32 . "□")))
  '(org-modern-hide-stars nil)
  '(org-modern-list '((43 . "•") (45 . "◦") (42 . "★")))
+ '(org-modules
+   '(ol-bbdb ol-bibtex org-crypt ol-docview ol-doi ol-eww ol-gnus ol-info ol-irc ol-mhe ol-rmail ol-w3m))
  '(org-now-default-cycle-level nil)
  '(org-now-hook '(hl-line-mode))
  '(org-now-location '("~/org/now.org"))
