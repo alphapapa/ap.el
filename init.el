@@ -58,6 +58,10 @@
  '(dired-omit-verbose nil)
  '(doom-outrun-electric-brighter-modeline t)
  '(doom-outrun-electric-comment-bg t)
+ '(ement-initial-sync-timeout 120)
+ '(ement-notify-notification-predicates
+   '(ement-notify--event-mentions-session-user-p ement-notify--event-mentions-room-p ement-notify--room-unread-p))
+ '(ement-room-list-space-prefix "")
  '(ement-save-sessions t)
  '(fci-rule-color "#62686E")
  '(forge-topic-list-limit '(60 . -5))
