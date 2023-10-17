@@ -45,7 +45,7 @@
 (defvar dogears-list nil
   "List of dogeared places.")
 
-(defvar dogears-index 0
+(defvar dogears-position 0
   "Index of last-visited dogeared place.
 Used in `dogears-back' and `dogears-forward'.")
 
@@ -246,9 +246,12 @@ context.  PLACE should be a bookmark record."
                                      (cl-remove-if (lambda (place)
                                                      (string-empty-p (dogears--relevance place)))
                                                    list))))
-                      (collection (cl-loop for place in (funcall filter-fn dogears-list)
-                                           for key = (dogears--format-record place)
+                      (collection (cl-loop for i from 0
+                                           for place in (funcall filter-fn dogears-list)
+                                           for key = (concat (number-to-string i) ": "
+                                                             (dogears--format-record place))
                                            collect (cons key place)))
+                      ;; TODO: Disable completion sorting (so they're always in order). 
                       (choice (completing-read "Place: " collection nil t)))
                  (list (alist-get choice collection nil nil #'equal))))
   (or (ignore-errors
@@ -286,15 +289,17 @@ consider manually dogeared places."
                       (and (not (dogears--equal place current-place))
                            (or (not manualp)
                                (map-elt (cdr place) 'manualp)))))
-         (place (cl-find-if predicate dogears-list
-                            :start (pcase direction
-                                     ('forward (1+ dogears-index)))
-                            :end (pcase direction
-                                   ('backward dogears-index))
-                            :from-end (equal 'backward direction))))
-    (if place
+         (position (cl-position-if predicate dogears-list
+                                   :start (pcase direction
+                                            ('backward (1+ dogears-position)))
+                                   :end (pcase direction
+                                          ('forward dogears-position))
+                                   :from-end (equal 'forward direction)))
+         place)
+    (if position
         (progn
-          (setf dogears-index (cl-position place dogears-list :test #'dogears--equal))
+          (setf dogears-position position
+                place (nth position dogears-list))
           (when (not (dogears--equal place current-place :ignore-manual-p manualp))
             (dogears-go place)
             (when dogears-message
@@ -302,7 +307,7 @@ consider manually dogeared places."
                        (pcase direction
                          ('backward "Back")
                          ('forward "Forward"))
-                       (1+ dogears-index) (length dogears-list)))))
+                       dogears-position (length dogears-list)))))
       (dogears--update-list-buffer)
       (user-error "At %s %sdogeared place"
                   (pcase direction
@@ -368,10 +373,10 @@ IGNORE-MANUAL-P, ignore whether places were manually remembered."
 
 (defun dogears--format-record (record)
   "Return bookmark RECORD formatted."
-  (pcase-let* ((`(,manualp ,relevance ,within ,line ,mode ,buffer ,position ,dir)
+  (pcase-let* ((`(,manual ,relevance ,within ,line ,mode ,buffer ,position ,dir)
                 (dogears--format-record-list record)))
     (format "%s [%9s]  (%25s)  \"%25s\"  %s %12s %s\\%s"
-            (if manualp "✓" " ") relevance within line buffer mode position dir)))
+            manual relevance within line buffer mode position dir)))
 
 (defun dogears--format-record-list (record)
   "Return a list of elements in RECORD formatted."
@@ -538,7 +543,7 @@ Compares against modes in `dogears-ignore-modes'."
   "Return `tabulated-list-entries'."
   (cl-loop for place in dogears-list
            for i from 0
-           for index = (if (equal i dogears-index)
+           for index = (if (equal i dogears-position)
                            (propertize (number-to-string i)
                                        'face 'font-lock-keyword-face)
                          (number-to-string i))
