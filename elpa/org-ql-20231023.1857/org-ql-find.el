@@ -41,6 +41,7 @@
 
 (defcustom org-ql-find-goto-hook '(org-show-entry org-reveal)
   "Functions called when selecting an entry."
+  ;; TODO: Add common choices, including `org-tree-to-indirect-buffer'.
   :type 'hook)
 
 (defcustom org-ql-find-display-buffer-action '(display-buffer-same-window)
@@ -86,10 +87,11 @@ single predicate)."
                   :query-prefix query-prefix
                   :query-filter query-filter
                   :prompt prompt)))
-    (org-with-point-at marker
-      (display-buffer (current-buffer) org-ql-find-display-buffer-action)
-      (select-window (get-buffer-window (current-buffer)))
-      (run-hook-with-args 'org-ql-find-goto-hook))))
+    (set-buffer (marker-buffer marker))
+    (goto-char marker)
+    (display-buffer (current-buffer) org-ql-find-display-buffer-action)
+    (select-window (get-buffer-window (current-buffer)))
+    (run-hook-with-args 'org-ql-find-goto-hook)))
 
 ;;;###autoload
 (defun org-ql-refile (marker)
@@ -133,9 +135,15 @@ which see (but only the files are used)."
   (org-ql-find (org-ql-search-directories-files)))
 
 ;;;###autoload
-(cl-defun org-ql-find-link
-    (buffers-files &key query-prefix query-filter
-                   (prompt "Open link: "))
+(defun org-ql-find-path ()
+  "Call `org-ql-find' to search outline paths in the current buffer."
+  (interactive)
+  (let ((org-ql-default-predicate 'outline-path))
+    (org-ql-find (current-buffer))))
+
+;;;###autoload
+(cl-defun org-ql-open-link (buffers-files &key query-prefix query-filter
+                                          (prompt "Open link: "))
   "FIXME: Docstring."
   (interactive
    ;; FIXME: Factor this out.

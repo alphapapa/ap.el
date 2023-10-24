@@ -142,7 +142,9 @@ which see (but only the files are used).
 Call `org-ql-find' on `org-agenda-files'." t)
 (autoload 'org-ql-find-in-org-directory "org-ql-find" "\
 Call `org-ql-find' on files in `org-directory'." t)
-(autoload 'org-ql-find-link "org-ql-find" "\
+(autoload 'org-ql-find-path "org-ql-find" "\
+Call `org-ql-find' to search outline paths in the current buffer." t)
+(autoload 'org-ql-open-link "org-ql-find" "\
 FIXME: Docstring.
 
 (fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (PROMPT \"Open link: \"))" t)
