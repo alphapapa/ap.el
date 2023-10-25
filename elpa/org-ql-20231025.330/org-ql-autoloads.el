@@ -145,7 +145,12 @@ Call `org-ql-find' on files in `org-directory'." t)
 (autoload 'org-ql-find-path "org-ql-find" "\
 Call `org-ql-find' to search outline paths in the current buffer." t)
 (autoload 'org-ql-open-link "org-ql-find" "\
-FIXME: Docstring.
+Open a link selected with `org-ql-completing-read'.
+Links found in entries matching the input query are offered as
+candidates, and the selected one is opened with
+`org-open-at-point'.  Arguments BUFFERS-FILES, QUERY-FILTER,
+QUERY-PREFIX, and PROMPT are passed to `org-ql-completing-read',
+which see.
 
 (fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (PROMPT \"Open link: \"))" t)
 (register-definition-prefixes "org-ql-find" '("org-ql-find-"))
