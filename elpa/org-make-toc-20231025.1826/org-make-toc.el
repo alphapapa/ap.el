@@ -4,8 +4,8 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/org-make-toc
-;; Package-Version: 20200409.936
-;; Version: 0.5
+;; Package-Version: 20231025.1826
+;; Version: 0.6-pre
 ;; Package-Requires: ((emacs "26.1") (dash "2.12") (s "1.10.0") (org "9.0"))
 ;; Keywords: Org, convenience
 
@@ -161,9 +161,24 @@ with the destination of the published file."
                  (const :tag "Org-compatible" org-make-toc--link-entry-org)
                  (function :tag "Custom function")))
 
+(defcustom org-make-toc-insert-custom-ids nil
+  "Add \"CUSTOM_ID\" properties to headings when using GitHub-compatible links.
+When non-nil and using the default `org-make-toc-link-type-fn' to
+generate GitHub-compatible links, automatically insert a
+\"CUSTOM_ID\" property for each entry.  This will allow links to
+also work in `org-mode' in Emacs."
+  :type 'boolean)
+
 (defcustom org-make-toc-exclude-tags '("noexport")
   "Entries with any of these tags are excluded from TOCs."
   :type '(repeat string))
+
+(defconst org-make-toc-contents-drawer-start-regexp
+  (rx bol (0+ blank) ":CONTENTS:" (0+ blank) eol)
+  "Regular expression for the beginning of a :CONTENTS: drawer")
+
+(defvar-local org-make-toc-disambiguations (make-hash-table :test #'equal)
+  "Used to disambiguate custom IDs.")
 
 ;;;; Commands
 
@@ -171,6 +186,7 @@ with the destination of the published file."
 (defun org-make-toc ()
   "Make or update table of contents in current buffer."
   (interactive)
+  (clrhash org-make-toc-disambiguations)
   (save-excursion
     (goto-char (point-min))
     (cl-loop with made-toc
@@ -264,7 +280,7 @@ with the destination of the published file."
 (defun org-make-toc--next-toc-position ()
   "Return position of next TOC, or nil."
   (save-excursion
-    (when (and (re-search-forward (rx bol ":CONTENTS:" (0+ blank) eol) nil t)
+    (when (and (re-search-forward org-make-toc-contents-drawer-start-regexp nil t)
                (save-excursion
                  (beginning-of-line)
                  (looking-at-p org-drawer-regexp)))
@@ -362,21 +378,36 @@ with the destination of the published file."
 (defun org-make-toc--tree-to-list (tree)
   "Return list string for TOC TREE."
   (cl-labels ((tree (tree depth)
-                    (when (> (length tree) 0)
-                      (when-let* ((entries (->> (append (when (car tree)
-                                                          (list (concat (s-repeat depth "  ")
-                                                                        "- " (car tree))))
-                                                        (--map (tree it (1+ depth))
-                                                               (cdr tree)))
-                                                -non-nil -flatten)))
-                        (s-join "\n" entries)))))
+                (when (> (length tree) 0)
+                  (when-let* ((entries (->> (append (when (car tree)
+                                                      (list (concat (s-repeat depth "  ")
+                                                                    "- " (car tree))))
+                                                    (--map (tree it (1+ depth))
+                                                           (cdr tree)))
+                                            -non-nil -flatten)))
+                    (s-join "\n" entries)))))
     (->> tree
          (--map (tree it 0))
          -flatten (s-join "\n"))))
 
+(defun org-make-toc--disambiguate (string)
+  "Return STRING having been disambiguated.
+Uses hash table `org-make-toc-disambiguations'."
+  (if (not (gethash string org-make-toc-disambiguations))
+      (progn
+        (setf (gethash string org-make-toc-disambiguations) t)
+        string)
+    (cl-loop for i from 0 to 1000
+             do (when (= 1000 i)
+                  (error "Tried to disambiguate %s 1000 times" string))
+             for new-string = (format "%s-%s" string i)
+             if (not (gethash new-string org-make-toc-disambiguations))
+             do (puthash new-string t org-make-toc-disambiguations)
+             and return new-string)))
+
 (defun org-make-toc--link-entry-github ()
   "Return text for ENTRY converted to GitHub style link."
-  (-when-let* ((title (nth 4 (org-heading-components)))
+  (-when-let* ((title (org-link-display-format (org-entry-get nil "ITEM")))
                (target (--> title
                             org-link-display-format
                             (downcase it)
@@ -385,13 +416,16 @@ with the destination of the published file."
                (filename (if org-make-toc-filename-prefix
                              (file-name-nondirectory (buffer-file-name))
                            "")))
+    (when org-make-toc-insert-custom-ids
+      (setf target (org-make-toc--disambiguate target))
+      (org-set-property "CUSTOM_ID" target))
     (org-make-link-string (concat filename "#" target)
                           (org-make-toc--visible-text title))))
 
 (defun org-make-toc--link-entry-org ()
   "Return text for ENTRY converted to regular Org link."
   ;; FIXME: There must be a built-in function to do this, although it might be in `org-export'.
-  (-when-let* ((title (nth 4 (org-heading-components)))
+  (-when-let* ((title (org-link-display-format (org-entry-get nil "ITEM")))
                (filename (if org-make-toc-filename-prefix
                              (concat "file:" (file-name-nondirectory (buffer-file-name)) "::")
                            "")))
@@ -405,13 +439,13 @@ Replaces contents of :CONTENTS: drawer."
     (org-back-to-heading 'invisible-ok)
     (let* ((end (org-entry-end-position))
            contents-beg contents-end)
-      (when (and (re-search-forward (rx bol ":CONTENTS:" (0+ blank) eol) end t)
+      (when (and (re-search-forward org-make-toc-contents-drawer-start-regexp end t)
                  (save-excursion
                    (beginning-of-line)
                    (looking-at-p org-drawer-regexp)))
         ;; Set the end first, then search back and skip any ":TOC:" property line in the drawer.
         (setf contents-end (save-excursion
-                             (when (re-search-forward (rx bol ":END:" (0+ blank) eol) end)
+                             (when (re-search-forward (rx bol (0+ blank) ":END:" (0+ blank) eol) end)
                                (match-beginning 0)))
               contents-beg (progn
                              (when (save-excursion
@@ -447,17 +481,17 @@ created."
           (cl-flet ((visible-p () (not (get-char-property (point) 'invisible)))
                     (invisible-p () (get-char-property (point) 'invisible))
                     (forward-until (until)
-                                   (cl-loop until (or (eobp) (funcall until))
-                                            for pos = (next-single-property-change (point) 'invisible nil (point-max))
-                                            while pos
-                                            do (goto-char pos))
-                                   (point))
+                      (cl-loop until (or (eobp) (funcall until))
+                               for pos = (next-single-property-change (point) 'invisible nil (point-max))
+                               while pos
+                               do (goto-char pos))
+                      (point))
                     (backward-until (until)
-                                    (cl-loop until (or (eobp) (funcall until))
-                                             for pos = (previous-single-property-change (point) 'invisible nil (point-max))
-                                             while pos
-                                             do (goto-char pos))
-                                    (point)))
+                      (cl-loop until (or (eobp) (funcall until))
+                               for pos = (previous-single-property-change (point) 'invisible nil (point-max))
+                               while pos
+                               do (goto-char pos))
+                      (point)))
             (goto-char (point-min))
             (unless (visible-p)
               (forward-until #'visible-p))
