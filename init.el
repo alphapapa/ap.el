@@ -1122,7 +1122,11 @@ Also, ignores effort, because it's not useful for this purpose."
 (use-package org-notely
   :quelpa (org-notely :fetcher github :repo "alphapapa/org-notely")
   :general
-  ("M-g N" #'org-notely))
+  ("M-g N" #'org-notely)
+  :config
+  ;; See <https://github.com/oantolin/embark/issues/670#issuecomment-1749887910>.
+  (cl-pushnew 'embark-org--at-heading
+              (alist-get 'org-notely-here embark-around-action-hooks)))
 
 (use-package org-now
   :quelpa (org-now :fetcher github :repo "alphapapa/org-now")
