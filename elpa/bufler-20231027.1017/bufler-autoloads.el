@@ -67,13 +67,21 @@ use current buffer.
 (autoload 'bufler-workspace-switch-buffer "bufler-workspace" "\
 Switch to another buffer in the current group.
 Without any input, switch to the previous buffer, like
-`switch-to-buffer'.  If ALL-P (interactively, with universal
-prefix) or if the frame has no workspace, select from all
-buffers.  If SWITCH-WORKSPACE-P (disable with two universal
-prefixes), select from all buffers and switch to that buffer's
-workspace.  If NO-FILTER (with three universal prefixes), include
-buffers that would otherwise be filtered by
+`switch-to-buffer'.
+
+If ALL-P (interactively, with universal prefix) or if the frame
+has no workspace, select from all buffers.
+
+If SWITCH-WORKSPACE-P (disable with two universal prefixes),
+select from all buffers and switch to that buffer's workspace.
+
+If NO-FILTER (with three universal prefixes), include buffers
+that would otherwise be filtered by
 `bufler-workspace-switch-buffer-filter-fns'.
+
+If INCLUDE-RECENT-BUFFERS, include recently shown buffers in the
+selected window at the top of the list of buffers (see option
+`bufler-switch-buffer-include-recent-buffers').
 
 If `bufler-workspace-switch-buffer-sets-workspace' is non-nil,
 act as if SET-WORKSPACE-P is non-nil.  And if
@@ -81,7 +89,7 @@ act as if SET-WORKSPACE-P is non-nil.  And if
 automatically switch to the buffer's workspace's tab, if it has
 one.
 
-(fn &key ALL-P NO-FILTER (SWITCH-WORKSPACE-P t))" t)
+(fn &key ALL-P NO-FILTER (INCLUDE-RECENT-BUFFERS bufler-switch-buffer-include-recent-buffers) (SWITCH-WORKSPACE-P t))" t)
 (autoload 'bufler-workspace-buffer-name-workspace "bufler-workspace" "\
 Set current buffer's workspace to NAME.
 If NAME is nil (interactively, with prefix), unset the buffer's
@@ -133,7 +141,7 @@ NAME should be the name of a bookmark (this just calls
 Handler function for `bufler-workspace' BOOKMARK.
 
 (fn BOOKMARK)")
-(register-definition-prefixes "bufler-workspace" '("bufler-w"))
+(register-definition-prefixes "bufler-workspace" '("bufler-"))
 
 
 ;;; Generated autoloads from bufler-workspace-tabs.el
