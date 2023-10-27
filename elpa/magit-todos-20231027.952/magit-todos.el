@@ -4,8 +4,8 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/magit-todos
-;; Package-Version: 20230826.1332
-;; Version: 1.7
+;; Package-Version: 20231027.952
+;; Version: 1.8-pre
 ;; Package-Requires: ((emacs "26.1") (async "1.9.2") (dash "2.13.0") (f "0.17.2") (hl-todo "1.9.0") (magit "2.13.0") (pcre2el "1.8") (s "1.12.0") (transient "0.2.0"))
 ;; Keywords: magit, vc
 
@@ -211,7 +211,7 @@ items."
   "Apply keyword faces to group keyword headers."
   :type 'boolean)
 
-(defcustom magit-todos-keyword-suffix (rx (optional "(" (1+ (not (any ")"))) ")") ":")
+(defcustom magit-todos-keyword-suffix (rx (optional (or "(" "[") (1+ (not (any ")" "]"))) (or ")" "]")) ":")
   "Regular expression matching suffixes after keywords.
 e.g. to match a keyword like \"TODO(user):\", use \"([^)]+):\".
 
@@ -221,8 +221,10 @@ account for optional whitespace after the suffix, as this is done
 automatically.
 
 Note: the suffix applies only to non-Org files."
-  :type `(choice (const :tag "Optional username in parens, then required colon (matching e.g. \"TODO:\" or \"TODO(user):\")"
+  :type `(choice (const :tag "Optional suffix in parens, then required colon (matching e.g. \"TODO:\" or \"TODO(foo):\")"
                         ,(rx (optional "(" (1+ (not (any ")"))) ")") ":"))
+                 (const :tag "Optional suffix in parens or brackets, then required colon (matching e.g. \"TODO:\" or \"TODO(foo):\" or \"TODO[foo]:\")"
+                        ,(rx (optional (or "(" "[") (1+ (not (any ")" "]"))) (or ")" "]")) ":"))
                  (const :tag "Required colon (matching e.g. \"TODO:\"" ":")
                  (string :tag "Custom regexp"))
   :package-version '(magit-todos . "1.2"))
@@ -623,16 +625,7 @@ buffer for RESULTS-REGEXP."
     (save-excursion
       (goto-char (point-min))
       (while (not (eobp))
-        (--when-let (condition-case err
-                        (magit-todos--line-item results-regexp)
-                      ;; Files with very, very long lines may cause Emacs's regexp matcher to overflow.
-                      ;; Rather than abort the whole scan and raise an error, try to handle it gracefully.
-                      ;; FIXME: This may raise multiple warnings per file.
-                      (error (if (string= "Stack overflow in regexp matcher" (error-message-string err))
-                                 (let ((filename (buffer-substring (point) (1- (re-search-forward ":")))))
-                                   (display-warning 'magit-todos (concat "File has lines too long for Emacs to search.  Consider excluding it from scans: " filename))
-                                   nil)
-                               (signal (car err) (cdr err)))))
+        (--when-let (magit-todos--line-item results-regexp)
           (push it items))
         (forward-line 1)))
     (nreverse items)))
@@ -983,7 +976,14 @@ This should be called in a process's output buffer from one of
 the async callback functions.  The calling function should
 advance to the next line."
   (let ((case-fold-search magit-todos-ignore-case))
-    (when (re-search-forward regexp (line-end-position) t)
+    (when (condition-case err
+              (re-search-forward regexp (line-end-position) t)
+            (error (if (string-match-p "Stack overflow in regexp matcher" (error-message-string err))
+                       ;; FIXME: This may raise multiple warnings per file.
+                       (let ((filename (buffer-substring (point) (1- (re-search-forward ":")))))
+                         (message "magit-todos: File has lines too long for Emacs to search.  Consider excluding it from scans: %s" filename)
+                         nil)
+                     (signal (car err) (cdr err)))))
       (make-magit-todos-item :filename (or filename
                                            (match-string 8))
                              :line (--when-let (match-string 2)
