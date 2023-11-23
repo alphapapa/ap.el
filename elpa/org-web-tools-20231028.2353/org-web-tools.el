@@ -1,9 +1,11 @@
 ;;; org-web-tools.el --- Display and capture web content with Org-mode  -*- lexical-binding: t -*-
 
+;; TODO: Add copyright line.
+
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: http://github.com/alphapapa/org-web-tools
-;; Version: 1.2-pre
-;; Package-Requires: ((emacs "25.1") (org "9.0") (dash "2.12") (esxml "0.3.4") (s "1.10.0") (request "0.3.0"))
+;; Version: 1.3-pre
+;; Package-Requires: ((emacs "27.1") (org "9.0") (compat "29.1.4.2") (dash "2.12") (esxml "0.3.4") (s "1.10.0") (plz "0.7") (request "0.3.0"))
 ;; Keywords: hypermedia, outlines, Org, Web
 
 ;;; Commentary:
@@ -44,7 +46,7 @@
 ;; your own commands.
 
 ;; `org-web-tools--dom-to-html': Return parsed HTML DOM as an HTML
-;; string. Note: This is an approximation and is not necessarily
+;; string.  Note: This is an approximation and is not necessarily
 ;; correct HTML (e.g. IMG tags may be rendered with a closing "</img>"
 ;; tag).
 
@@ -52,8 +54,6 @@
 ;; title.
 
 ;; `org-web-tools--get-url': Return content for URL as string.
-
-;; `org-web-tools--html-title': Return title of HTML page.
 
 ;; `org-web-tools--html-to-org-with-pandoc': Return string of HTML
 ;; converted to Org with Pandoc.
@@ -95,6 +95,7 @@
 ;;;; Requirements
 
 (require 'cl-lib)
+(require 'compat)
 (require 'dash)
 (require 'dom)
 (require 'esxml-query)
@@ -104,17 +105,15 @@
 (require 'shr)
 (require 'subr-x)
 (require 'thingatpt)
-(require 'url)
+
+(require 'plz)
 
 ;;;; Variables
-
-;; Silence byte-compiler.
-(defvar url-http-end-of-headers)
 
 ;;;; Customization
 
 (defgroup org-web-tools nil
-  "Options for `org-web-tools.'"
+  "Options for `org-web-tools'."
   :group 'org
   :link '(url-link "http://github.com/alphapapa/org-web-tools"))
 
@@ -127,13 +126,12 @@ Pandoc >= 1.16 deprecates `--no-wrap' in favor of
 
 (defcustom org-web-tools-pandoc-replacements
   (list (cons (rx "") ""))
-  "List of alists pairing regular expressions with a string that should replace each one.
-Used to clean output from Pandoc."
+  "Used to clean output from Pandoc."
   :type '(alist :key-type string
                 :value-type string))
 
 (defcustom org-web-tools-pandoc-sleep-time 0.2
-  "When testing Pandoc the first time it's used in a session, wait this long for Pandoc to start.
+  "Wait this long for Pandoc to start the first time in a session..
 Normally this should not need to be changed, but if Pandoc takes
 unusually long to start on your system (which it seems to on
 FreeBSD, for some reason), you may need to increase this."
@@ -159,6 +157,7 @@ When SELECTOR is non-nil, the HTML is filtered using
                                         "-f" "html-raw_html-native_divs" "-t" "org"))
       ;; TODO: Add error output, see org-protocol-capture-html
       (error "Pandoc failed"))
+    (org-mode)
     (org-web-tools--clean-pandoc-output)
     (buffer-string)))
 
@@ -251,11 +250,12 @@ If URL is not given, look for first URL in `kill-ring'."
   (insert (org-web-tools--org-link-for-url url)))
 
 ;;;###autoload
-(cl-defun org-web-tools-insert-web-page-as-entry (url &key (capture-fn #'org-web-tools--url-as-readable-org))
+(cl-defun org-web-tools-insert-web-page-as-entry (url &key (capture-function #'org-web-tools--url-as-readable-org))
   "Insert web page contents of URL as Org sibling entry.
-Page is processed with `eww-readable'."
+CAPTURE-FUNCTION is called with URL to get the contents.  Page is
+processed with `eww-readable'."
   (interactive (list (org-web-tools--get-first-url)))
-  (let ((content (s-trim (funcall capture-fn url))))
+  (let ((content (s-trim (funcall capture-function url))))
     (unless (string-empty-p content)
       (unless (eq major-mode 'org-mode)
         (display-warning 'org-web-tools "Pasting Org subtree into non-org-mode buffer; this may cause problems"))
@@ -265,13 +265,13 @@ Page is processed with `eww-readable'."
       t)))
 
 ;;;###autoload
-(cl-defun org-web-tools-read-url-as-org (url &key (show-buffer-fn #'switch-to-buffer))
+(cl-defun org-web-tools-read-url-as-org (url &key (show-buffer-function #'switch-to-buffer))
   "Read URL's readable content in an Org buffer.
-Buffer is displayed using SHOW-BUFFER-FN."
+Buffer is displayed using SHOW-BUFFER-FUNCTION."
   (interactive (list (org-web-tools--get-first-url)))
   (let ((entry (org-web-tools--url-as-readable-org url)))
     (when entry
-      (funcall show-buffer-fn url)
+      (funcall show-buffer-function url)
       (org-mode)
       (insert entry)
       ;; Set buffer title
@@ -287,17 +287,17 @@ current entry (i.e. this does not look deeper in the subtree, nor
 outside of it) will be converted."
   (interactive)
   (cl-flet ((prev-url (entry-beg)
-                      ;; Work from the bottom of the list to the top, makes it simpler
-                      (when (re-search-backward (rx "http" (optional "s") "://" (1+ (not (any space)))) entry-beg 'no-error)
-                        ;; Found link; see if it's an Org link
-                        (beginning-of-line)
-                        (if (re-search-forward org-bracket-link-analytic-regexp (line-end-position) 'noerror)
-                            ;; Org link
-                            (list ;; Reconstruct link from regexp groups
-                             (concat (match-string 1) (match-string 3))
-                             (match-beginning 0))
-                          ;; Plain link
-                          (list (match-string 0) (match-beginning 0))))))
+              ;; Work from the bottom of the list to the top, makes it simpler
+              (when (re-search-backward (rx "http" (optional "s") "://" (1+ (not (any space)))) entry-beg 'no-error)
+                ;; Found link; see if it's an Org link
+                (beginning-of-line)
+                (if (re-search-forward org-link-bracket-re (line-end-position) 'noerror)
+                    ;; Org link
+                    (list ;; Reconstruct link from regexp groups
+                     (concat (match-string 1) (match-string 3))
+                     (match-beginning 0))
+                  ;; Plain link
+                  (list (match-string 0) (match-beginning 0))))))
     (let ((level (1+ (org-outline-level)))
           (entry-beg (org-entry-beginning-position)))
       (goto-char (org-entry-end-position))
@@ -324,63 +324,21 @@ outside of it) will be converted."
   "Return Org link to URL using title of HTML page at URL.
 If URL is not given, look for first URL in `kill-ring'.  If page
 at URL has no title, return URL."
-  (let* ((html (org-web-tools--get-url url))
-         (title (org-web-tools--html-title html)))
-    (if title
-        (org-make-link-string url title)
-      (message "HTML page at URL has no title")
-      url)))
+  (if-let ((dom (plz 'get url :as #'libxml-parse-html-region))
+           (title (cl-caddr (car (dom-by-tag dom 'title)))))
+      (org-link-make-string url (org-web-tools--cleanup-title title))
+    (message "HTML page at URL has no title")
+    url))
 
-(defun org-web-tools--eww-readable (html)
-  "Return \"readable\" part of HTML with title.
+(defun org-web-tools--eww-readable (dom)
+  "Return \"readable\" part of DOM with title.
 Returns list (TITLE . HTML).  Based on `eww-readable'."
-  (let* ((dom (with-temp-buffer
-                (insert html)
-                (libxml-parse-html-region (point-min) (point-max))))
-         (title (cl-caddr (car (dom-by-tag dom 'title)))))
+  (let ((title (cl-caddr (car (dom-by-tag dom 'title)))))
     (eww-score-readability dom)
     (cons title
           (with-temp-buffer
             (shr-dom-print (eww-highest-readability dom))
             (buffer-string)))))
-
-(defun org-web-tools--get-url (url)
-  "Return content for URL as string.
-This uses `url-retrieve-synchronously' to make a request with the
-URL, then returns the response body.  Since that function returns
-the entire response, including headers, we must remove the
-headers ourselves."
-  (let* ((response-buffer (url-retrieve-synchronously url nil t))
-         (encoded-html (with-current-buffer response-buffer
-                         ;; Skip HTTP headers.
-                         ;; FIXME: Byte-compiling says that `url-http-end-of-headers' is a free
-                         ;; variable, which seems to be because it's not declared by url.el with
-                         ;; `defvar'.  Yet this seems to work fine...
-                         (delete-region (point-min) url-http-end-of-headers)
-                         (buffer-string))))
-    ;; NOTE: Be careful to kill the buffer, because `url' doesn't close it automatically.
-    (kill-buffer response-buffer)
-    (with-temp-buffer
-      ;; For some reason, running `decode-coding-region' in the
-      ;; response buffer has no effect, so we have to do it in a
-      ;; temp buffer.
-      (insert encoded-html)
-      (condition-case nil
-          ;; Fix undecoded text
-          (decode-coding-region (point-min) (point-max) 'utf-8)
-        (coding-system-error nil))
-      (buffer-string))))
-
-(defun org-web-tools--html-title (html)
-  "Return title of HTML page, or nil if it has none.
-Uses the `dom' library."
-  ;; Based on `eww-readable'
-  (let* ((dom (with-temp-buffer
-                (insert html)
-                (libxml-parse-html-region (point-min) (point-max))))
-         (title (cl-caddr (car (dom-by-tag dom 'title)))))
-    (when title
-      (org-web-tools--cleanup-title title))))
 
 (defun org-web-tools--url-as-readable-org (&optional url)
   "Return string containing Org entry of URL's web page content.
@@ -396,12 +354,11 @@ first-level entry for writing comments."
   ;;  (file "~/org/articles.org")
   ;;  "%(org-web-tools--url-as-readable-org)")
   (-let* ((url (or url (org-web-tools--get-first-url)))
-          (html (org-web-tools--get-url url))
-          (html (org-web-tools--sanitize-html html))
-          ((title . readable) (org-web-tools--eww-readable html))
+          (dom (plz 'get url :as #'org-web-tools--sanitized-dom))
+          ((title . readable) (org-web-tools--eww-readable dom))
           (title (org-web-tools--cleanup-title (or title "")))
           (converted (org-web-tools--html-to-org-with-pandoc readable))
-          (link (org-make-link-string url title))
+          (link (org-link-make-string url title))
           (timestamp (format-time-string (concat "[" (substring (cdr org-time-stamp-formats) 1 -1) "]"))))
     (with-temp-buffer
       (org-mode)
@@ -417,18 +374,16 @@ first-level entry for writing comments."
               "** Article" "\n\n")
       (buffer-string))))
 
-(defun org-web-tools--sanitize-html (html)
-  "Sanitize HTML string."
+(defun org-web-tools--sanitized-dom ()
+  "Return sanitized DOM for HTML in current buffer."
   ;; libxml-parse-html-region converts "&nbsp;" to " ", so we have to
   ;; clean the HTML first.
-  (with-temp-buffer
-    (insert html)
-    (cl-loop for (match . replace) in (list (cons "&nbsp;" " "))
-             do (progn
-                  (goto-char (point-min))
-                  (while (re-search-forward match nil t)
-                    (replace-match replace))))
-    (buffer-string)))
+  (cl-loop for (match . replace) in (list (cons "&nbsp;" " "))
+           do (progn
+                (goto-char (point-min))
+                (while (re-search-forward match nil t)
+                  (replace-match replace))))
+  (libxml-parse-html-region (point-min)))
 
 ;;;;; Misc
 
@@ -469,8 +424,7 @@ stars (i.e. the highest level possible has 1 star)."
 (defun org-web-tools--dom-to-html (dom)
   "Return parsed HTML object DOM as an HTML string.
 Note: This is an approximation and is not necessarily correct
-HTML (e.g. IMG tags may be rendered with a closing \"</img>\"
-tag)."
+HTML."
   ;; MAYBE: Use `shr-dom-print' instead?  (I think I wasn't aware of that function when I wrote
   ;; this.)
   ;; NOTE: As the docstring says, certain HTML tags may not be
@@ -479,17 +433,17 @@ tag)."
   ;; way to transform a parsed DOM back to correct HTML in Emacs.
   ;; This is probably close enough to still be useful in many cases.
   (cl-labels ((render (node)
-                      (cl-typecase node
-                        (string node)
-                        (list (concat "<"
-                                      (symbol-name (dom-tag node))
-                                      (when (dom-attributes node)
-                                        (concat " " (mapconcat #'attr (dom-attributes node) " ")))
-                                      ">"
-                                      (mapconcat #'render (dom-children node) "\n")
-                                      "</" (symbol-name (dom-tag node)) ">"))))
+                (cl-typecase node
+                  (string node)
+                  (list (concat "<"
+                                (symbol-name (dom-tag node))
+                                (when (dom-attributes node)
+                                  (concat " " (mapconcat #'attr (dom-attributes node) " ")))
+                                ">"
+                                (mapconcat #'render (dom-children node) "\n")
+                                "</" (symbol-name (dom-tag node)) ">"))))
               (attr (pair)
-                    (format "%s=\"%s\"" (car pair) (cdr pair))))
+                (format "%s=\"%s\"" (car pair) (cdr pair))))
     (render dom)))
 
 (defun org-web-tools--get-first-url ()
@@ -499,8 +453,9 @@ tag)."
            when (and item (string-match (rx bol "http" (optional "s") "://") item))
            return item))
 
+(declare-function org-element-property "org-element")
 (defun org-web-tools--read-url ()
-  "Return URL at point, or from clipboard, or from kill-ring, or prompt for one."
+  "Return URL at point, from clipboard, from `kill-ring', or prompt."
   (or (thing-at-point-url-at-point)
       (org-element-property :raw-link (org-element-context))
       (org-web-tools--get-first-url)
@@ -508,7 +463,7 @@ tag)."
 
 (defconst org-web-tools--link-desc-submatch
   (if (version<= "9.3" org-version) 2 3)
-  "Match group index of link description in `org-bracket-link-regexp'.")
+  "Match group index of link description in `org-link-bracket-re'.")
 
 (defun org-web-tools--read-org-bracket-link (&optional link)
   "Return (TARGET . DESCRIPTION) for Org bracket LINK or next link on current line."
@@ -517,11 +472,11 @@ tag)."
     (let (target desc)
       (if link
           ;; Link passed as arg
-          (when (string-match org-bracket-link-regexp link)
+          (when (string-match org-link-bracket-re link)
             (setq target (match-string-no-properties 1 link)
                   desc (match-string-no-properties org-web-tools--link-desc-submatch link)))
         ;; No arg; get link from buffer
-        (when (re-search-forward org-bracket-link-regexp (point-at-eol) t)
+        (when (re-search-forward org-link-bracket-re (pos-eol) t)
           (setq target (match-string-no-properties 1)
                 desc (match-string-no-properties org-web-tools--link-desc-submatch))))
       (when (and target desc)
