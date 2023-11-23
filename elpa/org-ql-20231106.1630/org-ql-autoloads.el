@@ -143,7 +143,14 @@ Call `org-ql-find' on `org-agenda-files'." t)
 (autoload 'org-ql-find-in-org-directory "org-ql-find" "\
 Call `org-ql-find' on files in `org-directory'." t)
 (autoload 'org-ql-find-path "org-ql-find" "\
-Call `org-ql-find' to search outline paths in the current buffer." t)
+Call `org-ql-find' to search outline paths in BUFFERS-FILES.
+Interactively, search the buffers and files relevant to the
+current buffer (i.e. in `org-agenda-mode', the value of
+`org-ql-view-buffers-files' or `org-agenda-contributing-files';
+in `org-mode', that buffer).  With universal prefix, select
+multiple buffers to search with completion and PROMPT.
+
+(fn BUFFERS-FILES)" t)
 (autoload 'org-ql-open-link "org-ql-find" "\
 Open a link selected with `org-ql-completing-read'.
 Links found in entries matching the input query are offered as
@@ -151,6 +158,12 @@ candidates, and the selected one is opened with
 `org-open-at-point'.  Arguments BUFFERS-FILES, QUERY-FILTER,
 QUERY-PREFIX, and PROMPT are passed to `org-ql-completing-read',
 which see.
+
+Interactively, search the buffers and files relevant to the
+current buffer (i.e. in `org-agenda-mode', the value of
+`org-ql-view-buffers-files' or `org-agenda-contributing-files';
+in `org-mode', that buffer).  With universal prefix, select
+multiple buffers to search with completion and PROMPT.
 
 (fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (PROMPT \"Open link: \"))" t)
 (register-definition-prefixes "org-ql-find" '("org-ql-find-"))
