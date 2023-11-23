@@ -472,6 +472,17 @@
 (use-package corfu
   :hook (prog-mode . corfu-mode))
 
+(use-package comp
+  :defer t
+  :config
+  (define-advice emacs-lisp-native-compile-and-load (:around (oldfn &rest args) bind-native-compile-target-directory)
+    "Make `emacs-lisp-native-compile-and-load' output to the user's ELN directory, not the system's.
+Like it used to."
+    ;; HACK: Not sure if needed because of changes in Emacs 29.1 or in the Guix build of it.
+    ;; TODO: Figure this out and file a bug report appropriately.
+    (let ((native-compile-target-directory (car native-comp-eln-load-path)))
+      (apply oldfn args))))
+
 (use-package compile
   :config
   (progn
