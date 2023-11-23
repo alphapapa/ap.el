@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/hammy.el
-;; Package-Version: 20230927.30
+;; Package-Version: 20231122.2352
 ;; Version: 0.3-pre
 ;; Package-Requires: ((emacs "28.1") (svg-lib "0.2.5") (ts "0.2.2"))
 ;; Keywords: convenience
@@ -526,12 +526,17 @@ If QUIETLY, don't say so."
     (hammy-call (hammy-stopped hammy) hammy)
     (setf (hammy-interval hammy) nil
           hammy-active (remove hammy hammy-active))
+    (defvar hammy-mode) ; `hammy-mode' is defined later in the file.
+    (when hammy-mode
+      ;; HACK: `hammy--mode-line-update' only updates when a hammy is
+      ;; active, so we do it directly.
+      (force-mode-line-update 'all))
     hammy))
 
 (cl-defun hammy-next (hammy &key duration advance interval)
   "Advance to HAMMY's next interval.
 If DURATION (interactively, with numeric prefix), set the
-interval's duration to DURATION seconds.  If ADVANCE, advance to
+interval's duration to DURATION minutes.  If ADVANCE, advance to
 the next interval even if the previous interval has an
 unsatisfied ADVANCE predicate.  INTERVAL may be an interval in
 the hammy to advance to (interactively, with universal prefix,
@@ -540,7 +545,7 @@ prompt for the interval with completion)."
    (if-let ((hammy (hammy-complete "Advance hammy: " hammy-active)))
        (list hammy
              :duration (cl-typecase current-prefix-arg
-                         (number current-prefix-arg))
+                         (number (* 60 current-prefix-arg)))
              :advance t
              :interval (cl-typecase current-prefix-arg
                          (null nil)
