@@ -1,0 +1,333 @@
+#+TITLE: Change log of fontaine.el
+#+AUTHOR: Protesilaos Stavrou
+#+EMAIL: info@protesilaos.com
+#+OPTIONS: ':nil toc:nil num:nil author:nil email:nil
+
+This document contains the release notes for each tagged commit on the
+project's main git repository: <https://git.sr.ht/~protesilaos/fontaine>.
+
+The newest release is at the top.  For further details, please consult
+the manual: <https://protesilaos.com/emacs/fontaine>.
+
+* Version 1.0.0 on 2023-02-11
+:PROPERTIES:
+:CUSTOM_ID: h:bb9803bd-6491-4b58-a685-822b0247fffc
+:END:
+
+Fontaine has been in a stable state for several months now.  I am thus
+increasing the major version number to reflect this fact.  Otherwise,
+this is a small release with only one sizeable addition.
+
+** Inherit the properties of another named preset
+:PROPERTIES:
+:CUSTOM_ID: h:f842797f-5b46-40e4-adc3-e98b289d85bf
+:END:
+
+Preset font configuration can now optionally inherit (and thus extend)
+the properties of another named preset.
+
+When defining multiple presets, we may need to duplicate properties
+and then make tweaks to individual values.  Suppose we want to have
+two distinct presets for presentations: one is for coding related
+demonstrations and the other for prose.  Both must have some common
+styles, but must define distinct font families each of which is
+suitable for the given task.  In this case, we do not want to fall
+back to the generic =t= preset (per the default behaviour) and we also
+do not wish to duplicate properties manually, potentially making
+mistakes in the process.  Fontaine thus provides a method of
+inheriting a named preset's properties by using the =:inherit=
+property with a value that references the name of another preset
+(technically, the ~car~ of that list).  Here is the idea:
+
+#+begin_src emacs-lisp
+(setq fontaine-presets
+      '((regular
+         :default-height 100)
+        (code-demo
+         :default-family "Source Code Pro"
+         :default-weight semilight
+         :default-height 170
+         :variable-pitch-family "Sans"
+         :bold-weight extrabold)
+        (prose-demo
+         :inherit code-demo ; copy the `code-demo' properties
+         :default-family "Sans"
+         :variable-pitch-family "Serif"
+         :default-height 220)
+        (t
+         :default-family "Monospace"
+         ;; more generic fallback properties here...
+         )))
+#+end_src
+
+In this scenario, the =regular= preset gets all its properties from
+the =t= preset.  We omit them here in the interest of brevity (see the
+default value of ~fontaine-presets~ and its documentation for the
+details).  In turn, the =code-demo= specifies more properties and
+falls back to =t= for any property not explicitly referenced therein.
+Finally, the =prose-demo= copies everything in =code-demo=, overrides
+every property it specifies, and falls back to =t= for every other
+property.
+
+In the interest of simplicity, Fontaine does not support recursive
+inheritance.  If there is a compelling need for it, we can add it in
+future versions.
+
+** Bug fixes
+:PROPERTIES:
+:CUSTOM_ID: h:d44c3958-e7d2-4190-93cf-92d983eb8e02
+:END:
+
+- Fixed a faulty setup for the ~:height~ attribute of the ~bold~ face.
+  Using the commands ~fontaine-set-preset~ or ~fontaine-set-face-font~
+  with a prefix argument (=C-u= with default key bindings) does not
+  produce an error anymore.  The prefix argument limits the operation
+  to the current frame.
+
+- Updated the =Commentary= section of =fontaine.el= to use the
+  FONTAINE backronym I have had on my website for a long time.
+  Namely, I changed =FONTs Are Irrelevant in Non-graphical Emacs=,
+  which was cheating on a few letters, to =Fonts, Ornaments, and Neat
+  Typography Are Irrelevant in Non-graphical Emacs=.  What do you mean
+  this is not a bug fix? 🙃
+
+* Version 0.4.0 on 2022-09-07
+:PROPERTIES:
+:CUSTOM_ID: h:757a185d-d367-4712-8313-ad17265e597f
+:END:
+
++ Made it possible for the user option ~fontaine-presets~ to cover the
+  ~fixed-pitch-serif~ face.  This face is used by the default Emacs
+  faces in Info buffers to render inline code elements.  A list of
+  properties within ~fontaine-presets~ can thus look like this (the
+  manual explains everything in detail---else check my current setup at
+  the end of this entry):
+
+  #+begin_src emacs-lisp
+  (regular
+   ;; I keep all properties for didactic purposes, but most can be
+   ;; omitted.
+   :default-family "Monospace"
+   :default-weight regular
+   :default-height 100
+   :fixed-pitch-family nil ; falls back to :default-family
+   :fixed-pitch-weight nil ; falls back to :default-weight
+   :fixed-pitch-height 1.0
+   :fixed-pitch-serif-family nil ; falls back to :default-family
+   :fixed-pitch-serif-weight nil ; falls back to :default-weight
+   :fixed-pitch-serif-height 1.0
+   :variable-pitch-family "Sans"
+   :variable-pitch-weight nil
+   :variable-pitch-height 1.0
+   :bold-family nil ; use whatever the underlying face has
+   :bold-weight bold
+   :italic-family nil
+   :italic-slant italic
+   :line-spacing nil)
+  #+end_src
+
+  When the relevant attributes of ~fixed-pitch-serif~ are not specified,
+  they fall back to the values of the ~default~ face.
+
+  Note that ~fixed-pitch-serif~ is not used by my =modus-themes= and
+  =ef-themes= because I think it looks awful out-of-the-box (a bitmap
+  font on the GNU/Linux distros I used).  One can still modify any face
+  to inherit from ~fixed-pitch-serif~, if they want to.
+
++ Introduced the command ~fontaine-apply-current-preset~ and wrote a
+  relevant entry in the manual on how to "Persist font configurations on
+  theme switch".  Relevant quote from the manual:
+
+  #+begin_quote
+  Themes re-apply face definitions when they are loaded.  This is
+  necessary to render the theme.  For certain faces, such as ~bold~ and
+  ~italic~, it means that their font family may be reset (depending on the
+  particularities of the theme).
+
+  To avoid such a problem, we can arrange to restore the current font
+  preset which was applied by ~fontaine-set-preset~.  Fontaine provides
+  the command ~fontaine-apply-current-preset~.  It can either be called
+  interactively after loading a theme or be assigned to a hook that is ran
+  at the post ~load-theme~ phase.
+
+  Some themes that provide a hook are the =modus-themes= and =ef-themes=
+  (both by Protesilaos), so we can use something like: [...]
+  #+end_quote
+
++ The once private variable ~fontaine--current-preset~ is now made
+  public by means of a rename to ~fontaine-current-preset~.  In
+  practical terms, this tells advanced users that they can rely on the
+  presence of this variable and/or on the fact that changes to it will
+  be documented accordingly.
+
+My current configuration as of 2022-09-07 17:56 +0300, which might give
+you some ideas:
+
+#+begin_src emacs-lisp
+(require 'fontaine)
+
+;; Iosevka Comfy is my highly customised build of Iosevka with
+;; monospaced and duospaced (quasi-proportional) variants as well as
+;; support or no support for ligatures:
+;; <https://git.sr.ht/~protesilaos/iosevka-comfy>.
+;;
+;; Iosevka Comfy            == monospaced, supports ligatures
+;; Iosevka Comfy Fixed      == monospaced, no ligatures
+;; Iosevka Comfy Duo        == quasi-proportional, supports ligatures
+;; Iosevka Comfy Wide       == like Iosevka Comfy, but wider
+;; Iosevka Comfy Wide Fixed == like Iosevka Comfy Fixed, but wider
+;; Iosevka Comfy Motion     == monospaced, supports ligatures, fancier glyphs
+;; Iosevka Comfy Motion Duo == as above, but quasi-proportional
+(setq fontaine-presets
+      '((tiny
+         :default-family "Iosevka Comfy Wide Fixed"
+         :default-height 70)
+        (small
+         :default-family "Iosevka Comfy Fixed"
+         :default-height 90)
+        (regular
+         :default-height 100)
+        (medium
+         :default-height 110)
+        (large
+         :default-weight semilight
+         :default-height 140
+         :bold-weight extrabold)
+        (code-demo
+         :default-weight semilight
+         :default-height 170
+         :bold-weight extrabold)
+        (presentation
+         :default-weight semilight
+         :default-height 220
+         :bold-weight extrabold)
+        (t
+         ;; I keep all properties for didactic purposes, but most can be
+         ;; omitted.  See the fontaine manual for the technicalities:
+         ;; <https://protesilaos.com/emacs/fontaine>.
+         :default-family "Iosevka Comfy"
+         :default-weight regular
+         :default-height 100
+         :fixed-pitch-family nil ; falls back to :default-family
+         :fixed-pitch-weight nil ; falls back to :default-weight
+         :fixed-pitch-height 1.0
+         :fixed-pitch-serif-family nil ; falls back to :default-family
+         :fixed-pitch-serif-weight nil ; falls back to :default-weight
+         :fixed-pitch-serif-height 1.0
+         :variable-pitch-family "Iosevka Comfy Motion Duo"
+         :variable-pitch-weight nil
+         :variable-pitch-height 1.0
+         :bold-family nil ; use whatever the underlying face has
+         :bold-weight bold
+         :italic-family "Iosevka Comfy Motion"
+         :italic-slant italic
+         :line-spacing nil)))
+
+;; Set last preset or fall back to desired style from `fontaine-presets'.
+(fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
+
+;; The other side of `fontaine-restore-latest-preset'.
+(add-hook 'kill-emacs-hook #'fontaine-store-latest-preset)
+
+;; Persist font configurations while switching themes (doing it with
+;; my `modus-themes' and `ef-themes' via the hooks they provide).
+(dolist (hook '(modus-themes-after-load-theme-hook ef-themes-post-load-hook))
+  (add-hook hook #'fontaine-apply-current-preset))
+
+(define-key global-map (kbd "C-c f") #'fontaine-set-preset)
+(define-key global-map (kbd "C-c F") #'fontaine-set-face-font)
+#+end_src
+
+* Version 0.3.0 on 2022-07-06
+:PROPERTIES:
+:CUSTOM_ID: h:0112e468-9ead-4bfb-b93b-74c520bbec69
+:END:
+
+This is a stability release that introduces minor tweaks while
+formalising point releases which were already available to users.
+
++ Fixed a bug where a nil minibuffer history would produce an error
+  while trying to set a preset.
+
++ Required the =subr-x= library at compile time.  This is to avoid
+  scenaria where ~if-let~ and friends are not known to the byte
+  compiler.  Such a problem was reported by Ted Reed concerning their
+  Emacs 27 build:
+  <https://lists.sr.ht/~protesilaos/fontaine/%3Cm27d6t3f7a.fsf@zenithia.net%3E#%3C87ee11w1j0.fsf@zenithia.net%3E>.
+
++ Simplified the text of the minibuffer prompt for the ~default~ face.
+  The =marginalia= package treats the candidates as faces when the word
+  "face" occurs in the prompt.  Generally that should be okay, though we
+  do not want it in our case.
+
++ Documented a reference to the "devel" variant of GNU ELPA.  This is
+  for users who want to use a version of the package built from the
+  latest commit instead of the last tagged release.  Read:
+  <https://protesilaos.com/codelog/2022-05-13-emacs-elpa-devel/>.
+
++ Refrained from erroring out with ~fontaine-set-preset~ if Emacs is not
+  in a graphical window (GUI) while the =emacs --daemon= is in use.  The
+  ~user-error~ is now limited to the case where a standalone frame is
+  non-graphial and the daemon is not running (the error is that you
+  cannot change fonts inside of TUI Emacs).  Thanks to Florent Teissier
+  for the patch!
+
++ Named the mailing list address as the =Maintainer:= of Denote.
+  Together with the other package headers, they help the user find our
+  primary sources and/or communication channels.  This change conforms
+  with work being done upstream in package.el by Philip Kaludercic.  I
+  was informed about it here:
+  <https://lists.sr.ht/~protesilaos/general-issues/%3C875ykl84yi.fsf%40posteo.net%3E>.
+
+* Version 0.2.0 on 2022-05-09
+:PROPERTIES:
+:CUSTOM_ID: h:f9399542-29b7-4d26-af82-090fed802cc8
+:END:
+
++ Fontaine can apply its changes on a per-frame basis.  One frame may,
+  for example, use a preset of font configurations for the purposes of a
+  "presentation" while the other has a "small" setup.  Concretely,
+  invoke the commands ~fontaine-set-preset~ and ~fontaine-set-face-font~
+  with a universal prefix argument (=C-u=).  Without a prefix argument,
+  these commands apply to all frames (as it was before).
+
++ The ~fontaine-presets~ accepts a special =t= preset which provides
+  "shared fallback values" for all presets.  The manual has a section
+  titled "Shared and implicit fallback values for presets" which covers
+  all permutations of ~fontaine-presets~ at length.  The gist is that
+  the user can write more concise presets.  Thanks to Ted Reed for
+  proposing the idea and testing my prototype in the mailing list:
+  <https://lists.sr.ht/~protesilaos/fontaine/%3C87y1zcmo67.fsf@zenithia.net%3E>.
+
++ Simplified the sample configuration on how to restore the latest saved
+  value or fall back to a preferred preset.  Thanks to Christopher
+  League for proposing an elegant expression over at the mailing list:
+  <https://lists.sr.ht/~protesilaos/fontaine/%3C87sfpop0dm.fsf@contrapunctus.net%3E#%3C87pmksoyv6.fsf@contrapunctus.net%3E>
+
++ The ~fontaine-latest-state-file~ is now handled by the package
+  =no-littering=.  Thanks to Christopher League for adding it there:
+  <https://github.com/emacscollective/no-littering/commit/76b7335202a5b6ddc6b6798a2e2fd5b09df57dc2>
+
++ The new user option ~fontaine-font-families~ specifies the preferred
+  font families that are provided as completion candidates of the
+  command ~fontaine-set-face-font~.  If left to its default nil value,
+  Fontaine tries to find relevant fonts from the underlying system,
+  though this is not always accurate depending on the build of Emacs and
+  where it runs in.
+
++ The doc string of ~fontaine-presets~ mentions some important caveats
+  or information about font settings in emacs.  Thanks to Eli Zaretskii
+  for the feedback on the emacs-devel mailing list:
+  <https://lists.gnu.org/archive/html/emacs-devel/2022-04/msg01281.html>.
+
+* Version 0.1.0 on 2022-04-28
+:PROPERTIES:
+:CUSTOM_ID: h:80e56ed6-cf2b-49a2-9184-b149c9ecfa38
+:END:
+
+Initial release of the package.  Please read the manual.
+
+The core idea for this package was implemented in the =prot-fonts.el=
+file that is part of [[https://gitlab.com/protesilaos/dotfiles][my dotfiles]] (now deprecated).  I was using it at
+least since November 2020, though the underlying code was probably
+implemented at an earlier date.
