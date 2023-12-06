@@ -37,6 +37,10 @@
       (locate-file "simple" load-path (get-load-suffixes))))
   "Directory where Emacs's own *.el and *.elc Lisp files are installed.")
 
+;;;; Defined in window.c
+
+(compat-defalias window-configuration-equal-p compare-window-configurations) ;; <compat-tests:window-configuration-equal-p>
+
 ;;;; Defined in xdisp.c
 
 (compat-defun get-display-property (position prop &optional object properties) ;; <compat-tests:get-display-property>
@@ -505,6 +509,14 @@ thus overriding the value of the TIMEOUT argument to that function.")
     exitfun))
 
 ;;;; Defined in simple.el
+
+(compat-defun char-uppercase-p (char) ;; <compat-tests:char-uppercase-p>
+  "Return non-nil if CHAR is an upper-case character.
+If the Unicode tables are not yet available, e.g. during bootstrap,
+then gives correct answers only for ASCII characters."
+  (cond ((unicode-property-table-internal 'lowercase)
+         (characterp (get-char-code-property char 'lowercase)))
+        ((and (>= char ?A) (<= char ?Z)))))
 
 (compat-defun use-region-noncontiguous-p () ;; <compat-tests:region-noncontiguous-p>
   "Return non-nil for a non-contiguous region if `use-region-p'."
