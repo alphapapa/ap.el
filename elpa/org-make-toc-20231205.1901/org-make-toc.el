@@ -4,9 +4,9 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/org-make-toc
-;; Package-Version: 20231025.1826
+;; Package-Version: 20231205.1901
 ;; Version: 0.6-pre
-;; Package-Requires: ((emacs "26.1") (dash "2.12") (s "1.10.0") (org "9.0"))
+;; Package-Requires: ((emacs "26.1") (dash "2.12") (s "1.10.0") (org "9.3") (compat "29.1"))
 ;; Keywords: Org, convenience
 
 ;;; Commentary:
@@ -175,10 +175,12 @@ also work in `org-mode' in Emacs."
 
 (defconst org-make-toc-contents-drawer-start-regexp
   (rx bol (0+ blank) ":CONTENTS:" (0+ blank) eol)
-  "Regular expression for the beginning of a :CONTENTS: drawer")
+  "Regular expression for the beginning of a :CONTENTS: drawer.")
 
-(defvar-local org-make-toc-disambiguations (make-hash-table :test #'equal)
+(defvar-local org-make-toc-disambiguations nil
   "Used to disambiguate custom IDs.")
+(defvar-local org-make-toc-ids nil
+  "Maps custom IDs to buffer positions.")
 
 ;;;; Commands
 
@@ -186,25 +188,28 @@ also work in `org-mode' in Emacs."
 (defun org-make-toc ()
   "Make or update table of contents in current buffer."
   (interactive)
-  (clrhash org-make-toc-disambiguations)
-  (save-excursion
-    (goto-char (point-min))
-    (cl-loop with made-toc
-             for pos = (org-make-toc--next-toc-position)
-             while pos
-             do (progn
-                  (goto-char pos)
-                  (when (org-make-toc--update-toc-at-point)
-                    (setq made-toc t)))
-             finally do (unless made-toc
-                          (message "org-make-toc: No TOC node found.")))))
+  (let ((org-make-toc-disambiguations (make-hash-table :test #'equal))
+        (org-make-toc-ids (make-hash-table :test #'equal)))
+    (save-excursion
+      (goto-char (point-min))
+      (cl-loop with made-toc
+               for pos = (org-make-toc--next-toc-position)
+               while pos
+               do (progn
+                    (goto-char pos)
+                    (when (org-make-toc--update-toc-at-point)
+                      (setq made-toc t)))
+               finally do (unless made-toc
+                            (message "org-make-toc: No TOC node found."))))))
 
 ;;;###autoload
 (defun org-make-toc-at-point ()
   "Make or update table of contents at current entry."
   (interactive)
-  (unless (org-make-toc--update-toc-at-point)
-    (user-error "No TOC node found")))
+  (let ((org-make-toc-disambiguations (make-hash-table :test #'equal))
+        (org-make-toc-ids (make-hash-table :test #'equal)))
+    (unless (org-make-toc--update-toc-at-point)
+      (user-error "No TOC node found"))))
 
 ;;;###autoload
 (defun org-make-toc-insert ()
@@ -224,29 +229,29 @@ also work in `org-mode' in Emacs."
 (defun org-make-toc--complete-toc-properties ()
   "Return TOC properties string read with completion."
   (cl-labels ((property (property)
-                        (--> (org-entry-get (point) "TOC")
-                             (concat "(" it ")") (read it)
-                             (plist-get it property)
-                             (if it
-                                 (prin1-to-string it)
-                               "")))
+                (--> (org-entry-get (point) "TOC")
+                     (concat "(" it ")") (read it)
+                     (plist-get it property)
+                     (if it
+                         (prin1-to-string it)
+                       "")))
               (read-number (prompt &optional initial-input)
-                           ;; The default `read-number' only accepts a number, and
-                           ;; we need to allow the user to input nothing.  But
-                           ;; using `read-string' with `string-to-number' returns
-                           ;; 0 for the empty string, so we use this instead.
-                           (let ((input (read-string prompt initial-input)))
-                             (pcase input
-                               ((rx bos (1+ digit) eos)
-                                (string-to-number input))
-                               ((rx bos (0+ blank) eos) "")
-                               (_ (read-number prompt initial-input)))))
+                ;; The default `read-number' only accepts a number, and
+                ;; we need to allow the user to input nothing.  But
+                ;; using `read-string' with `string-to-number' returns
+                ;; 0 for the empty string, so we use this instead.
+                (let ((input (read-string prompt initial-input)))
+                  (pcase input
+                    ((rx bos (1+ digit) eos)
+                     (string-to-number input))
+                    ((rx bos (0+ blank) eos) "")
+                    (_ (read-number prompt initial-input)))))
               (completing-read-description
-               (prompt collection &optional predicate require-match
-                       initial-input hist def inherit-input-method)
-               (let ((choice (completing-read prompt collection predicate require-match
-                                              initial-input hist def inherit-input-method)))
-                 (alist-get choice collection nil nil #'equal)))
+                (prompt collection &optional predicate require-match
+                        initial-input hist def inherit-input-method)
+                (let ((choice (completing-read prompt collection predicate require-match
+                                               initial-input hist def inherit-input-method)))
+                  (alist-get choice collection nil nil #'equal)))
               ;; TODO: Version of `completing-read-multiple' that works like that.  Sigh.
               )
     (let ((props
@@ -295,67 +300,67 @@ also work in `org-mode' in Emacs."
 (defun org-make-toc--toc-at-point ()
   "Return TOC tree for entry at point."
   (cl-labels ((descendants (&key depth force)
-                           (when (and (or (null depth) (> depth 0))
-                                      (children-p))
-                             (save-excursion
-                               (save-restriction
-                                 (org-narrow-to-subtree)
-                                 (outline-next-heading)
-                                 (cl-loop collect (cons (entry :force force)
-                                                        (unless (entry-match :ignore 'descendants)
-                                                          (descendants :depth (or (unless (or (arg-has force 'depth)
-                                                                                              (entry-match :local 'depth))
-                                                                                    (entry-property :depth))
-                                                                                  (when depth
-                                                                                    (1- depth)))
-                                                                       :force force)))
-                                          while (next-sibling))))))
+                (when (and (or (null depth) (> depth 0))
+                           (children-p))
+                  (save-excursion
+                    (save-restriction
+                      (org-narrow-to-subtree)
+                      (outline-next-heading)
+                      (cl-loop collect (cons (entry :force force)
+                                             (unless (entry-match :ignore 'descendants)
+                                               (descendants :depth (or (unless (or (arg-has force 'depth)
+                                                                                   (entry-match :local 'depth))
+                                                                         (entry-property :depth))
+                                                                       (when depth
+                                                                         (1- depth)))
+                                                            :force force)))
+                               while (next-sibling))))))
               (siblings (&key depth force)
-                        (save-excursion
-                          (save-restriction
-                            (when (org-up-heading-safe)
-                              (org-narrow-to-subtree)
-                              (outline-next-heading)
-                              (outline-next-heading))
-                            (cl-loop collect (cons (entry :force force)
-                                                   (unless (entry-match :ignore 'descendants)
-                                                     (descendants :depth (or (unless (or (arg-has force 'depth)
-                                                                                         (entry-match :local 'depth))
-                                                                               (entry-property :depth))
-                                                                             (when depth
-                                                                               (1- depth)))
-                                                                  :force force)))
-                                     while (next-sibling)))))
+                (save-excursion
+                  (save-restriction
+                    (when (org-up-heading-safe)
+                      (org-narrow-to-subtree)
+                      (outline-next-heading)
+                      (outline-next-heading))
+                    (cl-loop collect (cons (entry :force force)
+                                           (unless (entry-match :ignore 'descendants)
+                                             (descendants :depth (or (unless (or (arg-has force 'depth)
+                                                                                 (entry-match :local 'depth))
+                                                                       (entry-property :depth))
+                                                                     (when depth
+                                                                       (1- depth)))
+                                                          :force force)))
+                             while (next-sibling)))))
               (children-p ()
-                          (let ((level (org-current-level)))
-                            (save-excursion
-                              (when (outline-next-heading)
-                                (> (org-current-level) level)))))
+                (let ((level (org-current-level)))
+                  (save-excursion
+                    (when (outline-next-heading)
+                      (> (org-current-level) level)))))
               (next-sibling ()
-                            (let ((pos (point)))
-                              (org-forward-heading-same-level 1 'invisible-ok)
-                              (/= pos (point))))
+                (let ((pos (point)))
+                  (org-forward-heading-same-level 1 'invisible-ok)
+                  (/= pos (point))))
               (arg-has (var val)
-                       (or (equal var val)
-                           (and (listp var)
-                                (member val var))))
+                (or (equal var val)
+                    (and (listp var)
+                         (member val var))))
               (entry (&key force)
-                     (unless (or (and (not (arg-has force 'ignore))
-                                      (entry-match :ignore 'this))
-                                 ;; TODO: Add configurable predicate list to exclude entries.
-                                 (seq-intersection org-make-toc-exclude-tags (org-get-tags))
-                                 ;; NOTE: The "COMMENT" keyword is not returned as the to-do keyword
-                                 ;; by `org-heading-components', so it can't be tested as a keyword.
-                                 (string-match-p (rx bos "COMMENT" (or blank eos))
-                                                 (nth 4 (org-heading-components))))
-                       (funcall org-make-toc-link-type-fn)))
+                (unless (or (and (not (arg-has force 'ignore))
+                                 (entry-match :ignore 'this))
+                            ;; TODO: Add configurable predicate list to exclude entries.
+                            (seq-intersection org-make-toc-exclude-tags (org-get-tags))
+                            ;; NOTE: The "COMMENT" keyword is not returned as the to-do keyword
+                            ;; by `org-heading-components', so it can't be tested as a keyword.
+                            (string-match-p (rx bos "COMMENT" (or blank eos))
+                                            (nth 4 (org-heading-components))))
+                  (funcall org-make-toc-link-type-fn (point))))
               (entry-match (property value)
-                           (when-let* ((found-value (entry-property property)))
-                             (or (equal value found-value)
-                                 (and (listp found-value) (member value found-value)))))
+                (when-let* ((found-value (entry-property property)))
+                  (or (equal value found-value)
+                      (and (listp found-value) (member value found-value)))))
               (entry-property (property)
-                              (plist-get (read (concat "(" (org-entry-get (point) "TOC") ")"))
-                                         property)))
+                (plist-get (read (concat "(" (org-entry-get (point) "TOC") ")"))
+                           property)))
     (save-excursion
       (save-restriction
         (-let* (((&plist :include :depth :force force)
@@ -405,9 +410,9 @@ Uses hash table `org-make-toc-disambiguations'."
              do (puthash new-string t org-make-toc-disambiguations)
              and return new-string)))
 
-(defun org-make-toc--link-entry-github ()
-  "Return text for ENTRY converted to GitHub style link."
-  (-when-let* ((title (org-link-display-format (org-entry-get nil "ITEM")))
+(defun org-make-toc--link-entry-github (pos)
+  "Return text for entry at POS converted to GitHub style link."
+  (-when-let* ((title (org-link-display-format (org-entry-get pos "ITEM")))
                (target (--> title
                             org-link-display-format
                             (downcase it)
@@ -417,19 +422,21 @@ Uses hash table `org-make-toc-disambiguations'."
                              (file-name-nondirectory (buffer-file-name))
                            "")))
     (when org-make-toc-insert-custom-ids
-      (setf target (org-make-toc--disambiguate target))
+      (setf target (or (gethash pos org-make-toc-ids)
+                       (setf (gethash pos org-make-toc-ids)
+                             (org-make-toc--disambiguate target))))
       (org-set-property "CUSTOM_ID" target))
-    (org-make-link-string (concat filename "#" target)
+    (org-link-make-string (concat filename "#" target)
                           (org-make-toc--visible-text title))))
 
-(defun org-make-toc--link-entry-org ()
-  "Return text for ENTRY converted to regular Org link."
+(defun org-make-toc--link-entry-org (pos)
+  "Return text for entry at POS converted to regular Org link."
   ;; FIXME: There must be a built-in function to do this, although it might be in `org-export'.
-  (-when-let* ((title (org-link-display-format (org-entry-get nil "ITEM")))
+  (-when-let* ((title (org-link-display-format (org-entry-get pos "ITEM")))
                (filename (if org-make-toc-filename-prefix
                              (concat "file:" (file-name-nondirectory (buffer-file-name)) "::")
                            "")))
-    (org-make-link-string (concat filename title)
+    (org-link-make-string (concat filename title)
                           (org-make-toc--visible-text title))))
 
 (defun org-make-toc--replace-entry-contents (contents)
@@ -452,7 +459,7 @@ Replaces contents of :CONTENTS: drawer."
                                      (forward-line 1)
                                      (looking-at-p (rx bol ":TOC:" (0+ blank) (group (1+ nonl)))))
                                (forward-line 1))
-                             (point-at-eol))
+                             (pos-eol))
               contents (concat "\n" (string-trim contents) "\n")
               (buffer-substring contents-beg contents-end) contents)))))
 
@@ -504,7 +511,7 @@ created."
 
 ;;;###autoload
 (define-minor-mode org-make-toc-mode
-  "Add the `org-make-toc' command to the `before-save-hook' in the current Org buffer.
+  "Add `org-make-toc' to the `before-save-hook' in the current Org buffer.
 With prefix argument ARG, turn on if positive, otherwise off."
   :init-value nil
   (unless (derived-mode-p 'org-mode)

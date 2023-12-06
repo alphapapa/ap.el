@@ -22,7 +22,7 @@ Set TOC PROPERTIES of entry at point.
 
 (fn PROPERTIES)" t)
 (autoload 'org-make-toc-mode "org-make-toc" "\
-Add the `org-make-toc' command to the `before-save-hook' in the current Org buffer.
+Add `org-make-toc' to the `before-save-hook' in the current Org buffer.
 With prefix argument ARG, turn on if positive, otherwise off.
 
 (fn &optional ARG)" t)
