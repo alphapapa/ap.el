@@ -565,6 +565,9 @@ Like it used to."
     `(mode-line ((t :box (:line-width 1 :color ,(face-foreground 'font-lock-builtin-face)))))
     `(header-line ((t :box nil :background ,(face-background 'region))))))
 
+(use-package dumb-jump
+  :init (add-hook 'xref-backend-functions #'dumb-jump-xref-activate))
+
 (use-package elec-pair
   :custom
   (electric-pair-mode t))
