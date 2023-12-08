@@ -1,8 +1,8 @@
 ;;; org-bookmark-heading.el --- Emacs bookmark support for Org mode  -*- lexical-binding: t; -*-
 
 ;; Author: Adam Porter <adam@alphapapa.net>
-;; Version: 1.3-pre
-;; Package-Version: 20230426.917
+;; Version: 1.3.1
+;; Package-Version: 20231207.2127
 ;; Url: http://github.com/alphapapa/org-bookmark-heading
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: hypermedia, outlines
@@ -64,6 +64,10 @@
 (require 'org)
 (require 'bookmark)
 
+(eval-when-compile
+  ;; Support map pattern in pcase
+  (require 'map))
+
 ;;;; Customization
 
 (defgroup org-bookmark-heading nil
@@ -94,8 +98,11 @@ created for entries that don't already have one."
   :type '(choice (const :tag "Make ID if missing" t)
                  (const :tag "Make ID if missing and entry is within `org-directory'"
                         (lambda ()
-                          (and (buffer-file-name)
-                               (file-in-directory-p (buffer-file-name) org-directory))))
+                          (when-let ((buffer-file-name
+                                      (or (buffer-file-name)
+                                          (when (buffer-base-buffer)
+                                            (buffer-file-name (buffer-base-buffer))))))
+                            (file-in-directory-p buffer-file-name org-directory))))
                  (const :tag "Use existing IDs, but don't make new ones" nil)
                  (function :tag "Custom predicate" :doc "Called with point at the heading, it should return non-nil if an ID should be created.  This may be useful to, e.g. only make IDs for entries within one's `org-directory'.")))
 
