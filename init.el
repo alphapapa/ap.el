@@ -1168,7 +1168,13 @@ Also, ignores effort, because it's not useful for this purpose."
     ))
 
 (use-package org-bookmark-heading
-  :quelpa (org-bookmark-heading :fetcher github :repo "alphapapa/org-bookmark-heading"))
+  :quelpa (org-bookmark-heading :fetcher github :repo "alphapapa/org-bookmark-heading")
+  :config
+  (add-hook 'org-bookmark-heading-after-jump-hook
+            (lambda ()
+              ;; It's frustrating that apparently the only way to get the
+              ;; visibility state I want is to call this interactively.
+              (call-interactively #'org-cycle))))
 
 (use-package org-auto-expand
   :hook (org-mode . org-auto-expand-mode))
