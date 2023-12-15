@@ -292,8 +292,8 @@
  '(tab-bar-format
    '(tab-bar-format-history tab-bar-format-tabs-groups tab-bar-separator tab-bar-format-add-tab))
  '(tab-bar-mode t)
- '(tab-bar-new-tab-choice 'bookmark-bmenu-get-buffer)
  '(tab-bar-tab-name-function 'tab-bar-tab-name-current-with-count)
+ '(tab-bar-new-tab-choice "*scratch*")
  '(tab-bar-tab-post-change-group-functions '(tab-bar-move-tab-to-group))
  '(tab-line-close-button-show nil)
  '(tool-bar-mode nil)
