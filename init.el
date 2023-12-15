@@ -103,11 +103,15 @@
  '(org-blank-before-new-entry '((heading . t) (plain-list-item . auto)))
  '(org-bookmark-heading-make-ids
    '(lambda nil
-      (and
-       (buffer-file-name)
-       (file-in-directory-p
-        (buffer-file-name)
-        org-directory))))
+      (when-let
+          ((buffer-file-name
+            (or
+             (buffer-file-name)
+             (when
+                 (buffer-base-buffer)
+               (buffer-file-name
+                (buffer-base-buffer))))))
+        (file-in-directory-p buffer-file-name org-directory))))
  '(org-clock-mode-line-total 'current)
  '(org-clock-report-include-clocking-task t)
  '(org-crypt-disable-auto-save 'encrypt)
