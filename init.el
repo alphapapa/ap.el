@@ -108,8 +108,6 @@
        (file-in-directory-p
         (buffer-file-name)
         org-directory))))
- '(org-catch-invisible-edits 'smart)
- '(org-catch-invisible-edits 'error)
  '(org-clock-mode-line-total 'current)
  '(org-clock-report-include-clocking-task t)
  '(org-crypt-disable-auto-save 'encrypt)
