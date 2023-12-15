@@ -980,7 +980,8 @@ Includes \"%s\" format spec for length of playlist in minutes."
    "C-c l" #'org-store-link)
   (:keymaps 'org-mode-map
             "C-c c" #'org-capture
-            "C-c l" #'org-store-link)
+            "C-c l" #'org-store-link
+            "S-<return>" #'ap/org-shift-return)
   (:keymaps 'org-agenda-mode-map
             "RET" #'ap/org-agenda-switch-to-heading-in-indirect-buffer)
   :hook
@@ -1004,6 +1005,19 @@ Includes \"%s\" format spec for length of playlist in minutes."
       :background ,(face-attribute 'org-scheduled-previously :foreground))))
 
   :config
+  (define-advice org-insert-item
+      (:around (oldfun &optional checkbox) ap/org-insert-item)
+    "Call `org-insert-item' and provide CHECKBOX argument smartly."
+    (funcall oldfun (org-at-item-checkbox-p)))
+
+  (defun ap/org-shift-return (&optional arg)
+    "Call `org-insert-subheading' or `org-table-copy-down'."
+    (interactive "p")
+    (cond ((org-at-table-p)
+           (org-table-copy-down arg))
+          (t
+           (org-insert-subheading arg))))
+
   (define-advice org-id-update-id-locations (:around (oldfun &rest args) include-work-files)
     "Call `org-id-update-id-locations' with `org-id-extra-files' set to relevant Org files in \"~/work\"."
     (let ((org-id-extra-files (directory-files-recursively
