@@ -296,6 +296,8 @@
  '(tab-bar-new-tab-choice "*scratch*")
  '(tab-bar-tab-post-change-group-functions '(tab-bar-move-tab-to-group))
  '(tab-line-close-button-show nil)
+ '(tab-line-new-button-show nil)
+ '(tab-line-tabs-function 'tab-line-tabs-window-buffers)
  '(tool-bar-mode nil)
  '(vc-annotate-background "#242730")
  '(vc-annotate-color-map
