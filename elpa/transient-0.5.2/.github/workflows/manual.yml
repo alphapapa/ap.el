@@ -1,0 +1,11 @@
+name: Manual
+on:
+  push:
+    branches: main
+jobs:
+  manual:
+    name: Manual
+    uses: emacscollective/workflows/.github/workflows/manual.yml@main
+    secrets:
+      aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
