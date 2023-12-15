@@ -469,6 +469,9 @@
   (burly-tabs-mode))
 
 
+(use-package pocket-reader
+  :quelpa
+  (pocket-reader :fetcher github :repo "alphapapa/pocket-reader.el"))
 
 (use-package corfu
   :hook (prog-mode . corfu-mode))
