@@ -717,6 +717,30 @@ the file!"
                        (cons "./" load-path)))
                   (apply oldfun args)))))
 
+(use-package flyspell
+  :hook (org-mode . flyspell-mode)
+  :config
+  (define-advice flyspell-goto-next-error
+      (:around (oldfun &optional previous) ap/flyspell-goto-next-error)
+    "Go to next or previous misspelled word, or to previous position.
+When no misspellings remain, goes to the position before
+`flyspell-goto-next-error' was called."
+    (cl-labels ((next-error-pos (&optional previous)
+                  (save-excursion
+                    (pcase (funcall oldfun previous)
+                      ("No more miss-spelled words" nil)
+                      (_ (point))))))
+      (if-let ((pos (or (next-error-pos)
+                        (next-error-pos 'previous))))
+          (progn
+            (pcase last-command
+              ((or 'flyspell-auto-correct-word 'flyspell-goto-next-error)
+               nil)
+              (_ (push-mark)))
+            (goto-char pos))
+        (goto-char (mark-marker))
+        (pop-mark)))))
+
 (use-package hammy
   :quelpa (hammy :fetcher github :repo "alphapapa/hammy.el")
 
