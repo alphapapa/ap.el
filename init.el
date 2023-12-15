@@ -323,7 +323,8 @@
  '(vc-annotate-very-old-color nil)
  '(which-key-mode t)
  '(window-resize-pixelwise t)
- '(winner-mode t))
+ '(winner-mode t)
+ '(xref-search-program 'ripgrep))
 
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
