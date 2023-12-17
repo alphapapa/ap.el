@@ -1,8 +1,8 @@
 ;;; org-bookmark-heading.el --- Emacs bookmark support for Org mode  -*- lexical-binding: t; -*-
 
 ;; Author: Adam Porter <adam@alphapapa.net>
-;; Version: 1.3.1
-;; Package-Version: 20231207.2127
+;; Version: 1.4-pre
+;; Package-Version: 20231216.634
 ;; Url: http://github.com/alphapapa/org-bookmark-heading
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: hypermedia, outlines
@@ -121,7 +121,7 @@ Called with point on heading.  Can be used to, e.g. cycle visibility."
 (defun org-bookmark-heading-make-record ()
   "Return bookmark record for current heading.
 Sets ID property for heading if necessary."
-  (let* ((filename (buffer-file-name (org-base-buffer (current-buffer))))
+  (let* ((filename (abbreviate-file-name (buffer-file-name (org-base-buffer (current-buffer)))))
          (display-filename (funcall org-bookmark-heading-filename-fn filename))
          (heading (unless (org-before-first-heading-p)
                     (org-link-display-format (org-get-heading t t))))
