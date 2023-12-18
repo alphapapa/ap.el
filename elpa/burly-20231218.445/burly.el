@@ -67,6 +67,22 @@
 (defvar burly-opened-bookmark-name nil
   "The name of the last bookmark opened by Burly.")
 
+(defvar burly-buffer-local-variables nil
+  "Variables whose value are saved and restored by Burly bookmarks.
+Intended to be bound around code calling `burly-bookmark-'
+commands.")
+
+(defvar burly-window-parameters-translators
+  `((window-preserved-size
+     (serialize . ,(pcase-lambda (`(,buffer ,direction ,size))
+                     `(,(buffer-name buffer) ,direction ,size)))
+     (deserialize . ,(pcase-lambda (`(,buffer-name ,direction ,size))
+                       `(,(get-buffer buffer-name) ,direction ,size)))))
+  "Functions used to serialize and deserialize certain window parameters.
+For example, the value of `window-preserved-size' includes a
+buffer, which must be serialized to a buffer name, and then
+deserialized back to the buffer after it is reincarnated.")
+
 ;;;; Customization
 
 (defgroup burly nil
@@ -245,6 +261,9 @@ a project."
           (t (or (with-current-buffer buffer
                    (when-let* ((record (ignore-errors
                                          (bookmark-make-record))))
+                     (when burly-buffer-local-variables
+                       ;; TODO: Also do this in non-bookmark URL functions?
+                       (setf record (burly--add-buffer-local-variables record burly-buffer-local-variables)))
 		     (cl-labels ((encode (element)
 				   (cl-typecase element
 				     (string (encode-coding-string element 'utf-8-unix))
@@ -264,6 +283,18 @@ a project."
                                                           (concat "?" (encode-coding-string (buffer-name buffer)
 											    'utf-8-unix))
 							  nil nil 'fullness)))))))
+
+(defun burly--add-buffer-local-variables (record variables)
+  "Return bookmark RECORD having added buffer-local VARIABLES to it.
+Adds alist of variables and their values to a
+`burly-buffer-local-variables' property in RECORD.  Variables
+without buffer-local bindings in the current buffer are ignored."
+  (cl-loop for variable in variables
+           when (buffer-local-boundp variable (current-buffer))
+           collect (cons variable (buffer-local-value variable (current-buffer)))
+           into map
+           finally do (bookmark-prop-set record 'burly-buffer-local-variables map))
+  record)
 
 ;;;;; Files
 
@@ -341,7 +372,29 @@ serializing."
       ;; Clear window parameters we set (because they aren't kept
       ;; current, so leaving them could be confusing).
       (burly--windows-set-url (window-list nil 'never) 'nullify)
-      window-state)))
+      (burly--window-serialized window-state))))
+
+(defun burly--window-serialized (state)
+  "Return window STATE having serialized its parameters."
+  (cl-labels ((translate-state (state)
+                "Set windows' buffers in STATE."
+                (pcase state
+                  (`(leaf . ,_attrs) (translate-leaf state))
+                  ((pred atom) state)
+                  (`(,_key . ,(pred atom)) state)
+                  ((pred list) (mapcar #'translate-state state))))
+              (translate-leaf (leaf)
+                "Translate window parameters in LEAF."
+                (pcase-let* ((`(leaf . ,attrs) leaf)
+                             ((map parameters) attrs))
+                  (pcase-dolist (`(,parameter . ,(map serialize))
+                                 burly-window-parameters-translators)
+                    (when (map-elt parameters parameter)
+                      (setf (map-elt parameters parameter)
+                            (funcall serialize (map-elt parameters parameter)))))
+                  (setf (map-elt attrs 'parameters) parameters)
+                  (cons 'leaf attrs))))
+    (translate-state state)))
 
 (defun burly--windows-set-url (windows &optional nullify)
   "Set `burly-url' window parameter in WINDOWS.
@@ -357,10 +410,11 @@ If NULLIFY, set the parameter to nil."
                                                      window-persistent-parameters))
                (`(,_ . ,query-string) (url-path-and-query urlobj))
                ;; FIXME: Remove this condition-case eventually, after giving users time to update their bookmarks.
-               (state (condition-case nil
+               (state (condition-case-unless-debug nil
                           (read (url-unhex-string query-string))
-                        (invalid-read-syntax (display-warning 'burly "Please recreate that Burly bookmark (storage format changed)")
-                                             (read query-string))))
+                        (invalid-read-syntax
+                         (display-warning 'burly "Please recreate that Burly bookmark (storage format changed).  If this warning persists, please file a bug report.")
+                         (read query-string))))
                (state (burly--bufferize-window-state state)))
     (window-state-put state (frame-root-window))
     ;; HACK: Since `bookmark--jump-via' insists on calling a
@@ -375,7 +429,7 @@ If NULLIFY, set the parameter to nil."
   (cl-labels ((bufferize-state (state)
                 "Set windows' buffers in STATE."
                 (pcase state
-                  (`(leaf . ,_attrs) (bufferize-leaf state))
+                  (`(leaf . ,_attrs) (translate-leaf (bufferize-leaf state)))
                   ((pred atom) state)
                   (`(,_key . ,(pred atom)) state)
                   ((pred list) (mapcar #'bufferize-state state))))
@@ -387,11 +441,22 @@ If NULLIFY, set the parameter to nil."
                              (`(,_buffer-name . ,buffer-attrs) buffer)
                              (new-buffer (burly-url-buffer burly-url)))
                   (setf (map-elt attrs 'buffer) (cons new-buffer buffer-attrs))
+                  (cons 'leaf attrs)))
+              (translate-leaf (leaf)
+                "Translate window parameters in LEAF."
+                (pcase-let* ((`(leaf . ,attrs) leaf)
+                             ((map parameters) attrs))
+                  (pcase-dolist (`(,parameter . ,(map deserialize))
+                                 burly-window-parameters-translators)
+                    (when (map-elt parameters parameter)
+                      (setf (map-elt parameters parameter)
+                            (funcall deserialize (map-elt parameters parameter)))))
+                  (setf (map-elt attrs 'parameters) parameters)
                   (cons 'leaf attrs))))
     (if-let ((leaf-pos (cl-position 'leaf state)))
         ;; A one-window frame: the elements following `leaf' are that window's params.
         (append (cl-subseq state 0 leaf-pos)
-                (bufferize-leaf (cl-subseq state leaf-pos)))
+                (translate-leaf (bufferize-leaf (cl-subseq state leaf-pos))))
       ;; Multi-window frame.
       (bufferize-state state))))
 
@@ -474,7 +539,11 @@ URLOBJ should be a URL object as returned by
       (setf record (decode record)))
     (save-window-excursion
       (condition-case err
-          (bookmark-jump record)
+          (progn
+            (bookmark-jump record)
+            (when-let ((local-variable-map (bookmark-prop-get record 'burly-buffer-local-variables)))
+              (cl-loop for (variable . value) in local-variable-map
+                       do (setf (buffer-local-value variable (current-buffer)) value))))
         (error (delay-warning 'burly (format "Error while opening bookmark: ERROR:%S  RECORD:%S" err record))))
       (current-buffer))))
 
