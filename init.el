@@ -1293,6 +1293,9 @@ Also, ignores effort, because it's not useful for this purpose."
 (use-package org-modern
   :hook (org-mode . org-modern-mode))
 
+(use-package org-web-tools
+  :quelpa (org-web-tools :fetcher github :repo "alphapapa/org-web-tools"))
+
 (use-package prism
   :quelpa (prism :fetcher github :repo "alphapapa/prism.el")
 

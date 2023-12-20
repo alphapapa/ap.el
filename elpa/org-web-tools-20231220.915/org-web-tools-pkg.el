@@ -1,11 +1,11 @@
-(define-package "org-web-tools" "20231028.2353" "Display and capture web content with Org-mode"
+(define-package "org-web-tools" "20231220.915" "Display and capture web content with Org-mode"
   '((emacs "27.1")
     (org "9.0")
     (compat "29.1.4.2")
     (dash "2.12")
     (esxml "0.3.4")
     (s "1.10.0")
-    (plz "0.7")
+    (plz "0.7.1")
     (request "0.3.0"))
   :authors
   '(("Adam Porter" . "adam@alphapapa.net"))

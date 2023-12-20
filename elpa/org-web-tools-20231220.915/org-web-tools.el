@@ -1,11 +1,11 @@
 ;;; org-web-tools.el --- Display and capture web content with Org-mode  -*- lexical-binding: t -*-
 
-;; TODO: Add copyright line.
+;; Copyright (C) 2017-2023  Adam Porter
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: http://github.com/alphapapa/org-web-tools
-;; Version: 1.3-pre
-;; Package-Requires: ((emacs "27.1") (org "9.0") (compat "29.1.4.2") (dash "2.12") (esxml "0.3.4") (s "1.10.0") (plz "0.7") (request "0.3.0"))
+;; Version: 1.3
+;; Package-Requires: ((emacs "27.1") (org "9.0") (compat "29.1.4.2") (dash "2.12") (esxml "0.3.4") (s "1.10.0") (plz "0.7.1") (request "0.3.0"))
 ;; Keywords: hypermedia, outlines, Org, Web
 
 ;;; Commentary:
@@ -151,15 +151,21 @@ When SELECTOR is non-nil, the HTML is filtered using
                     (org-web-tools--dom-to-html))))
   (with-temp-buffer
     (insert html)
-    (unless (zerop (call-process-region (point-min) (point-max) "pandoc"
-                                        t t nil
-                                        (org-web-tools--pandoc-no-wrap-option)
-                                        "-f" "html-raw_html-native_divs" "-t" "org"))
-      ;; TODO: Add error output, see org-protocol-capture-html
-      (error "Pandoc failed"))
-    (org-mode)
-    (org-web-tools--clean-pandoc-output)
-    (buffer-string)))
+    (let ((stderr-file (make-temp-file "org-web-tools-pandoc-stderr")))
+      (unwind-protect
+          (if (not (zerop (call-process-region (point-min) (point-max) "pandoc"
+                                               t (list t stderr-file) nil
+                                               "--verbose"
+                                               (org-web-tools--pandoc-no-wrap-option)
+                                               "-f" "html-raw_html-native_divs" "-t" "org")))
+              (progn
+                (delete-region (point-min) (point-max))
+                (insert-file-contents stderr-file)
+                (error "Pandoc failed: %s" (buffer-string)))
+            (org-mode)
+            (org-web-tools--clean-pandoc-output)
+            (buffer-string))
+        (delete-file stderr-file)))))
 
 (defun org-web-tools--pandoc-no-wrap-option ()
   "Return option `org-web-tools--pandoc-no-wrap-option', setting if unset."
@@ -324,7 +330,8 @@ outside of it) will be converted."
   "Return Org link to URL using title of HTML page at URL.
 If URL is not given, look for first URL in `kill-ring'.  If page
 at URL has no title, return URL."
-  (if-let ((dom (plz 'get url :as #'libxml-parse-html-region))
+  (if-let ((dom (plz 'get url :as (lambda ()
+                                    (libxml-parse-html-region (point-min) (point-max)))))
            (title (cl-caddr (car (dom-by-tag dom 'title)))))
       (org-link-make-string url (org-web-tools--cleanup-title title))
     (message "HTML page at URL has no title")
@@ -359,7 +366,7 @@ first-level entry for writing comments."
           (title (org-web-tools--cleanup-title (or title "")))
           (converted (org-web-tools--html-to-org-with-pandoc readable))
           (link (org-link-make-string url title))
-          (timestamp (format-time-string (concat "[" (substring (cdr org-time-stamp-formats) 1 -1) "]"))))
+          (timestamp (format-time-string (org-time-stamp-format 'with-time 'inactive))))
     (with-temp-buffer
       (org-mode)
       ;; Insert article text
@@ -383,7 +390,7 @@ first-level entry for writing comments."
                 (goto-char (point-min))
                 (while (re-search-forward match nil t)
                   (replace-match replace))))
-  (libxml-parse-html-region (point-min)))
+  (libxml-parse-html-region (point-min) (point-max)))
 
 ;;;;; Misc
 
@@ -448,9 +455,8 @@ HTML."
 
 (defun org-web-tools--get-first-url ()
   "Return URL in clipboard, or first URL in the `kill-ring', or nil if none."
-  (cl-loop for item in (append (list (gui-get-selection 'CLIPBOARD))
-                               kill-ring)
-           when (and item (string-match (rx bol "http" (optional "s") "://") item))
+  (cl-loop for item in (cons (current-kill 0) kill-ring)
+           when (and item (string-match-p (rx bol "http" (optional "s") "://") item))
            return item))
 
 (declare-function org-element-property "org-element")
