@@ -106,7 +106,7 @@ with commas to turn multiple tokens, which would normally be
 treated as multiple predicates, into multiple arguments to a
 single predicate).
 
-(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (ACTION #\\='org-ql-completing-read-action) (ANNOTATE #\\='org-ql-completing-read-snippet) (SNIPPET #\\='org-ql-completing-read-snippet) (PATH #\\='org-ql-completing-read-path) (ACTION-FILTER #\\='list) (PROMPT \"Find entry: \"))")
+(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (ACTION #\\='org-ql-completing-read-action) (SNIPPET #\\='org-ql-completing-read-snippet) (PATH #\\='org-ql-completing-read-path) (ACTION-FILTER #\\='list) (PROMPT \"Find entry: \"))")
 (function-put 'org-ql-completing-read 'lisp-indent-function 'defun)
 (register-definition-prefixes "org-ql-completing-read" '("org-ql-completing-read-"))
 
