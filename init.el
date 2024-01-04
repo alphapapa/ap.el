@@ -1246,10 +1246,11 @@ Also, ignores effort, because it's not useful for this purpose."
 
 (use-package org-ql
   :quelpa (org-ql :fetcher github :repo "alphapapa/org-ql"
-	          :files (:defaults (:exclude "helm-org-ql.el")))
+                  :files (:defaults (:exclude "helm-org-ql.el")))
   :general
   (:map org-mode-map
-        "M-g o" #'org-ql-find)
+        "M-g f" #'org-ql-find
+        "M-g p" #'org-ql-find-path)
   ("M-g O" #'org-ql-find-in-org-directory)
 
   :config
