@@ -5,7 +5,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/taxy.el
-;; Version: 0.12.1
+;; Version: 0.13
 ;; Package-Requires: ((emacs "26.3") (magit-section "3.2.1") (taxy "0.10"))
 ;; Keywords: lisp
 
@@ -96,8 +96,20 @@ this does not disable indentation of section headings.")
   ;; hierarchical path, but since the taxys aren't doubly linked, that isn't easily done.
   ;; Could probably be worked around by binding a special variable around the creation of
   ;; the taxy hierarchy that would allow the path to be saved into each taxy.
-  (when-let ((taxy (oref section value)))
-    (taxy-name taxy)))
+
+  ;; NOTE: This method seems to slightly conflate a couple of things: the section class
+  ;; and the value of the section instance.  In the case of `taxy-magit-section', the
+  ;; non-leaf nodes will have a `taxy' as their value, but the leaves will be whatever
+  ;; type of object the `taxy' contains, and we can't account for that in the method
+  ;; specializer (or could we define our own specializer?  I guess we could, but the
+  ;; implications of that aren't obvious).  It's not clear that calling the next method
+  ;; (i.e. probably falling back on just the `magit-section' class) would produce a useful
+  ;; or "correct" value for visibility caching purposes, but at least it works, so it will
+  ;; do for now.
+  (let ((value (oref section value)))
+    (cl-typecase value
+      (taxy (taxy-name value))
+      (otherwise (cl-call-next-method)))))
 
 ;;;; Commands
 
@@ -105,82 +117,85 @@ this does not disable indentation of section headings.")
 ;;;; Functions
 
 (cl-defun taxy-magit-section-insert
-    (taxy &key (items 'first) (initial-depth 0) (blank-between-depth 1))
+    (taxy &key (items 'first) (initial-depth 0) (blank-between-depth 1)
+          (section-class 'taxy-magit-section-section))
   "Insert a `magit-section' for TAXY into current buffer.
 If ITEMS is `first', insert a taxy's items before its descendant
 taxys; if `last', insert them after descendants.  INITIAL-DEPTH
 is the initial indentation depth; it may be, e.g. -1 to make the
 second level unindented.  BLANK-BETWEEN-DEPTH is the level up to
-which blank lines are inserted between sections at that level."
+which blank lines are inserted between sections at that level.
+SECTION-CLASS is passed to `magit-insert-section', which
+see (this may be set to a custom subclass of `magit-section' in
+order to define a custom `magit-section-ident-value' method so
+that section visibility may be cached concisely)."
   (declare (indent defun))
   (let* ((magit-section-set-visibility-hook
           (cons #'taxy-magit-section-visibility magit-section-set-visibility-hook)))
-    (cl-labels ((insert-item
-                 (item taxy depth)
-                 (magit-insert-section (magit-section item)
-                   (magit-insert-section-body
-                     ;; This is a tedious way to give the indent
-                     ;; string the same text properties as the start
-                     ;; of the formatted string, but no matter where I
-                     ;; left point after using `insert-and-inherit',
-                     ;; something was wrong about the properties, and
-                     ;; `magit-section' didn't navigate the sections
-                     ;; properly anymore.
-                     (let* ((formatted (funcall (taxy-magit-section-format-fn taxy) item))
-                            (indent-size (if (or (not taxy-magit-section-insert-indent-items)
-                                                 (< depth 0))
-                                             0
-                                           (+ (* depth (taxy-magit-section-level-indent taxy))
-                                              (taxy-magit-section-item-indent taxy))))
-                            (indent-string (make-string indent-size ? )))
-                       (add-text-properties 0 (length indent-string)
-                                            (text-properties-at 0 formatted)
-                                            indent-string)
-                       (insert indent-string formatted "\n")))))
-                (insert-taxy
-                 (taxy depth)
-                 (let ((magit-section-set-visibility-hook magit-section-set-visibility-hook)
-                       (taxy-magit-section-level-indent (taxy-magit-section-level-indent taxy))
-                       (taxy-magit-section-item-indent (taxy-magit-section-item-indent taxy))
-                       (taxy-name (copy-sequence (taxy-name taxy))))
-                   (add-face-text-property
-                    0 (length taxy-name)
-                    (funcall (taxy-magit-section-heading-face-fn taxy) depth)
-                    t taxy-name)
-                   (cl-typecase taxy
-                     (taxy-magit-section
-                      (when (taxy-magit-section-visibility-fn taxy)
-                        (push (taxy-magit-section-visibility-fn taxy)
-                              magit-section-set-visibility-hook))))
-                   ;; HACK: We set the section's washer to nil to prevent
-                   ;; `magit-section--maybe-wash' from trying to wash the section when its
-                   ;; visibility is toggled back on.  I'm not sure why this is necessary
-                   ;; (maybe an issue in magit-section?).
-                   (oset (magit-insert-section (taxy-magit-section-section taxy)
-                           (magit-insert-heading
-                             (make-string (* (if (< depth 0) 0 depth)
-                                             (taxy-magit-section-level-indent taxy))
-                                          ? )
-                             taxy-name
-                             (format " (%s%s)"
-                                     (if (taxy-description taxy)
-                                         (concat (taxy-description taxy) " ")
-                                       "")
-                                     (taxy-size taxy)))
-                           (magit-insert-section-body
-                             (when (eq 'first items)
-                               (dolist (item (taxy-items taxy))
-                                 (insert-item item taxy depth)))
-                             (dolist (taxy (taxy-taxys taxy))
-                               (insert-taxy taxy (1+ depth)))
-                             (when (eq 'last items)
-                               (dolist (item (taxy-items taxy))
-                                 (insert-item item taxy depth))))
-                           (when (<= depth blank-between-depth)
-                             (insert "\n")))
-                         washer nil))))
+    (cl-labels ((insert-item (item taxy depth)
+                  (magit-insert-section ((eval section-class) item)
+                    (magit-insert-section-body
+                      ;; This is a tedious way to give the indent
+                      ;; string the same text properties as the start
+                      ;; of the formatted string, but no matter where I
+                      ;; left point after using `insert-and-inherit',
+                      ;; something was wrong about the properties, and
+                      ;; `magit-section' didn't navigate the sections
+                      ;; properly anymore.
+                      (let* ((formatted (funcall (taxy-magit-section-format-fn taxy) item))
+                             (indent-size (if (or (not taxy-magit-section-insert-indent-items)
+                                                  (< depth 0))
+                                              0
+                                            (+ (* depth (taxy-magit-section-level-indent taxy))
+                                               (taxy-magit-section-item-indent taxy))))
+                             (indent-string (make-string indent-size ? )))
+                        (add-text-properties 0 (length indent-string)
+                                             (text-properties-at 0 formatted)
+                                             indent-string)
+                        (insert indent-string formatted "\n")))))
+                (insert-taxy (taxy depth)
+                  (let ((magit-section-set-visibility-hook magit-section-set-visibility-hook)
+                        (taxy-magit-section-level-indent (taxy-magit-section-level-indent taxy))
+                        (taxy-magit-section-item-indent (taxy-magit-section-item-indent taxy))
+                        (taxy-name (copy-sequence (taxy-name taxy))))
+                    (add-face-text-property
+                     0 (length taxy-name)
+                     (funcall (taxy-magit-section-heading-face-fn taxy) depth)
+                     t taxy-name)
+                    (cl-typecase taxy
+                      (taxy-magit-section
+                       (when (taxy-magit-section-visibility-fn taxy)
+                         (push (taxy-magit-section-visibility-fn taxy)
+                               magit-section-set-visibility-hook))))
+                    ;; HACK: We set the section's washer to nil to prevent
+                    ;; `magit-section--maybe-wash' from trying to wash the section when its
+                    ;; visibility is toggled back on.  I'm not sure why this is necessary
+                    ;; (maybe an issue in magit-section?).
+                    (oset (magit-insert-section ((eval section-class) taxy)
+                            (magit-insert-heading
+                              (make-string (* (if (< depth 0) 0 depth)
+                                              (taxy-magit-section-level-indent taxy))
+                                           ? )
+                              taxy-name
+                              (format " (%s%s)"
+                                      (if (taxy-description taxy)
+                                          (concat (taxy-description taxy) " ")
+                                        "")
+                                      (taxy-size taxy)))
+                            (magit-insert-section-body
+                              (when (eq 'first items)
+                                (dolist (item (taxy-items taxy))
+                                  (insert-item item taxy depth)))
+                              (dolist (taxy (taxy-taxys taxy))
+                                (insert-taxy taxy (1+ depth)))
+                              (when (eq 'last items)
+                                (dolist (item (taxy-items taxy))
+                                  (insert-item item taxy depth))))
+                            (when (<= depth blank-between-depth)
+                              (insert "\n")))
+                          washer nil))))
       ;; HACK: See earlier note about washer.
-      (oset (magit-insert-section (taxy-magit-section-section)
+      (oset (magit-insert-section ((eval section-class))
               (insert-taxy taxy initial-depth))
             washer nil))))
 
@@ -359,70 +374,69 @@ according to `columns' and takes into account the width of all
 the items' values for each column."
   (let ((table (make-hash-table))
         column-aligns column-sizes image-p)
-    (cl-labels ((string-width*
-                 (string) (if-let (pos (text-property-not-all 0 (length string)
-                                                              'display nil string))
-                              ;; Text has a display property: check for an image.
-                              (pcase (get-text-property pos 'display string)
-                                ((and `(image . ,_rest) spec)
-                                 ;; An image: try to calcuate the display width.  (See also:
-                                 ;; `org-string-width'.)
+    (cl-labels ((string-width* (string)
+                  (if-let (pos (text-property-not-all 0 (length string)
+                                                      'display nil string))
+                      ;; Text has a display property: check for an image.
+                      (pcase (get-text-property pos 'display string)
+                        ((and `(image . ,_rest) spec)
+                         ;; An image: try to calcuate the display width.  (See also:
+                         ;; `org-string-width'.)
 
-                                 ;; FIXME: The entire string may not be an image, so the
-                                 ;; image part needs to be handled separately from any
-                                 ;; non-image part.
+                         ;; FIXME: The entire string may not be an image, so the
+                         ;; image part needs to be handled separately from any
+                         ;; non-image part.
 
-                                 ;; TODO: Do we need to specify the frame?  What if the
-                                 ;; buffer isn't currently displayed?
-                                 (setf image-p t)
-                                 (floor (car (image-size spec))))
-                                (_
-                                 ;; No image: just use `string-width'.
-                                 (setf image-p nil)
-                                 (string-width string)))
-                            ;; No display property.
-                            (setf image-p nil)
-                            (string-width string)))
-                (resize-image-string
-                 (string width) (let ((image
-                                       (get-text-property
-                                        (text-property-not-all 0 (length string)
-                                                               'display nil string)
-                                        'display string)))
-                                  (propertize (make-string width ? ) 'display image)))
+                         ;; TODO: Do we need to specify the frame?  What if the
+                         ;; buffer isn't currently displayed?
+                         (setf image-p t)
+                         (floor (car (image-size spec))))
+                        (_
+                         ;; No image: just use `string-width'.
+                         (setf image-p nil)
+                         (string-width string)))
+                    ;; No display property.
+                    (setf image-p nil)
+                    (string-width string)))
+                (resize-image-string (string width)
+                  (let ((image
+                         (get-text-property
+                          (text-property-not-all 0 (length string)
+                                                 'display nil string)
+                          'display string)))
+                    (propertize (make-string width ? ) 'display image)))
 
-                (format-column
-                 (item depth column-name)
-                 (let* ((column-alist (alist-get column-name formatters nil nil #'equal))
-                        (fn (alist-get 'formatter column-alist))
-                        (value (funcall fn item depth))
-                        (current-column-size (or (map-elt column-sizes column-name) (string-width column-name))))
-                   (setf (map-elt column-sizes column-name)
-                         (max current-column-size (string-width* value)))
-                   (setf (map-elt column-aligns column-name)
-                         (or (alist-get 'align column-alist)
-                             'left))
-                   (when image-p
-                     ;; String probably is an image: set its non-image string value to a
-                     ;; number of matching spaces.  It's not always pixel-perfect, but
-                     ;; this is probably as good as we can do without using pixel-based
-                     ;; :align-to's for everything (which might be worth doing in the
-                     ;; future).
+                (format-column (item depth column-name)
+                  (let* ((column-alist (alist-get column-name formatters nil nil #'equal))
+                         (fn (alist-get 'formatter column-alist))
+                         (value (funcall fn item depth))
+                         (current-column-size (or (map-elt column-sizes column-name) (string-width column-name))))
+                    (setf (map-elt column-sizes column-name)
+                          (max current-column-size (string-width* value)))
+                    (setf (map-elt column-aligns column-name)
+                          (or (alist-get 'align column-alist)
+                              'left))
+                    (when image-p
+                      ;; String probably is an image: set its non-image string value to a
+                      ;; number of matching spaces.  It's not always pixel-perfect, but
+                      ;; this is probably as good as we can do without using pixel-based
+                      ;; :align-to's for everything (which might be worth doing in the
+                      ;; future).
 
-                     ;; FIXME: This only works properly if the entire string has an image
-                     ;; display property (but this is good enough for now).
-                     (setf value (resize-image-string value (string-width* value))))
-                   value))
-                (format-item
-                 (depth item) (puthash item
-                                       (cl-loop for column in columns
-                                                collect (format-column item depth column))
-                                       table))
+                      ;; FIXME: This only works properly if the entire string has an image
+                      ;; display property (but this is good enough for now).
+                      (setf value (resize-image-string value (string-width* value))))
+                    value))
+                (format-item (depth item)
+                  (puthash item
+                           (cl-loop for column in columns
+                                    collect (format-column item depth column))
+                           table))
                 (format-taxy (depth taxy)
-                             (dolist (item (taxy-items taxy))
-                               (format-item depth item))
-                             (dolist (taxy (taxy-taxys taxy))
-                               (format-taxy (1+ depth) taxy))))
+                  (dolist (item (taxy-items taxy))
+                    (format-item depth item))
+                  (dolist (taxy (taxy-taxys taxy))
+                    (format-taxy (1+ depth) taxy))))
       (format-taxy 0 taxy)
       ;; Now format each item's string using the column sizes.
       (let* ((column-sizes (nreverse column-sizes))
@@ -452,7 +466,8 @@ variable passed to that function, which see."
                                ((or `nil 'left) "-")
                                ('right ""))))
     (concat (format (format " %%%s%ss"
-                            first-column-align (cdar column-sizes))
+                            ;; FIXME: Why is this 1+ necessary for proper alignment?
+                            first-column-align (1+ (cdar column-sizes)))
                     (caar column-sizes))
             (cl-loop for (name . size) in (cdr column-sizes)
                      for column-alist = (alist-get name formatters nil nil #'equal)
