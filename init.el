@@ -600,8 +600,14 @@ Like it used to."
 
 (use-package embark
   ;; TODO: Install `embark-consult'.
-  :bind (("C-." . embark-act)
-         ("C-;" . embark-dwim))
+  :defer t
+  :bind
+  (("C-." . embark-act)
+   ("C-;" . embark-dwim))
+  (:map embark-org-heading-map
+        ("N" . #'org-notely-here))
+  (:map embark-url-map
+        ("F" . #'browse-url-firefox))
 
   :init
   (setq prefix-help-command #'embark-prefix-help-command))
