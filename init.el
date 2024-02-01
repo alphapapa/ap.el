@@ -781,7 +781,10 @@ When no misspellings remain, goes to the position before
 (use-package hammy
   :quelpa (hammy :fetcher github :repo "alphapapa/hammy.el")
 
-  :general (ap/general-def "hn" #'hammy-next)
+  :general (ap/general-def
+             "hn" #'hammy-next
+             "hs" #'hammy-start
+             "hS" #'hammy-stop)
 
   :init
   (hammy-mode)
