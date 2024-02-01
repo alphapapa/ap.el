@@ -3,9 +3,9 @@
 ;; Copyright (C) 2019 Free Software Foundation, Inc.
 
 ;; Author: Phillip Lord <phillip.lord@russet.org.uk>
-;; Maintainer: Phillip Lord <phillip.lord@russet.org.uk>
+;; Maintainer: Joseph Turner <persist-el@breatheoutbreathe.in>
 ;; Package-Type: multi
-;; Version: 0.5
+;; Version: 0.6
 
 ;; The contents of this file are subject to the GPL License, Version 3.0.
 
@@ -22,7 +22,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
@@ -41,6 +41,7 @@
 ;; variables.
 
 ;;; Code:
+
 (defvar persist--directory-location
   (locate-user-emacs-file "persist")
   "The location of persist directory.")
@@ -63,14 +64,14 @@ variable is not set to the value.")
        persist--directory-location)))
 
 (defun persist--defvar-1 (symbol location)
-  "Set symbol up for persistance."
+  "Set symbol up for persistence."
   (when location
     (persist-location symbol location))
   (persist-symbol symbol (symbol-value symbol))
   (persist-load symbol))
 
 (defmacro persist-defvar (symbol initvalue docstring &optional location)
-  "Define SYMBOL as a persistant variable and return SYMBOL.
+  "Define SYMBOL as a persistent variable and return SYMBOL.
 
 This form is nearly equivalent to `defvar', except that the
 variable persists between Emacs sessions.
@@ -85,7 +86,9 @@ DOCSTRING need to be given."
 
   ;; Don't support 2-arity calls either because we are lazy and
   ;; because if you want to persist it, you want to doc it.
-  (declare (debug (symbolp form stringp &optional form)) (doc-string 3))
+  (declare (debug (symbolp form stringp &optional form))
+           (doc-string 3)
+           (indent defun))
   ;; Define inside progn so the byte compiler sees defvar
   `(progn
      (defvar ,symbol ,initvalue ,docstring)
@@ -103,7 +106,7 @@ to persist a variable, you will normally need to call
   (put symbol 'persist-location (expand-file-name directory)))
 
 (defun persist-symbol (symbol &optional initvalue)
-  "Make SYMBOL a persistant variable.
+  "Make SYMBOL a persistent variable.
 
 If non-nil, INITVALUE is the value to which SYMBOL will be set if
 `persist-reset' is called.  Otherwise, the INITVALUE will be the
@@ -118,10 +121,12 @@ to load a previously saved location."
   (let ((initvalue (or initvalue (symbol-value symbol))))
     (add-to-list 'persist--symbols symbol)
     (put symbol 'persist t)
-    (put symbol 'persist-default initvalue)))
+    (if (hash-table-p initvalue)
+        (put symbol 'persist-default (copy-hash-table initvalue))
+      (put symbol 'persist-default (persist-copy-tree initvalue t)))))
 
 (defun persist--persistant-p (symbol)
-  "Return non-nil if SYMBOL is a persistant variable."
+  "Return non-nil if SYMBOL is a persistent variable."
   (get symbol 'persist))
 
 (defun persist-save (symbol)
@@ -131,10 +136,10 @@ Normally, it should not be necessary to call this explicitly, as
 variables persist automatically when Emacs exits."
   (unless (persist--persistant-p symbol)
     (error (format
-            "Symbol %s is not persistant" symbol)))
+            "Symbol %s is not persistent" symbol)))
   (let ((symbol-file-loc (persist--file-location symbol)))
-    (if (equal (symbol-value symbol)
-               (persist-default symbol))
+    (if (persist-equal (symbol-value symbol)
+                       (persist-default symbol))
         (when (file-exists-p symbol-file-loc)
           (delete-file symbol-file-loc))
       (let ((dir-loc
@@ -180,12 +185,60 @@ This does not remove any saved value of SYMBOL."
         (remove symbol persist--symbols)))
 
 (defun persist--save-all ()
-  "Save all persistant symbols."
+  "Save all persistent symbols."
   (mapc 'persist-save persist--symbols))
 
 ;; Save on kill-emacs-hook anyway
 (add-hook 'kill-emacs-hook
           'persist--save-all)
+
+(defun persist-equal (a b)
+  "Return non-nil when the values of A and B are equal.
+A and B are compared using `equal' unless they are both hash
+tables. In that case, the following are compared:
+
+- hash table count
+- hash table predicate
+- values, using `persist-equal'"
+  (if (and (hash-table-p a) (hash-table-p b))
+      (and (= (hash-table-count a) (hash-table-count b))
+           (eq (hash-table-test a) (hash-table-test b))
+           (catch 'done
+             (maphash
+              (lambda (key a-value)
+                (unless (persist-equal a-value (gethash key b (not a-value)))
+                  (throw 'done nil)))
+              a)
+             t))
+    (equal a b)))
+
+(defun persist-copy-tree (tree &optional vectors-and-records)
+  "Make a copy of TREE.
+If TREE is a cons cell, this recursively copies both its car and its cdr.
+Contrast to `copy-sequence', which copies only along the cdrs.
+With the second argument VECTORS-AND-RECORDS non-nil, this
+traverses and copies vectors and records as well as conses."
+  (declare (side-effect-free error-free))
+  (if (consp tree)
+      (let (result)
+	(while (consp tree)
+	  (let ((newcar (car tree)))
+	    (if (or (consp (car tree))
+                    (and vectors-and-records
+                         (or (vectorp (car tree)) (recordp (car tree)))))
+		(setq newcar (persist-copy-tree (car tree) vectors-and-records)))
+	    (push newcar result))
+	  (setq tree (cdr tree)))
+	(nconc (nreverse result)
+               (if (and vectors-and-records (or (vectorp tree) (recordp tree)))
+                   (persist-copy-tree tree vectors-and-records)
+                 tree)))
+    (if (and vectors-and-records (or (vectorp tree) (recordp tree)))
+	(let ((i (length (setq tree (copy-sequence tree)))))
+	  (while (>= (setq i (1- i)) 0)
+	    (aset tree i (persist-copy-tree (aref tree i) vectors-and-records)))
+	  tree)
+      tree)))
 
 (provide 'persist)
 ;;; persist.el ends here

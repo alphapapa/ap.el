@@ -25,51 +25,57 @@
    :type 'error
    :exclude-subtypes t))
 
-(ert-deftest test-persist-save ()
-  (with-local-temp-persist
-   (let ((sym (cl-gensym)))
-     ;; precondition
-   (should-not (file-exists-p (persist--file-location sym)))
-     (set sym 10)
-     (persist-symbol sym 10)
-     (persist-save sym)
-     (should t)
-     (should-not (file-exists-p (persist--file-location sym)))
-     (set sym 20)
-     (persist-save sym)
-     (should (file-exists-p (persist--file-location sym)))
-     (should
-      (string-match-p
-       "20"
-       (with-temp-buffer
-         (insert-file-contents (persist--file-location sym))
-         (buffer-string))))
-     (set sym 10)
-     (persist-save sym)
-     (should-not (file-exists-p (persist--file-location sym)))
-     (should-error
-      (persist-save 'fred)))))
+(defmacro persist-test-persist-save (init default change printed-changed)
+  "Test persisting symbols.
+- symbol is not persisted when value is set to INIT and default
+  value is set to DEFAULT.
+- symbol is persisted when value is changed according to CHANGE.
+- persisted file contents match PRINTED-CHANGED.
+- symbol is not persisted after value is set back to DEFAULT."
+  `(with-local-temp-persist
+    (let ((sym (cl-gensym)))
+      (should-not (file-exists-p (persist--file-location sym)))
+      (set sym ,init)
+      (persist-symbol sym ,default)
+      (persist-save sym)
+      (should t)
+      (should-not (file-exists-p (persist--file-location sym)))
+      ,change
+      (persist-save sym)
+      (should (file-exists-p (persist--file-location sym)))
+      (should
+       (string-match-p
+        ,printed-changed
+        (with-temp-buffer
+          (insert-file-contents (persist--file-location sym))
+          (buffer-string))))
+      (set sym ,default)
+      (persist-save sym)
+      (should-not (file-exists-p (persist--file-location sym))))))
 
-(ert-deftest test-persist-save-non-number ()
-  "Test saving something that is not a number.
+(ert-deftest test-persist-save-number ()
+  "Test saving number."
+  (persist-test-persist-save 1 1 (set sym 2) "2"))
 
-`test-persist-save' missed "
-  (with-local-temp-persist
-   (let ((sym (cl-gensym)))
-     (set sym "fred")
-     (persist-symbol sym "fred")
-     (persist-save sym)
-     (should t)
-     (should-not (file-exists-p (persist--file-location sym)))
-     (set sym "george")
-     (persist-save sym)
-     (should (file-exists-p (persist--file-location sym)))
-     (should
-      (string-match-p
-       "george"
-       (with-temp-buffer
-         (insert-file-contents (persist--file-location sym))
-         (buffer-string)))))))
+(ert-deftest test-persist-save-string ()
+  "Test saving string."
+  (persist-test-persist-save "foo" "foo" (set sym "bar") "bar"))
+
+(ert-deftest test-persist-save-hash ()
+  "Test saving hash table."
+  (let* ((hash (make-hash-table))
+         (default (copy-hash-table hash)))
+    (persist-test-persist-save hash default
+                               (puthash 'foo "bar" (symbol-value sym))
+                               "#s(hash-table size 65 test eql rehash-size 1.5 rehash-threshold 0.8125 data (foo \"bar\"))")))
+
+(ert-deftest test-persist-save-record ()
+  "Test saving record."
+  (let* ((rec (record 'foo 'a 'b))
+         (default (copy-sequence rec)))
+    (persist-test-persist-save rec default
+                               (setf (aref (symbol-value sym) 2) 'quux)
+                               "#s(foo a quux)")))
 
 (ert-deftest test-persist-load ()
   (with-local-temp-persist

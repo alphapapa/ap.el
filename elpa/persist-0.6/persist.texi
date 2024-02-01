@@ -1,10 +1,10 @@
 \input texinfo
 @setfilename persist.info
-@settitle persist persistant variables
+@settitle persist persistent variables
 
 @dircategory Emacs
 @direntry
-* Persist: (persist).  Persistant variables for Emacs.
+* Persist: (persist).  Persistent variables for Emacs.
 @end direntry
 
 @copying
@@ -29,7 +29,7 @@ and modified without restriction.
 @end copying
 
 @titlepage
-@title Persist -- Persistant Variables for Emacs
+@title Persist -- Persistent Variables for Emacs
 @author by Phillip Lord
 @page
 @insertcopying
@@ -38,9 +38,9 @@ and modified without restriction.
 @contents
 
 @node Top
-@top Persist -- Persistant Variables for Emacs
+@top Persist -- Persistent Variables for Emacs
 
-Perist is a library for making variables persistant; that it, their
+Persist is a library for making variables persistent; that it, their
 state can be changed from the default and the new value will remain even
 after Emacs has been closed and restarted.
 
@@ -68,7 +68,7 @@ not support the lower arity versions of @code{defvar}. Both an
 (persist-defvar my-persistant-variable 10
    "A variable of no purpose.
    
-This variable is persistant between sessions")
+This variable is persistent between sessions")
 @end group
 @end example
 
@@ -79,15 +79,15 @@ This variable is persistant between sessions")
 
 @defmac persist-defvar (var initvalue docstring) body@dots{}
 This macro is equivalent to @code{defvar} and can be used to make a
-variable persistant.
+variable persistent.
 @end defmac
 
 @defun persist-symbol (symbol &optional initvalue)
-This function takes @code{symbol} for an existing, non-persistant variable
-and makes it persistant. If @code{initvalue} is not given, then the
+This function takes @code{symbol} for an existing, non-persistent variable
+and makes it persistent. If @code{initvalue} is not given, then the
 current value is used. For package developers, @code{persist-defvar}
-would generally be prefered; this function might be useful for making
-third-party variables persistant.
+would generally be preferred; this function might be useful for making
+third-party variables persistent.
 @end defun
 
 @example
