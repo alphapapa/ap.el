@@ -1157,11 +1157,12 @@ Includes \"%s\" format spec for length of playlist in minutes."
 
     (defun org-link-start-process-shell-command-follow (command _)
       (when (or (member command org-link-start-process-shell-command-safe-commands)
-                (pcase (read-answer (format "Run command %S? " command)
-                                    '(("yes" ?y "run command")
-                                      ("no" ?n "don't run command")
-                                      ("remember" ?! "run command and remember that it's safe to run")
-                                      ("help" ?h "show help")))
+                (pcase (let ((read-answer-short t))
+                         (read-answer (format "Run command %S? " command)
+                                      '(("yes" ?y "run command")
+                                        ("no" ?n "don't run command")
+                                        ("remember" ?! "run command and remember that it's safe to run")
+                                        ("help" ?h "show help"))))
                   ("yes" t)
                   ("remember"
                    (cl-pushnew command org-link-start-process-shell-command-safe-commands :test #'equal)
