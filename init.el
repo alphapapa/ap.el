@@ -306,6 +306,8 @@
  '(tab-line-new-button-show nil)
  '(tab-line-tabs-function 'tab-line-tabs-window-buffers)
  '(tool-bar-mode nil)
+ '(url-cache-directory "~/.cache/emacs/url/cache")
+ '(url-cookie-file "~/.cache/emacs/url/cookies")
  '(vc-annotate-background "#242730")
  '(vc-annotate-color-map
    (list
