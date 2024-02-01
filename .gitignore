@@ -16,6 +16,7 @@ elpa/archives/
 /dirvish/
 /emms/
 *.elc
+*.eln
 /multisession/
 /persist/
 /recentf
