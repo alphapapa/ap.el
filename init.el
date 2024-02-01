@@ -1313,8 +1313,7 @@ Also, ignores effort, because it's not useful for this purpose."
   :custom (org-auto-expand-mode t))
 
 (use-package org-make-toc
-  :quelpa (org-make-toc :fetcher github :repo "alphapapa/org-make-toc"
-                        :branch "wip/rewrite"))
+  :quelpa (org-make-toc :fetcher github :repo "alphapapa/org-make-toc"))
 
 (use-package org-notely
   :quelpa (org-notely :fetcher github :repo "alphapapa/org-notely")
