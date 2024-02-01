@@ -1309,7 +1309,8 @@ Also, ignores effort, because it's not useful for this purpose."
               (call-interactively #'org-cycle))))
 
 (use-package org-auto-expand
-  :hook (org-mode . org-auto-expand-mode))
+  :quelpa (org-auto-expand :fetcher github :repo "alphapapa/org-auto-expand")
+  :custom (org-auto-expand-mode t))
 
 (use-package org-make-toc
   :quelpa (org-make-toc :fetcher github :repo "alphapapa/org-make-toc"
