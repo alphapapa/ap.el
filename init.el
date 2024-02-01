@@ -1720,6 +1720,10 @@ few common parameters with completion."
 (use-package ement-derpit
   :load-path ("~/src/emacs/misc/derpit.el"))
 
+;; Load work-related configs.
+(with-demoted-errors "%s"
+  (load-file (expand-file-name "~/work/config.el")))
+
 ;;; Footer
 
 (find-file user-init-file)
