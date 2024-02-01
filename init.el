@@ -132,6 +132,8 @@
  '(org-id-locations-file-relative t)
  '(org-imenu-depth 8)
  '(org-indirect-buffer-display 'current-window)
+ '(org-link-start-process-shell-command-safe-commands
+   '("~/.bin/chromium-sandbox ushin" "~/.bin/chromium-sandbox numfocus" "~/.bin/chromium-sandbox infio"))
  '(org-list-allow-alphabetical t)
  '(org-list-demote-modify-bullet '(("+" . "-") ("-" . "*") ("*" . "+")))
  '(org-list-two-spaces-after-bullet-regexp nil)
