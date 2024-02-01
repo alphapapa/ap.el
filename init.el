@@ -1533,6 +1533,20 @@ boundaries."
   (define-key reb-lisp-mode-map (kbd "RET") #'reb-replace-regexp)
   (global-set-key (kbd "C-M-%") #'re-builder))
 
+(use-package python
+  :hook
+  (python-mode . flyspell-prog-mode)
+  (python-mode . prism-whitespace-mode)
+  :config
+  (progn
+    (require 'info-look)
+
+    (info-lookup-add-help
+     :mode 'python-mode
+     :regexp "[[:alnum:]_]+"
+     :doc-spec
+     '(("(python)Index" nil "")))))
+
 (use-package salv
   :quelpa
   (salv :fetcher github :repo "alphapapa/salv.el")
