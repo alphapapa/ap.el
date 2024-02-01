@@ -1566,7 +1566,8 @@ boundaries."
 (use-package switchy-window
   :general
   (:map switchy-window-minor-mode-map
-        [remap other-window] #'switchy-window)
+        ;; TODO: Figure out how to use repeat-mode to make "C-x o o o" work like this does.
+        [remap other-window] (defrepeater 'repeat-switchy-window #'switchy-window))
   :init
   (switchy-window-minor-mode)
   :config
