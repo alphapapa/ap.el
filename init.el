@@ -688,6 +688,10 @@ format."
       (message "%s" frame-font))))
 
 (use-package fontaine
+  :demand t
+  :config
+  (fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
+  (add-hook 'kill-emacs-hook #'fontaine-store-latest-preset)
 
   :custom
   (fontaine-presets
@@ -714,7 +718,8 @@ format."
             :bold-weight extrabold)
 
      (fantasque-sans-mono :default-family "Fantasque Sans Mono"
-                          :default-height 105)
+                          :default-height 105
+                          :default-weight normal)
 
      (iosevka-comfy :default-family "Iosevka Comfy Motion")
      (iosevka-comfy-wide :default-family "Iosevka Comfy Wide Motion")
