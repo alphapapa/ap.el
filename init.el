@@ -470,13 +470,20 @@
 
 (use-package burly
   :quelpa
-  (burly :fetcher github :repo "alphapapa/burly.el"
-	 :branch "wip/tabs")
+  (burly :fetcher github :repo "alphapapa/burly.el")
 
-  :bind (("C-x t R" . burly-reset-tab))
   :init
-  (burly-tabs-mode))
+  (burly-tabs-mode)
 
+  :bind
+  (("C-x t R" . burly-reset-tab))
+
+  :config
+  ;; (add-hook 'burly-tabs-after-hook
+  ;;           ;; This may be obsoleted by using `bufler-workspace-save'.
+  ;;           (defun ap/burly-bufler-worksacpe-focus-buffer (&rest _ignore)
+  ;;             (bufler-workspace-focus-buffer (current-buffer) :title burly-opened-bookmark-name)))
+  )
 
 (use-package pocket-reader
   :quelpa
