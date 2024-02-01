@@ -1039,6 +1039,9 @@ Includes \"%s\" format spec for length of playlist in minutes."
   :after magit
   :config (magit-todos-mode 1))
 
+(use-package markdown-mode
+  :hook (markdown-mode . visual-line-mode))
+
 (use-package marginalia
   :init (marginalia-mode))
 
