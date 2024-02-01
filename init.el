@@ -572,15 +572,16 @@ Like it used to."
                   (toggle-truncate-lines 1))))
 
 (use-package dogears
-  :init (dogears-mode)
-  ;; These bindings are optional, of course:
+  :quelpa (dogears :fetcher github :repo "alphapapa/dogears.el")
   :bind (:map global-map
+              ("M-g M-r" . dogears-remember)
               ("M-g M-d" . dogears-go)
               ("M-g M-b" . dogears-back)
               ("M-g M-f" . dogears-forward)
               ("M-g M-D" . dogears-list)
               ;; ("M-g M-D" . dogears-sidebar)
-	      ))
+              )
+  :custom (dogears-mode t))
 
 (use-package doom-themes
   :config
