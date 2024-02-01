@@ -101,6 +101,7 @@
  '(modus-themes-hl-line '(accented))
  '(modus-themes-org-blocks 'gray-background)
  '(modus-themes-tabs-accented t)
+ '(native-comp-async-jobs-number 2)
  '(objed-cursor-color "#ff665c")
  '(org-agenda-files '("~/org/inbox.org"))
  '(org-attach-use-inheritance nil)
