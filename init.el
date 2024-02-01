@@ -1563,17 +1563,6 @@ boundaries."
   ([remap scroll-down-command] #'scrollkeeper-up)
   ([remap scroll-up-command] #'scrollkeeper-down))
 
-(use-package selectrum
-  ;; Trying Vertico instead.  See comment below.
-  ;; :init (selectrum-mode)
-  )
-
-(use-package selectrum-prescient
-  ;; Trying Vertico instead.  See comment below.
-  :after selectrum
-  ;; :init (selectrum-prescient-mode)
-  )
-
 (use-package switchy-window
   :general
   (:map switchy-window-minor-mode-map
