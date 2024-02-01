@@ -795,6 +795,7 @@ When no misspellings remain, goes to the position before
 
     (cl-defun ap/mpris-toggle-players (&key (bus :session) (messagep t))
       "Toggle playback in MPRIS players that are playing or paused."
+      (interactive)
       (require 'dbus)
       (cl-labels
           ((mpris-service-p (service)
@@ -808,7 +809,7 @@ When no misspellings remain, goes to the position before
            (service-player-metadata (service)
              (dbus-get-property bus service "/org/mpris/MediaPlayer2" "org.mpris.MediaPlayer2.Player"
                                 "Metadata"))
-           (toggle-playback (service)
+           (service-player-toggle-playback (service)
              (dbus-call-method bus service "/org/mpris/MediaPlayer2" "org.mpris.MediaPlayer2.Player"
                                "PlayPause")
              (when messagep
@@ -825,14 +826,14 @@ When no misspellings remain, goes to the position before
              (-select #'mpris-service-p)
              (--select (member (service-playback-status it)
                                '("Playing" "Paused")))
-             (mapc #'toggle-playback))))
+             (mapc #'service-player-toggle-playback))))
 
     (defcustom ap/hammy-mpc-before-command "pmm cheerful -e vocal %s"
       "Command used to play music in function `ap/hammy-mpc-before'.
 Includes \"%s\" format spec for length of playlist in minutes."
       :type 'string)
 
-    (defcustom ap/hammy-mpc-enabled t
+    (defcustom ap/hammy-mpc-enabled nil
       "Whether to toggle MPC playback in Hammy timers."
       :type 'boolean)
 
@@ -874,8 +875,9 @@ Includes \"%s\" format spec for length of playlist in minutes."
                    :before (do (announce "Starting work time.")
                                (notify "Starting work time.")
                                ;; TODO: Get the duration from the interval itself.
-                               (when ap/hammy-mpc-enabled
-                                 (ap/hammy-mpc-before (/ current-duration 60))))
+                               (if ap/hammy-mpc-enabled
+                                   (ap/hammy-mpc-before (/ current-duration 60))
+                                 (ap/mpris-toggle-players)))
                    :advance (remind "10 minutes"
                                     (do (announce "Break time!")
                                         (notify "Break time!")
@@ -890,8 +892,9 @@ Includes \"%s\" format spec for length of playlist in minutes."
                                    "5 minutes"))
                    :before (do (announce "Starting break time.")
                                (notify "Starting break time.")
-                               (when ap/hammy-mpc-enabled
-                                 (mpc-pause)))
+                               (if ap/hammy-mpc-enabled
+                                   (mpc-pause)
+                                 (ap/mpris-toggle-players)))
                    :advance (remind "10 minutes"
                                     (do (announce "Break time is over!")
                                         (notify "Break time is over!")
@@ -955,7 +958,27 @@ Includes \"%s\" format spec for length of playlist in minutes."
                                :advance (do (announce "Time for a sit-down...")
                                             (notify "Time for a sit-down...")
                                             (run (concat "aplay "
-                                                         (expand-file-name "~/Misc/Sounds/Mario/smw_yoshi_tongue.wav"))))))))
+                                                         (expand-file-name "~/Misc/Sounds/Mario/smw_yoshi_tongue.wav")))))))
+
+  (progn
+    (defvar hammy-always-timer nil)
+    (define-minor-mode hammy-always-mode
+      "Periodically remind the user if no `hammy' timer is active."
+      :global t
+      (if hammy-always-mode
+          (progn
+            (unless (timerp hammy-always-timer)
+              (setf hammy-always-timer
+                    (run-at-time t 600
+                                 (lambda ()
+                                   (unless hammy-active
+                                     (notifications-notify :title "Always Be Hammy"
+                                                           :body "&#x1F439; Remember to use timers!")
+                                     (start-process "cvlc" nil "cvlc"
+                                                    "--play-and-exit" (expand-file-name "~/Dropbox/Sounds/Cell Phone Ringers/Homer's Cell Phone.mp3"))))))))
+        (when (timerp hammy-always-timer)
+          (cancel-timer hammy-always-timer)
+          (setf hammy-always-timer nil))))))
 
 (use-package helm-bufler
   :quelpa
