@@ -57,6 +57,10 @@
  '(dired-create-destination-dirs 'ask)
  '(dired-listing-switches "-alh")
  '(dired-omit-verbose nil)
+ '(display-buffer-alist
+   '(("^\\*Ement"
+      (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-same-window)
+      (nil))))
  '(doom-outrun-electric-brighter-modeline t)
  '(doom-outrun-electric-comment-bg t)
  '(ement-initial-sync-timeout 120)
