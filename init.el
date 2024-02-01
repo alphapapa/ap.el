@@ -1060,6 +1060,33 @@ Includes \"%s\" format spec for length of playlist in minutes."
       `(org-done ((t :foreground ,(face-background 'default) :background ,(face-foreground 'default)
                      :box (:line-width 2 :color "black" :style flat) :inverse-video t))))))
 
+(use-package mu4e
+  :init
+  (defun ap/mu4e-accounts-folder-function (folder)
+    (cl-assert (not (string-prefix-p "/" folder)))
+    (cl-assert (not (string-suffix-p "/" folder)))
+    (lambda (message)
+      (let ((maildir (mu4e-message-field message :maildir))
+            account)
+        (or (when (string-match (rx bos "/" (group (1+ (not (any "/")))) "/") maildir)
+              (setf account (match-string 1 maildir))
+              (when (member account (mu4e-personal-addresses 'no-regexp))
+                (concat "/" account "/" folder)))
+            (user-error "ACCOUNT:%S not in ACCOUNTS:%S for FOLDER:%S"
+                        account (mu4e-personal-addresses) folder)))))
+
+  :custom
+  (mu4e-read-option-use-builtin nil)
+  (mu4e-completing-read-function #'completing-read)
+  (mu4e-sent-folder (ap/mu4e-accounts-folder-function "Sent"))
+  (mu4e-drafts-folder (ap/mu4e-accounts-folder-function "Drafts"))
+  (mu4e-trash-folder  (ap/mu4e-accounts-folder-function "Trash"))
+  (mu4e-refile-folder (lambda (message)
+                        (concat (funcall (ap/mu4e-accounts-folder-function "Archives") message)
+                                "/" (format-time-string "%Y" (mu4e-message-field message :date)))))
+  (mu4e-change-filenames-when-moving t)
+  (mu4e-get-mail-command "mbsync -a"))
+
 (use-package orderless
   :custom
   (completion-styles '(orderless flex)))
