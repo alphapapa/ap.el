@@ -93,6 +93,10 @@ Includes buffers from `window-prev-buffers' at the top of the
 list of buffers in `bufler-switch-buffer'."
   :type 'boolean)
 
+(defcustom bufler-workspace-mode-lighter "Bflr:"
+  "Lighter used in mode-line for `bufler-workspace-mode'."
+  :type 'string)
+
 ;;;; Variables
 
 (defvar burly-buffer-local-variables)
@@ -295,6 +299,10 @@ Also sets current tab/frame's workspace to the current buffer's."
                         (cons 'handler #'bufler-workspace-bookmark-handler)
                         (cons 'bufler-workspace-name name))))
       (bookmark-store name record nil)))
+  (setf (bufler-workspace--tab-parameter
+         ;; FIXME: This doesn't seem to work: after saving a new workspace, it can't be reset until it's opened again.
+         'bufler-workspace-bookmark-name (tab-bar--current-tab-find))
+        name)
   (bufler-workspace-set (bufler-buffer-workspace-path (current-buffer))
                         :title name))
 
@@ -373,9 +381,10 @@ Works as `tab-line-tabs-function'."
 
 (defun bufler-workspace-mode-lighter ()
   "Return lighter string for mode line."
-  (concat "Bflr:" (if tab-bar-mode
-                      (bufler-workspace--tab-parameter 'bufler-workspace-path-formatted (tab-bar--current-tab-find))
-                    (frame-parameter nil 'bufler-workspace-path-formatted))))
+  (concat bufler-workspace-mode-lighter
+          (if tab-bar-mode
+              (bufler-workspace--tab-parameter 'bufler-workspace-path-formatted (tab-bar--current-tab-find))
+            (frame-parameter nil 'bufler-workspace-path-formatted))))
 
 (defun bufler-workspace-set-frame-name (name)
   "Set current frame's name according to NAME.

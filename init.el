@@ -420,7 +420,8 @@
                            (mode-match "Forge" (rx bos "forge-"))
                            (mode-match "Org" (rx bos "org-"))
                            (auto-file)
-                           (mode-match "Dired" (rx bos "dired-"))))
+                           (mode-match "Dired" (rx bos "dired-"))
+                           (mode-match "Deffy" (rx bos "deffy-"))))
       (group
        (name-match "**Special**"
                    (rx bos "*" (or "Messages" "Warnings" "scratch" "Backtrace") "*")))
@@ -436,8 +437,8 @@
        (mode-match "*Helm*" (rx bos "helm-")))
       (auto-mode))
      (group
-      (dir "~/work")
-      (dir "~/work" 1)
+      (dir '("~/work" "~/Dropbox/work"))
+      (dir '("~/work" "~/Dropbox/work") 1)
       (group (auto-indirect))
       (auto-parent-project))
      (group
