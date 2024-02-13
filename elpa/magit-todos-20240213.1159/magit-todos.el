@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: http://github.com/alphapapa/magit-todos
-;; Package-Version: 20231216.605
+;; Package-Version: 20240213.1159
 ;; Version: 1.8-pre
 ;; Package-Requires: ((emacs "26.1") (async "1.9.2") (dash "2.13.0") (f "0.17.2") (hl-todo "1.9.0") (magit "2.13.0") (pcre2el "1.8") (s "1.12.0") (transient "0.2.0"))
 ;; Keywords: magit, vc
@@ -120,8 +120,7 @@ Used to avoid running multiple simultaneous scans for a
 
 (defvar magit-todos-section-map
   (let ((map (make-sparse-keymap)))
-    (define-key map "jT" #'magit-todos-jump-to-todos)
-    (define-key map "jl" #'magit-todos-list)
+    (set-keymap-parent map magit-status-mode-map)
     (define-key map "b" #'magit-todos-branch-list-toggle)
     (define-key map "B" #'magit-todos-branch-list-set-commit)
     (define-key map [remap magit-visit-thing] #'magit-todos-list)
@@ -1312,17 +1311,15 @@ When SYNC is non-nil, match items are returned."
                                                  (optional (group-n 6 (regexp ,magit-todos-keyword-suffix)))
                                                  (optional (1+ blank))
                                                  (optional (group-n 5 (1+ not-newline)))))))))
-                (command (-flatten
-                          (-non-nil
-                           (list (when magit-todos-nice
-                                   (list "nice" "-n5"))
-                                 ,command)))))
+                (command (-flatten (-non-nil ,command))))
            ;; Convert any numbers in command to strings (e.g. depth).
            (cl-loop for elt in-ref command
                     when (numberp elt)
                     do (setf elt (number-to-string elt)))
            ;; Run command.
            (when command
+             (when magit-todos-nice
+               (setf command (append (list "nice" "-n5") command)))
              (if sync
                  ;; Synchronous: return matching items.
                  (with-temp-buffer
