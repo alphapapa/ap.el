@@ -1725,6 +1725,28 @@ few common parameters with completion."
 (with-demoted-errors "%s"
   (load-file (expand-file-name "~/work/config.el")))
 
+;;;; Functions
+
+(defun ap/wx ()
+  (interactive)
+  (shell-command "wx -f")
+  (read-only-mode))
+
+(defun ap/xdg-open (filename)
+  "Open FILENAME asynchronously with \"xdg-open\"."
+  (interactive (list (read-file-name "Open file: ")))
+  (call-process "xdg-open" nil 0 nil (expand-file-name filename)))
+
+(defun ap/chromium-profile (profile-name)
+  "Run Chromium PROFILE-NAME."
+  (interactive
+   (list (completing-read "Chromium profile: "
+                          (directory-files "~/.local/var/browser-profiles"
+                                           nil (rx bos (not (any "."))))
+                          nil t)))
+  (start-process (format "chromium-sandbox:%s" profile-name)
+                 nil "chromium-sandbox" profile-name))
+
 ;;; Footer
 
 (find-file user-init-file)
