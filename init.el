@@ -541,6 +541,24 @@ Like it used to."
                ;; Elisp Imenu section headings.
                '(115 "Sections" font-lock-comment-face)
                (plist-get (alist-get 'emacs-lisp-mode consult-imenu-config) :types)))))
+               (plist-get (alist-get 'emacs-lisp-mode consult-imenu-config) :types))))
+  (progn
+    ;; From the consult manual:
+    (defun consult-info-emacs ()
+      "Search through Emacs info pages."
+      (interactive)
+      (consult-info "emacs" "efaq" "elisp" "cl" "compat"))
+
+    (defun consult-info-org ()
+      "Search through the Org info page."
+      (interactive)
+      (consult-info "org"))
+
+    (defun consult-info-completion ()
+      "Search through completion info pages."
+      (interactive)
+      (consult-info "vertico" "consult" "marginalia" "orderless" "embark"
+                    "corfu" "cape" "tempel"))))
 
 (use-package custom
   :config
