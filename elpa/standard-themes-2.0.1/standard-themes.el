@@ -6,7 +6,7 @@
 ;; Maintainer: Standard-Themes Development <~protesilaos/standard-themes@lists.sr.ht>
 ;; URL: https://git.sr.ht/~protesilaos/standard-themes
 ;; Mailing-List: https://lists.sr.ht/~protesilaos/standard-themes
-;; Version: 1.2.0
+;; Version: 2.0.1
 ;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: faces, theme, accessibility
 
@@ -102,21 +102,26 @@ This affects comments, doc strings, and some other minor elements."
      semibold bold heavy extrabold ultrabold)
   "List of font weights.")
 
-(defconst standard-themes--headings-choice
-  '(set :tag "Properties" :greedy t
+(defconst standard-themes--weight-widget
+  '(choice :tag "Font weight (must be supported by the typeface)"
+           (const :tag "Unspecified (use whatever the default is)" nil)
+           (const :tag "Thin" thin)
+           (const :tag "Ultra-light" ultralight)
+           (const :tag "Extra-light" extralight)
+           (const :tag "Light" light)
+           (const :tag "Semi-light" semilight)
+           (const :tag "Regular" regular)
+           (const :tag "Medium" medium)
+           (const :tag "Semi-bold" semibold)
+           (const :tag "Bold" bold)
+           (const :tag "Extra-bold" extrabold)
+           (const :tag "Ultra-bold" ultrabold))
+  "List of supported font weights used by `defcustom' forms.")
+
+(defconst standard-themes--headings-widget
+  `(set :tag "Properties" :greedy t
         (const :tag "Proportionately spaced font (variable-pitch)" variable-pitch)
-        (choice :tag "Font weight (must be supported by the typeface)"
-                (const :tag "Thin" thin)
-                (const :tag "Ultra-light" ultralight)
-                (const :tag "Extra-light" extralight)
-                (const :tag "Light" light)
-                (const :tag "Semi-light" semilight)
-                (const :tag "Regular" regular)
-                (const :tag "Medium" medium)
-                (const :tag "Semi-bold" semibold)
-                (const :tag "Bold" bold)
-                (const :tag "Extra-bold" extrabold)
-                (const :tag "Ultra-bold" ultrabold))
+        ,standard-themes--weight-widget
         (radio :tag "Height"
                (float :tag "Floating point to adjust height by")
                (cons :tag "Cons cell of `(height . FLOAT)'"
@@ -144,43 +149,42 @@ stylistic combinations, followed by a presentation of all
 available properties:
 
     (setq standard-themes-headings
-          (quote ((1 . (light variable-pitch 1.5))
-                  (2 . (regular 1.3))
-                  (3 . (1.1))
-                  (agenda-date (1.3))
-                  (agenda-structure (variable-pitch light 1.8))
-                  (t . (variable-pitch)))))
+          (quote ((1 . (variable-pitch 1.5))
+                  (2 . (1.3))
+                  (agenda-date . (1.3))
+                  (agenda-structure . (variable-pitch light 1.8))
+                  (t . (1.1)))))
 
 By default (a nil value for this variable), all headings have a
-normal typographic weight, a font family that is the same as the
-`default' face (typically monospaced), and a height that is equal
-to the `default' face's height.
+bold typographic weight, use a desaturated text color, have a
+font family that is the same as the `default' face (typically
+monospaced), and a height that is equal to the `default' face's
+height.
 
-- A `variable-pitch' property changes the font family of the
-  heading to that of the `variable-pitch' face (normally a
-  proportionately spaced typeface).  Also check the `fontaine'
-  package (by Protesilaos) for tweaking fonts via faces.
+A `variable-pitch' property changes the font family of the
+heading to that of the `variable-pitch' face (normally a
+proportionately spaced typeface).
 
-- The symbol of a weight attribute adjusts the font of the
-  heading accordingly, such as `light', `semibold', etc.  Valid
-  symbols are defined in the variable `standard-themes-weights'.
-  The absence of a weight means that no distinct weight will be
-  used.
+The symbol of a weight attribute adjusts the font of the heading
+accordingly, such as `light', `semibold', etc.  Valid symbols are
+defined in the variable `standard-themes-weights'.  The absence of a
+weight means that bold will be used by virtue of inheriting the
+`bold' face (check the manual for tweaking bold and italic
+faces).
 
-- A number, expressed as a floating point (e.g. 1.5), adjusts the
-  height of the heading to that many times the base font size.
-  The default height is the same as 1.0, though it need not be
-  explicitly stated.  Instead of a floating point, an acceptable
-  value can be in the form of a cons cell like (height . FLOAT)
-  or (height FLOAT), where FLOAT is the given number.
+A number, expressed as a floating point (e.g. 1.5), adjusts the
+height of the heading to that many times the base font size.  The
+default height is the same as 1.0, though it need not be
+explicitly stated.  Instead of a floating point, an acceptable
+value can be in the form of a cons cell like (height . FLOAT)
+or (height FLOAT), where FLOAT is the given number.
 
 Combinations of any of those properties are expressed as a list,
 like in these examples:
 
     (semibold)
-    (variable-pitch semibold)
     (variable-pitch semibold 1.3)
-    (variable-pitch semibold (height 1.3))   ; same as above
+    (variable-pitch semibold (height 1.3)) ; same as above
     (variable-pitch semibold (height . 1.3)) ; same as above
 
 The order in which the properties are set is not significant.
@@ -188,10 +192,11 @@ The order in which the properties are set is not significant.
 In user configuration files the form may look like this:
 
     (setq standard-themes-headings
-          (quote ((1 . (light variable-pitch 1.5))
-                  (2 . (regular 1.3))
-                  (3 . (1.1))
-                  (t . (variable-pitch)))))
+          (quote ((1 . (variable-pitch 1.5))
+                  (2 . (1.3))
+                  (agenda-date . (1.3))
+                  (agenda-structure . (variable-pitch light 1.8))
+                  (t . (1.1)))))
 
 When defining the styles per heading level, it is possible to
 pass a non-nil value (t) instead of a list of properties.  This
@@ -199,21 +204,31 @@ will retain the original aesthetic for that level.  For example:
 
     (setq standard-themes-headings
           (quote ((1 . t)           ; keep the default style
-                  (2 . (variable-pitch 1.2))
+                  (2 . (semibold 1.2))
                   (t . (variable-pitch))))) ; style for all other headings
 
     (setq standard-themes-headings
-          (quote ((1 . (variable-pitch 1.6))
-                  (2 . (1.3))
-                  (t . t)))) ; default style for all other levels"
+          (quote ((1 . (variable-pitch extrabold 1.5))
+                  (2 . (semibold))
+                  (t . t)))) ; default style for all other levels
+
+Note that the text color of headings, of their background, and
+overline can all be set via the overrides.  It is possible to
+have any color combination for any heading level (something that
+could not be done in older versions of the themes).
+
+Read Info node `(standard-themes) Option for palette overrides' as
+well as Info node `(standard-themes) Make headings more or less
+colorful'.  Else check `standard-themes-common-palette-overrides'
+and related user options."
   :group 'standard-themes
-  :package-version '(standard-themes . "1.0.0")
+  :package-version '(standard-themes . "2.0.0")
   :type `(alist
-          :options ,(mapcar (lambda (h)
-                              (list h standard-themes--headings-choice))
+          :options ,(mapcar (lambda (el)
+                              (list el standard-themes--headings-widget))
                             '(0 1 2 3 4 5 6 7 8 t agenda-date agenda-structure))
           :key-type symbol
-          :value-type ,standard-themes--headings-choice)
+          :value-type ,standard-themes--headings-widget)
   :link '(info-link "(standard-themes) Option for headings"))
 
 (defcustom standard-themes-mixed-fonts nil
@@ -246,152 +261,45 @@ ELPA (by Protesilaos))."
   :type 'boolean
   :link '(info-link "(standard-themes) UI typeface"))
 
-(defcustom standard-themes-region nil
-  "Control the appearance of the `region' face.
-
-The value is a list of symbols.
-
-If nil or an empty list (the default), use a subtle background
-for the region and preserve the color of selected text.
-
-The `no-extend' symbol limits the highlighted area to the end of
-the line, so that it does not reach the edge of the window.
-
-The `neutral' symbol makes the highlighted area's background
-gray (or more gray, depending on the theme).
-
-The `intense' symbol amplifies the intensity of the highlighted
-area's background color.  It also overrides any text color to
-keep it legible.
-
-Combinations of those symbols are expressed in any order.
-
-In user configuration files the form may look like this:
-
-    (setq standard-themes-region \\='(intense no-extend))
-
-Other examples:
-
-    (setq standard-themes-region \\='(intense))
-    (setq standard-themes-region \\='(intense no-extend neutral))"
-  :group 'standard-themes
-  :package-version '(standard-themes . "1.0.0")
-  :type '(set :tag "Properties" :greedy t
-              (const :tag "Do not extend to the edge of the window" no-extend)
-              (const :tag "More neutral/gray background" neutral)
-              (const :tag "More intense background (also override text color)" intense))
-  :link '(info-link "(standard-themes) Style of region highlight"))
-
-(defcustom standard-themes-fringes 'subtle
-  "Control the visibility of fringes.
-
-When the value is nil, do not apply a distinct background color.
-
-With a value of `subtle', use a gray background color that is
-visible yet close to the main background color.
-
-With `intense', use a more pronounced gray background color."
-  :group 'standard-themes
-  :package-version '(standard-themes . "1.0.0")
-  :type '(choice
-          (const :format "[%v] %t\n" :tag "No visible fringes" nil)
-          (const :format "[%v] %t\n" :tag "Subtle gray background" subtle)
-          (const :format "[%v] %t\n" :tag "Intense gray background" intense))
-  :link '(info-link "(standard-themes) Fringe visibility"))
-
-(defcustom standard-themes-links nil
-  "Set the style of links.
-
-The value is a list of properties, each designated by a symbol.
-The default (a nil value or an empty list) is a prominent text
-color, typically blue, with an underline of the same color.
-
-For the style of the underline, a `neutral-underline' property
-turns the color of the line into a subtle gray, while the
-`no-underline' property removes the line altogether.  If both of
-those are set, the latter takes precedence.
-
-For text coloration, a `faint' property desaturates the color of
-the text and the underline, unless the underline is affected by
-the aforementioned properties.
-
-A `bold' property applies a heavy typographic weight to the text
-of the link.
-
-An `italic' property adds a slant to the link's text (italic or
-oblique forms, depending on the typeface).
-
-Combinations of any of those properties are expressed as a list,
-like in these examples:
-
-    (faint)
-    (no-underline faint)
-
-The order in which the properties are set is not significant.
-
-In user configuration files the form may look like this:
-
-    (setq standard-themes-links (quote (neutral-underline faint)))
-
-The placement of the underline, meaning its proximity to the
-text, is controlled by `x-use-underline-position-properties',
-`x-underline-at-descent-line', `underline-minimum-offset'.
-Please refer to their documentation strings."
-  :group 'standard-themes
-  :package-version '(standard-themes . "1.0.0")
-  :type '(set :tag "Properties" :greedy t
-              (choice :tag "Text coloration"
-                      (const :tag "Saturared color (default)" nil)
-                      (const :tag "Faint coloration" faint))
-              (choice :tag "Underline"
-                      (const :tag "Same color as text (default)" nil)
-                      (const :tag "Neutral (gray) underline color" neutral-underline)
-                      (const :tag "No underline" no-underline))
-              (const :tag "Bold font weight" bold)
-              (const :tag "Italic font slant" italic))
-  :link '(info-link "(standard-themes) Link style"))
+(make-obsolete-variable 'standard-themes-region nil "2.0.0")
+(make-obsolete-variable 'standard-themes-fringes nil "2.0.0")
+(make-obsolete-variable 'standard-themes-links nil "2.0.0")
 
 (defcustom standard-themes-prompts nil
-  "Control the style of prompts (e.g. minibuffer, REPL).
+  "Use subtle or intense styles for minibuffer and REPL prompts.
 
 The value is a list of properties, each designated by a symbol.
-The default (a nil value or an empty list) means to only use an
-accented foreground color.
+The default (a nil value or an empty list) means to only use a
+subtle colored foreground color.
 
-The property `background' applies a background color to the
-prompt's text and adjusts the foreground accordingly.
-
-The property `bold' makes the text use a bold typographic weight.
-Similarly, `italic' adds a slant to the font's forms (italic or
+The `italic' property adds a slant to the font's forms (italic or
 oblique forms, depending on the typeface).
+
+The symbol of a font weight attribute such as `light',
+`semibold', et cetera, adds the given weight to links.  Valid
+symbols are defined in the variable `standard-themes-weights'.
+The absence of a weight means that the one of the underlying text
+will be used.
 
 Combinations of any of those properties are expressed as a list,
 like in these examples:
 
-    (background)
     (bold italic)
-    (background bold italic)
+    (italic semibold)
 
 The order in which the properties are set is not significant.
 
 In user configuration files the form may look like this:
 
-    (setq standard-themes-prompts (quote (background bold)))"
+    (setq standard-themes-prompts (quote (extrabold italic)))"
   :group 'standard-themes
-  :package-version '(standard-themes . "1.0.0")
-  :type '(set :tag "Properties" :greedy t
-              (const :tag "With Background" background)
-              (const :tag "Bold font weight" bold)
-              (const :tag "Italic font slant" italic))
+  :package-version '(standard-themes . "2.0.0")
+  :type `(set :tag "Properties" :greedy t
+              (const :tag "Italic font slant" italic)
+              ,standard-themes--weight-widget)
   :link '(info-link "(standard-themes) Option for command prompts"))
 
-(defcustom standard-themes-mode-line-accented nil
-  "When non-nil, use accented background for the active mode line.
-The default is a gray background color."
-  :group 'standard-themes
-  :package-version '(standard-themes . "1.0.0")
-  :type 'boolean
-  :link '(info-link "(standard-themes) Accented mode line"))
+(make-obsolete-variable 'standard-themes-mode-line-accented nil "2.0.0")
 
 (defcustom standard-themes-common-palette-overrides nil
   "Set palette overrides for all the Standard themes.
@@ -455,22 +363,40 @@ represents."
   (when standard-themes-variable-pitch-ui
     (list :inherit 'variable-pitch)))
 
-(defun standard-themes--fringe (mainbg intensebg)
-  "Conditional use of background colors for fringes.
-MAINBG is the default.  INTENSEBG should be a prominent gray
-value."
-  (pcase standard-themes-fringes
-    ('intense (list :background intensebg))
-    ('subtle (list :background mainbg))
-    (_ (list :background 'unspecified))))
+(defun standard-themes--prompt (fg bg)
+  "Conditional use of colors for text prompt faces.
+FG is the prompt's standard foreground.  BG is a background
+color that is combined with FG-FOR-BG."
+  (let* ((properties (standard-themes--list-or-warn 'standard-themes-prompts))
+         (weight (standard-themes--weight properties)))
+    (list :inherit
+          (cond
+           ((and (memq 'bold properties)
+                 (memq 'italic properties))
+            'bold-italic)
+           ((memq 'italic properties)
+            'italic)
+           ((memq 'bold properties)
+            'bold)
+           ('unspecified))
+          :background bg
+          :foreground fg
+          :weight
+          ;; If we have `bold' specifically, we inherit the face of
+          ;; the same name.  This allows the user to customise that
+          ;; face, such as to change its font family.
+          (if (and weight (not (eq weight 'bold)))
+              weight
+            'unspecified))))
 
-(defun standard-themes--alist-or-seq (properties alist-key seq-pred seq-default)
-  "Return value from alist or sequence.
+(defun standard-themes--property-lookup (properties alist-key list-pred default)
+  "Return value from property alist or list.
 Check PROPERTIES for an alist value that corresponds to
 ALIST-KEY.  If no alist is present, search the PROPERTIES
-sequence given SEQ-PRED, using SEQ-DEFAULT as a fallback."
+list given LIST-PRED, using DEFAULT as a fallback."
   (if-let* ((val (or (alist-get alist-key properties)
-                     (seq-find seq-pred properties seq-default)))
+                     (seq-filter (lambda (x) (funcall list-pred x)) properties)
+                     default))
             ((listp val)))
       (car val)
     val))
@@ -482,99 +408,30 @@ sequence given SEQ-PRED, using SEQ-DEFAULT as a fallback."
       (when (memq elt standard-themes-weights)
         (throw 'found elt)))))
 
-(defun standard-themes--heading (level)
-  "Conditional styles for `standard-themes-headings' per LEVEL heading."
+(defun standard-themes--heading (level fg &optional bg ol)
+  "Conditional styles for `standard-themes-headings'.
+
+LEVEL is the heading's position in their order.  FG is the
+default text color.  Optional BG is an appropriate background.
+Optional OL is the color of an overline."
   (let* ((key (alist-get level standard-themes-headings))
          (style (or key (alist-get t standard-themes-headings)))
          (style-listp (listp style))
          (properties style)
+         (var (when (and style-listp (memq 'variable-pitch properties)) 'variable-pitch))
          (weight (when style-listp (standard-themes--weight style))))
-    (list :inherit
-          (if (memq 'variable-pitch properties)
-              'variable-pitch
-            'unspecified)
-          :height
-          (standard-themes--alist-or-seq properties 'height #'floatp 'unspecified)
-          :weight
-          (cond
-           ((and (not (symbolp level))
-                 (zerop level)
-                 (null weight))
-            'bold)
-           ((or weight 'unspecified))))))
-
-(defun standard-themes--region (bg bgneutral bgintense bgintenseneutral fgintense)
-  "Apply `standard-themes-region' styles.
-
-BG is the default background.  BGNEUTRAL is its gray counterpart.
-BGINTENSE is an amplified variant of BG, while BGINTENSENEUTRAL
-is a more intense neutral background.  FGINTENSE is the
-foreground that is used with any of the intense backgrounds."
-  (let ((properties (standard-themes--list-or-warn 'standard-themes-region)))
-    (list
-     :background
-     (cond
-      ((and (memq 'intense properties) (memq 'neutral properties))
-       bgintenseneutral)
-      ((memq 'intense properties)
-       bgintense)
-      ((memq 'neutral properties)
-       bgneutral)
-      (bg))
-     :foreground
-     (if (memq 'intense properties)
-         fgintense
-       'unspecified)
-     :extend
-     (if (memq 'no-extend properties)
-         nil
-       t))))
-
-(defun standard-themes--link (fg fgfaint underline)
-  "Conditional application of link styles.
-FG is the link's default color for its text and underline
-property.  FGFAINT is a desaturated color for the text and
-underline.  UNDERLINE is a gray color only for the undeline."
-  (let ((properties (standard-themes--list-or-warn 'standard-themes-links)))
-    (list :inherit
-          (cond
-           ((and (memq 'bold properties)
-                 (memq 'italic properties))
-            'bold-italic)
-           ((memq 'italic properties)
-            'italic)
-           ((memq 'bold properties)
-            'bold)
-           ('unspecified))
-          :foreground
-          (if (memq 'faint properties) fgfaint fg)
-          :underline
-          (cond
-           ((memq 'no-underline properties)
-            'unspecified)
-           ((memq 'neutral-underline properties)
-            underline)
-           (t)))))
-
-(defun standard-themes--prompt (fg bg fg-for-bg)
-  "Conditional use of colors for text prompt faces.
-FG is the prompt's standard foreground.  BG is a background
-color that is combined with FG-FOR-BG."
-  (let ((properties (standard-themes--list-or-warn 'standard-themes-prompts)))
-    (list :background
-          (if (memq 'background properties) bg 'unspecified)
-          :foreground
-          (if (memq 'background properties) fg-for-bg fg)
-          :inherit
-          (cond
-           ((and (memq 'bold properties)
-                 (memq 'italic properties))
-            'bold-italic)
-           ((memq 'italic properties)
-            'italic)
-           ((memq 'bold properties)
-            'bold)
-           ('unspecified)))))
+    (list :inherit (cond
+                    ((not style-listp) 'bold)
+                    (weight var)
+                    (var (append (list 'bold) (list var)))
+                    (t 'bold))
+          :background (or bg 'unspecified)
+          :foreground fg
+          :overline (or ol 'unspecified)
+          :height (if style-listp
+                      (standard-themes--property-lookup properties 'height #'floatp 'unspecified)
+                    'unspecified)
+          :weight (or weight 'unspecified))))
 
 ;;; Commands and their helper functions
 
@@ -625,11 +482,9 @@ symbol, which is safe when used as a face attribute's value."
       value
     'unspecified))
 
-(declare-function cl-remove-if-not "cl-seq" (cl-pred cl-list &rest cl-keys))
-
 (defun standard-themes--list-enabled-themes ()
   "Return list of `custom-enabled-themes' with standard- prefix."
-  (cl-remove-if-not
+  (seq-filter
    (lambda (theme)
      (string-prefix-p "standard-" (symbol-name theme)))
    custom-enabled-themes))
@@ -644,14 +499,15 @@ symbol, which is safe when used as a face attribute's value."
 (defun standard-themes--list-known-themes ()
   "Return list of `custom-known-themes' with standard- prefix."
   (standard-themes--enable-themes)
-  (cl-remove-if-not
+  (seq-filter
    (lambda (theme)
      (string-prefix-p "standard-" (symbol-name theme)))
    custom-known-themes))
 
 (defun standard-themes--current-theme ()
   "Return first enabled Standard theme."
-  (car (standard-themes--list-enabled-themes)))
+  (car (or (standard-themes--list-enabled-themes)
+           (standard-themes--list-known-themes))))
 
 (defun standard-themes--palette-symbol (theme &optional overrides)
   "Return THEME palette as a symbol.
@@ -852,6 +708,11 @@ Optional prefix argument MAPPINGS has the same meaning as for
   :package-version '(standard-themes . "1.0.0")
   :group 'standard-themes-faces)
 
+(defface standard-themes-prompt nil
+  "Generic face for command prompts."
+  :package-version '(standard-themes . "2.0.0")
+  :group 'standard-themes-faces)
+
 ;; This produces `standard-themes-mark-delete' and the like.
 (dolist (scope '(delete select other))
   (custom-declare-face
@@ -875,51 +736,99 @@ Optional prefix argument MAPPINGS has the same meaning as for
    :package-version '(standard-themes . "1.0.0")
    :group 'standard-themes-faces))
 
+(dolist (color '(red green yellow blue magenta cyan))
+  (custom-declare-face
+   (intern (format "standard-themes-nuanced-%s" color))
+   nil (format "Nuanced %s background." color)
+   :package-version '(standard-themes . "2.0.0")
+   :group 'standard-themes-faces))
+
+(dolist (color '(red green yellow blue magenta cyan))
+  (custom-declare-face
+   (intern (format "standard-themes-subtle-%s" color))
+   nil (format "Subtle %s background." color)
+   :package-version '(standard-themes . "2.0.0")
+   :group 'standard-themes-faces))
+
+(dolist (color '(red green yellow blue magenta cyan))
+  (custom-declare-face
+   (intern (format "standard-themes-intense-%s" color))
+   nil (format "Intense %s background." color)
+   :package-version '(standard-themes . "2.0.0")
+   :group 'standard-themes-faces))
+
 (defconst standard-themes-faces
   '(
 ;;;; internal faces
+;;;;; general internal faces
     `(standard-themes-bold ((,c ,@(standard-themes--bold))))
     `(standard-themes-italic ((,c ,@(standard-themes--slant))))
     `(standard-themes-fixed-pitch ((,c ,@(standard-themes--fixed-pitch))))
-    `(standard-themes-heading-0 ((,c ,@(standard-themes--heading 0) :foreground ,rainbow-0)))
-    `(standard-themes-heading-1 ((,c ,@(standard-themes--heading 1) :foreground ,rainbow-1)))
-    `(standard-themes-heading-2 ((,c ,@(standard-themes--heading 2) :foreground ,rainbow-2)))
-    `(standard-themes-heading-3 ((,c ,@(standard-themes--heading 3) :foreground ,rainbow-3)))
-    `(standard-themes-heading-4 ((,c ,@(standard-themes--heading 4) :foreground ,rainbow-4)))
-    `(standard-themes-heading-5 ((,c ,@(standard-themes--heading 5) :foreground ,rainbow-5)))
-    `(standard-themes-heading-6 ((,c ,@(standard-themes--heading 6) :foreground ,rainbow-6)))
-    `(standard-themes-heading-7 ((,c ,@(standard-themes--heading 7) :foreground ,rainbow-7)))
-    `(standard-themes-heading-8 ((,c ,@(standard-themes--heading 8) :foreground ,rainbow-8)))
-    `(standard-themes-key-binding ((,c :inherit (bold standard-themes-fixed-pitch) :foreground ,keybind)))
     `(standard-themes-ui-variable-pitch ((,c ,@(standard-themes--variable-pitch-ui))))
+    `(standard-themes-key-binding ((,c :inherit (bold standard-themes-fixed-pitch) :foreground ,keybind)))
+    `(standard-themes-prompt ((,c ,@(standard-themes--prompt fg-prompt bg-prompt))))
+;;;;; styles for regular headings used in Org, Markdown, Info, etc.
+    `(standard-themes-heading-0 ((,c ,@(standard-themes--heading 0 fg-heading-0 bg-heading-0 overline-heading-0))))
+    `(standard-themes-heading-1 ((,c ,@(standard-themes--heading 1 fg-heading-1 bg-heading-1 overline-heading-1))))
+    `(standard-themes-heading-2 ((,c ,@(standard-themes--heading 2 fg-heading-2 bg-heading-2 overline-heading-2))))
+    `(standard-themes-heading-3 ((,c ,@(standard-themes--heading 3 fg-heading-3 bg-heading-3 overline-heading-3))))
+    `(standard-themes-heading-4 ((,c ,@(standard-themes--heading 4 fg-heading-4 bg-heading-4 overline-heading-4))))
+    `(standard-themes-heading-5 ((,c ,@(standard-themes--heading 5 fg-heading-5 bg-heading-5 overline-heading-5))))
+    `(standard-themes-heading-6 ((,c ,@(standard-themes--heading 6 fg-heading-6 bg-heading-6 overline-heading-6))))
+    `(standard-themes-heading-7 ((,c ,@(standard-themes--heading 7 fg-heading-7 bg-heading-7 overline-heading-7))))
+    `(standard-themes-heading-8 ((,c ,@(standard-themes--heading 8 fg-heading-8 bg-heading-8 overline-heading-8))))
+;;;;; mark indicators
     `(standard-themes-mark-delete ((,c :inherit bold :background ,bg-mark-del :foreground ,fg-mark-del)))
     `(standard-themes-mark-select ((,c :inherit bold :background ,bg-mark-sel :foreground ,fg-mark-sel)))
     `(standard-themes-mark-other ((,c :inherit bold :background ,bg-mark-alt :foreground ,fg-mark-alt)))
+;;;;; underlines for linting and fringe indicators
     `(standard-themes-underline-error ((,c :underline (:style wave :color ,underline-err))))
     `(standard-themes-underline-info ((,c :underline (:style wave :color ,underline-info))))
     `(standard-themes-underline-warning ((,c :underline (:style wave :color ,underline-warning))))
-    `(standard-themes-fringe-error ((,c :inherit bold :background ,bg-red :foreground ,fg-main)))
-    `(standard-themes-fringe-info ((,c :inherit bold :background ,bg-green :foreground ,fg-main)))
-    `(standard-themes-fringe-warning ((,c :inherit bold :background ,bg-yellow :foreground ,fg-main)))
+    `(standard-themes-fringe-error ((,c :inherit bold :background ,bg-red-intense :foreground ,fg-main)))
+    `(standard-themes-fringe-info ((,c :inherit bold :background ,bg-green-intense :foreground ,fg-main)))
+    `(standard-themes-fringe-warning ((,c :inherit bold :background ,bg-yellow-intense :foreground ,fg-main)))
+;;;;; nuanced colored backgrounds
+    `(standard-themes-nuanced-red ((,c :background ,bg-red-nuanced :extend t)))
+    `(standard-themes-nuanced-green ((,c :background ,bg-green-nuanced :extend t)))
+    `(standard-themes-nuanced-yellow ((,c :background ,bg-yellow-nuanced :extend t)))
+    `(standard-themes-nuanced-blue ((,c :background ,bg-blue-nuanced :extend t)))
+    `(standard-themes-nuanced-magenta ((,c :background ,bg-magenta-nuanced :extend t)))
+    `(standard-themes-nuanced-cyan ((,c :background ,bg-cyan-nuanced :extend t)))
+;;;;; subtle colored backgrounds
+    `(standard-themes-subtle-red ((,c :background ,bg-red-subtle :foreground ,fg-main)))
+    `(standard-themes-subtle-green ((,c :background ,bg-green-subtle :foreground ,fg-main)))
+    `(standard-themes-subtle-yellow ((,c :background ,bg-yellow-subtle :foreground ,fg-main)))
+    `(standard-themes-subtle-blue ((,c :background ,bg-blue-subtle :foreground ,fg-main)))
+    `(standard-themes-subtle-magenta ((,c :background ,bg-magenta-subtle :foreground ,fg-main)))
+    `(standard-themes-subtle-cyan ((,c :background ,bg-cyan-subtle :foreground ,fg-main)))
+;;;;; intense colored backgrounds
+    `(standard-themes-intense-red ((,c :background ,bg-red-intense :foreground ,fg-main)))
+    `(standard-themes-intense-green ((,c :background ,bg-green-intense :foreground ,fg-main)))
+    `(standard-themes-intense-yellow ((,c :background ,bg-yellow-intense :foreground ,fg-main)))
+    `(standard-themes-intense-blue ((,c :background ,bg-blue-intense :foreground ,fg-main)))
+    `(standard-themes-intense-magenta ((,c :background ,bg-magenta-intense :foreground ,fg-main)))
+    `(standard-themes-intense-cyan ((,c :background ,bg-cyan-intense :foreground ,fg-main)))
 ;;;; all basic faces
 ;;;;; absolute essentials
+    `(appt-notification ((,c :inherit error)))
     `(bold ((,c :weight bold)))
     `(bold-italic ((,c :inherit (bold italic))))
     `(cursor ((,c :background ,cursor)))
     `(default ((,c :background ,bg-main :foreground ,fg-main)))
     `(italic ((,c :slant italic)))
-    `(region ((,c ,@(standard-themes--region bg-region bg-alt bg-region-intense bg-active fg-main))))
+    `(region ((,c :background ,bg-region :foreground ,fg-region)))
     `(vertical-border ((,c :foreground "gray50")))
 ;;;;; all other basic faces
-    `(button ((,c ,@(standard-themes--link link link-faint border))))
+    `(button ((,c :background ,bg-link :foreground ,fg-link :underline ,underline-link)))
     `(child-frame-border ((,c :background ,border)))
     `(comint-highlight-input ((,c :inherit bold)))
-    `(comint-highlight-prompt ((,c :inherit minibuffer-prompt)))
+    `(comint-highlight-prompt ((,c :inherit standard-themes-prompt)))
     `(edmacro-label ((,c :inherit bold :foreground ,accent-0)))
     `(elisp-shorthand-font-lock-face ((,c :inherit italic)))
     `(error ((,c :inherit bold :foreground ,err)))
     `(escape-glyph ((,c :foreground ,warning)))
-    `(fringe ((,c ,@(standard-themes--fringe bg-dim bg-active) :foreground ,fg-main)))
+    `(fringe ((,c :background ,fringe :foreground ,fg-main)))
     `(header-line ((,c :inherit standard-themes-ui-variable-pitch :background ,bg-dim)))
     `(header-line-highlight ((,c :inherit highlight)))
     `(help-argument-name ((,c :foreground ,prose-verbatim)))
@@ -927,9 +836,9 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(highlight ((,c :background ,bg-hover :foreground ,fg-main)))
     `(hl-line ((,c :background ,bg-hl-line)))
     `(icon-button ((,c :box ,fg-dim :background ,bg-active :foreground ,fg-main))) ; same as `custom-button'
-    `(link ((,c ,@(standard-themes--link link link-faint border))))
-    `(link-visited ((,c ,@(standard-themes--link link-alt link-alt-faint border))))
-    `(minibuffer-prompt ((,c ,@(standard-themes--prompt prompt bg-prompt fg-main))))
+    `(link ((,c :inherit button)))
+    `(link-visited ((,c :background ,bg-link-visited :foreground ,fg-link-visited :underline ,underline-link-visited)))
+    `(minibuffer-prompt ((,c :inherit standard-themes-prompt)))
     `(mm-command-output ((,c :foreground ,mail-4))) ; like message-mml
     `(pgtk-im-0 ((,c :inherit secondary-selection)))
     `(read-multiple-choice-face ((,c :inherit warning :background ,bg-warning)))
@@ -938,7 +847,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(shadow ((,c :foreground ,fg-dim)))
     `(success ((,c :inherit bold :foreground ,info)))
     `(tooltip ((,c :background ,bg-alt :foreground ,fg-main)))
-    `(trailing-whitespace ((,c :background ,bg-red :foreground ,fg-main)))
+    `(trailing-whitespace ((,c :background ,bg-space-err)))
     `(warning ((,c :inherit bold :foreground ,warning)))
 ;;;; all-the-icons
     `(all-the-icons-blue ((,c :foreground ,blue-cooler)))
@@ -951,8 +860,8 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(all-the-icons-dmaroon ((,c :foreground ,magenta-faint)))
     `(all-the-icons-dorange ((,c :foreground ,red-faint)))
     `(all-the-icons-dpink ((,c :foreground ,magenta-faint)))
-    `(all-the-icons-dpurple ((,c :foreground ,blue-faint)))
-    `(all-the-icons-dred ((,c :foreground ,red-faint)))
+    `(all-the-icons-dpurple ((,c :foreground ,magenta-cooler)))
+    `(all-the-icons-dred ((,c :foreground ,red)))
     `(all-the-icons-dsilver ((,c :foreground ,cyan-faint)))
     `(all-the-icons-dyellow ((,c :foreground ,yellow-faint)))
     `(all-the-icons-green ((,c :foreground ,green)))
@@ -963,17 +872,17 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(all-the-icons-lorange ((,c :foreground ,red-warmer)))
     `(all-the-icons-lpink ((,c :foreground ,magenta)))
     `(all-the-icons-lpurple ((,c :foreground ,magenta-faint)))
-    `(all-the-icons-lred ((,c :foreground ,red)))
-    `(all-the-icons-lsilver ((,c :foreground ,fg-dim)))
+    `(all-the-icons-lred ((,c :foreground ,red-faint)))
+    `(all-the-icons-lsilver ((,c :foreground "gray50")))
     `(all-the-icons-lyellow ((,c :foreground ,yellow-warmer)))
     `(all-the-icons-maroon ((,c :foreground ,magenta)))
-    `(all-the-icons-orange ((,c :foreground ,red-warmer)))
-    `(all-the-icons-pink ((,c :foreground ,magenta)))
+    `(all-the-icons-orange ((,c :foreground ,yellow-warmer)))
+    `(all-the-icons-pink ((,c :foreground ,magenta-warmer)))
     `(all-the-icons-purple ((,c :foreground ,magenta-cooler)))
-    `(all-the-icons-purple-alt ((,c :foreground ,magenta-cooler)))
-    `(all-the-icons-red ((,c :foreground ,red-warmer)))
+    `(all-the-icons-purple-alt ((,c :foreground ,blue-warmer)))
+    `(all-the-icons-red ((,c :foreground ,red)))
     `(all-the-icons-red-alt ((,c :foreground ,red-cooler)))
-    `(all-the-icons-silver ((,c :foreground ,cyan-faint)))
+    `(all-the-icons-silver ((,c :foreground "gray50")))
     `(all-the-icons-yellow ((,c :foreground ,yellow)))
 ;;;; all-the-icons-dired
     `(all-the-icons-dired-dir-face ((,c :foreground ,accent-0)))
@@ -1022,6 +931,10 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(TeX-error-description-warning ((,c :inherit warning)))
 ;;;; auto-dim-other-buffers
     `(auto-dim-other-buffers-face ((,c :background ,bg-inactive)))
+;;;; breadcrumb
+    `(breadcrumb-face (( )))
+    `(breadcrumb-imenu-leaf-face ((,c :inherit bold :foreground ,modeline-warning))) ; same as `which-func'
+    `(breadcrumb-project-leaf-face ((,c :inherit bold)))
 ;;;; bongo
     `(bongo-album-title (( )))
     `(bongo-artist ((,c :foreground ,rainbow-0)))
@@ -1040,12 +953,12 @@ Optional prefix argument MAPPINGS has the same meaning as for
 ;;;; calendar and diary
     `(calendar-month-header ((,c :inherit bold)))
     `(calendar-today ((,c :inherit bold :underline t)))
-    `(calendar-weekday-header ((,c :foreground ,date)))
-    `(calendar-weekend-header ((,c :foreground ,err)))
+    `(calendar-weekday-header ((,c :foreground ,date-weekday)))
+    `(calendar-weekend-header ((,c :foreground ,date-weekend)))
     `(diary ((,c :background ,bg-dim :foreground ,accent-0)))
-    `(diary-anniversary ((,c :foreground ,accent-1)))
-    `(diary-time ((,c :foreground ,date)))
-    `(holiday ((,c :background ,bg-dim :foreground ,accent-2)))
+    `(diary-anniversary ((,c :foreground ,date-holiday)))
+    `(diary-time ((,c :foreground ,date-common)))
+    `(holiday ((,c :foreground ,date-holiday)))
 ;;;; cider
     `(cider-deprecated-face ((,c :background ,bg-warning :foreground ,warning)))
     `(cider-enlightened-face ((,c :box ,warning)))
@@ -1054,14 +967,26 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(cider-fringe-good-face ((,c :inherit standard-themes-mark-select)))
     `(cider-instrumented-face ((,c :box ,err)))
     `(cider-reader-conditional-face ((,c :inherit font-lock-type-face)))
-    `(cider-repl-prompt-face ((,c :inherit minibuffer-prompt)))
+    `(cider-repl-prompt-face ((,c :inherit standard-themes-prompt)))
     `(cider-repl-stderr-face ((,c :foreground ,err)))
     `(cider-repl-stdout-face ((,c :foreground ,info)))
     `(cider-warning-highlight-face ((,c :inherit standard-themes-underline-warning)))
+;;;; centaur-tabs
+    `(centaur-tabs-active-bar-face ((,c :background ,blue)))
+    `(centaur-tabs-close-mouse-face ((,c :inherit bold :foreground ,red :underline t)))
+    `(centaur-tabs-close-selected ((,c :inherit centaur-tabs-selected)))
+    `(centaur-tabs-close-unselected ((,c :inherit centaur-tabs-unselected)))
+    `(centaur-tabs-modified-marker-selected ((,c :inherit centaur-tabs-selected)))
+    `(centaur-tabs-modified-marker-unselected ((,c :inherit centaur-tabs-unselected)))
+    `(centaur-tabs-default ((,c :background ,bg-main)))
+    `(centaur-tabs-selected ((,c :inherit bold :box (:line-width -2 :color ,bg-tab) :background ,bg-tab)))
+    `(centaur-tabs-selected-modified ((,c :inherit (italic centaur-tabs-selected))))
+    `(centaur-tabs-unselected ((,c :box (:line-width -2 :color ,bg-tab-inactive) :background ,bg-tab-inactive)))
+    `(centaur-tabs-unselected-modified ((,c :inherit (italic centaur-tabs-unselected))))
 ;;;; change-log and log-view (`vc-print-log' and `vc-print-root-log')
     `(change-log-acknowledgment ((,c :inherit shadow)))
     `(change-log-conditionals ((,c :inherit error)))
-    `(change-log-date ((,c :foreground ,date)))
+    `(change-log-date ((,c :foreground ,date-common)))
     `(change-log-email ((,c :foreground ,fg-alt)))
     `(change-log-file ((,c :inherit bold)))
     `(change-log-function ((,c :inherit warning)))
@@ -1069,7 +994,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(change-log-name ((,c :foreground ,name)))
     `(log-edit-header ((,c :inherit bold)))
     `(log-edit-headers-separator ((,c :height 1 :background ,border :extend t)))
-    `(log-edit-summary ((,c :inherit bold :foreground ,accent-0)))
+    `(log-edit-summary ((,c :inherit success)))
     `(log-edit-unknown-header ((,c :inherit shadow)))
     `(log-view-commit-body (( )))
     `(log-view-file ((,c :inherit bold)))
@@ -1080,7 +1005,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(company-echo-common ((,c :inherit bold :foreground ,accent-0)))
     `(company-preview ((,c :background ,bg-dim :foreground ,fg-dim)))
     `(company-preview-common ((,c :inherit company-echo-common)))
-    `(company-preview-search ((,c :background ,bg-yellow :foreground ,fg-main)))
+    `(company-preview-search ((,c :background ,bg-yellow-intense :foreground ,fg-main)))
     `(company-scrollbar-bg ((,c :background ,bg-active)))
     `(company-scrollbar-fg ((,c :background ,fg-main)))
     `(company-template-field ((,c :background ,bg-active :foreground ,fg-main)))
@@ -1119,6 +1044,8 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(corfu-bar ((,c :background ,fg-main)))
     `(corfu-border ((,c :background ,bg-active)))
     `(corfu-default ((,c :background ,bg-inactive)))
+;;;;; corfu-candidate-overlay
+    `(corfu-candidate-overlay-face ((t :inherit shadow)))
 ;;;; custom (M-x customize)
     `(custom-button ((,c :box (:line-width 2 :style released-button) :background ,bg-active :foreground ,fg-main)))
     `(custom-button-mouse ((,c :inherit (highlight custom-button))))
@@ -1138,7 +1065,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(custom-group-tag-1 ((,c :inherit bold :foreground ,constant)))
     `(custom-variable-tag ((,c :inherit bold :foreground ,variable)))
 ;;;; denote
-    `(denote-faces-date ((,c :foreground ,date)))
+    `(denote-faces-date ((,c :foreground ,date-common)))
     `(denote-faces-keywords ((,c :foreground ,name)))
 ;;;; dictionary
     `(dictionary-button-face ((,c :inherit bold)))
@@ -1194,7 +1121,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(diredfl-autofile-name ((,c :background ,bg-alt)))
     `(diredfl-compressed-file-name ((,c :foreground ,yellow-cooler)))
     `(diredfl-compressed-file-suffix ((,c :foreground ,red)))
-    `(diredfl-date-time ((,c :foreground ,date)))
+    `(diredfl-date-time ((,c :foreground ,date-common)))
     `(diredfl-deletion ((,c :inherit dired-flagged)))
     `(diredfl-deletion-file-name ((,c :inherit diredfl-deletion)))
     `(diredfl-dir-heading ((,c :inherit bold)))
@@ -1207,7 +1134,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(diredfl-flag-mark ((,c :inherit dired-marked)))
     `(diredfl-flag-mark-line ((,c :inherit dired-marked)))
     `(diredfl-ignored-file-name ((,c :inherit shadow)))
-    `(diredfl-link-priv ((,c :foreground ,link)))
+    `(diredfl-link-priv ((,c :foreground ,fg-link)))
     `(diredfl-no-priv ((,c :inherit shadow)))
     `(diredfl-number ((,c :inherit shadow)))
     `(diredfl-other-priv ((,c :foreground ,rainbow-0)))
@@ -1258,24 +1185,25 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(doom-modeline-urgent ((,c :inherit bold-italic :foreground ,modeline-err)))
     `(doom-modeline-warning ((,c :inherit bold :foreground ,modeline-warning)))
 ;;;; ediff
-    `(ediff-current-diff-A ((,c :inherit diff-removed)))
-    `(ediff-current-diff-Ancestor ((,c :background ,bg-region))) ; TODO 2022-08-14: Needs review
-    `(ediff-current-diff-B ((,c :inherit diff-added)))
-    `(ediff-current-diff-C ((,c :inherit diff-changed)))
+    `(ediff-current-diff-A ((,c :background ,bg-removed :foreground ,fg-removed)))
+    `(ediff-current-diff-Ancestor ((,c :background ,bg-region)))
+    `(ediff-current-diff-B ((,c :background ,bg-added :foreground ,fg-added)))
+    `(ediff-current-diff-C ((,c :background ,bg-changed :foreground ,fg-changed)))
     `(ediff-even-diff-A ((,c :background ,bg-dim)))
     `(ediff-even-diff-Ancestor ((,c :background ,bg-dim)))
     `(ediff-even-diff-B ((,c :background ,bg-dim)))
     `(ediff-even-diff-C ((,c :background ,bg-dim)))
-    `(ediff-fine-diff-A ((,c :inherit diff-refine-removed)))
-    `(ediff-fine-diff-Ancestor ((,c :inherit diff-refine-cyan)))
-    `(ediff-fine-diff-B ((,c :inherit diff-refine-added)))
-    `(ediff-fine-diff-C ((,c :inherit diff-refine-changed)))
+    `(ediff-fine-diff-A ((,c :background ,bg-removed-refine :foreground ,fg-removed)))
+    `(ediff-fine-diff-Ancestor ((,c :inherit standard-themes-subtle-cyan)))
+    `(ediff-fine-diff-B ((,c :background ,bg-added-refine :foreground ,fg-added)))
+    `(ediff-fine-diff-C ((,c :background ,bg-changed-refine :foreground ,fg-changed)))
     `(ediff-odd-diff-A ((,c :inherit ediff-even-diff-A)))
     `(ediff-odd-diff-Ancestor ((,c :inherit ediff-even-diff-Ancestor)))
     `(ediff-odd-diff-B ((,c :inherit ediff-even-diff-B)))
     `(ediff-odd-diff-C ((,c :inherit ediff-even-diff-C)))
 ;;;; eglot
     `(eglot-mode-line ((,c :inherit bold :foreground ,modeline-info)))
+    `(eglot-diagnostic-tag-unnecessary-face ((,c :inherit standard-themes-underline-info)))
 ;;;; eldoc
     ;; NOTE: see https://github.com/purcell/package-lint/issues/187
     (list 'eldoc-highlight-function-argument `((,c :inherit warning :background ,bg-warning)))
@@ -1285,10 +1213,10 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(elfeed-log-error-level-face ((,c :inherit error)))
     `(elfeed-log-info-level-face ((,c :inherit success)))
     `(elfeed-log-warn-level-face ((,c :inherit warning)))
-    `(elfeed-search-date-face ((,c :foreground ,date)))
+    `(elfeed-search-date-face ((,c :foreground ,date-common)))
     `(elfeed-search-feed-face ((,c :foreground ,accent-1)))
     `(elfeed-search-filter-face ((,c :inherit bold)))
-    `(elfeed-search-last-update-face ((,c :inherit bold :foreground ,date)))
+    `(elfeed-search-last-update-face ((,c :inherit bold :foreground ,date-common)))
     `(elfeed-search-tag-face ((,c :foreground ,accent-0)))
     `(elfeed-search-title-face ((,c :foreground ,fg-dim)))
     `(elfeed-search-unread-count-face (( )))
@@ -1320,7 +1248,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(eshell-ls-special ((,c :foreground ,magenta)))
     `(eshell-ls-symlink ((,c :inherit link)))
     `(eshell-ls-unreadable ((,c :inherit shadow)))
-    `(eshell-prompt ((,c :inherit minibuffer-prompt)))
+    `(eshell-prompt ((,c :inherit standard-themes-prompt)))
 ;;;; eww
     `(eww-invalid-certificate ((,c :foreground ,err)))
     `(eww-valid-certificate ((,c :foreground ,info)))
@@ -1338,9 +1266,16 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(flycheck-info ((,c :inherit standard-themes-underline-info)))
     `(flycheck-warning ((,c :inherit standard-themes-underline-warning)))
 ;;;; flymake
+    `(flymake-end-of-line-diagnostics-face ((,c :inherit italic :height 0.85 :box ,border)))
     `(flymake-error ((,c :inherit standard-themes-underline-error)))
+    `(flymake-error-echo ((,c :inherit error)))
+    `(flymake-error-echo-at-eol ((,c :inherit flymake-end-of-line-diagnostics-face :foreground ,err)))
     `(flymake-note ((,c :inherit standard-themes-underline-info)))
+    `(flymake-note-echo ((,c :inherit success)))
+    `(flymake-note-echo-at-eol ((,c :inherit flymake-end-of-line-diagnostics-face :foreground ,info)))
     `(flymake-warning ((,c :inherit standard-themes-underline-warning)))
+    `(flymake-warning-echo ((,c :inherit warning)))
+    `(flymake-note-echo-at-eol ((,c :inherit flymake-end-of-line-diagnostics-face :foreground ,warning)))
 ;;;; flyspell
     `(flyspell-duplicate ((,c :inherit standard-themes-underline-warning)))
     `(flyspell-incorrect ((,c :inherit standard-themes-underline-error)))
@@ -1369,7 +1304,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(git-commit-keyword ((,c :foreground ,keyword)))
     `(git-commit-nonempty-second-line ((,c :inherit error)))
     `(git-commit-overlong-summary ((,c :inherit warning)))
-    `(git-commit-summary ((,c :inherit bold :foreground ,accent-0)))
+    `(git-commit-summary ((,c :inherit success)))
 ;;;; git-rebase
     `(git-rebase-comment-hash ((,c :inherit font-lock-comment-face :foreground ,constant)))
     `(git-rebase-comment-heading  ((,c :inherit (bold font-lock-comment-face))))
@@ -1467,23 +1402,26 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(info-title-3 ((,c :inherit standard-themes-heading-3)))
     `(info-title-4 ((,c :inherit standard-themes-heading-4)))
 ;;;; isearch, occur, and the like
-    `(isearch ((,c :background ,bg-magenta :foreground ,fg-main)))
-    `(isearch-fail ((,c :background ,bg-red :foreground ,fg-main)))
-    `(isearch-group-1 ((,c :background ,bg-green :foreground ,fg-main)))
-    `(isearch-group-2 ((,c :background ,bg-yellow :foreground ,fg-main)))
-    `(lazy-highlight ((,c :background ,bg-cyan :foreground ,fg-main)))
+    `(isearch ((,c :background ,bg-magenta-intense :foreground ,fg-main)))
+    `(isearch-fail ((,c :background ,bg-red-intense :foreground ,fg-main)))
+    `(isearch-group-1 ((,c :background ,bg-green-intense :foreground ,fg-main)))
+    `(isearch-group-2 ((,c :background ,bg-yellow-intense :foreground ,fg-main)))
+    `(lazy-highlight ((,c :background ,bg-cyan-intense :foreground ,fg-main)))
     `(match ((,c :background ,bg-warning)))
-    `(query-replace ((,c :background ,bg-red :foreground ,fg-main)))
+    `(query-replace ((,c :background ,bg-red-intense :foreground ,fg-main)))
+;;;; jit-spell
+    `(jit-spell-misspelling ((,c :inherit standard-themes-underline-error)))
 ;;;; keycast
     `(keycast-command ((,c :inherit bold :foreground ,bg-accent)))
     `(keycast-key ((,c :background ,bg-accent :foreground ,bg-main)))
 ;;;; line numbers (display-line-numbers-mode and global variant)
-    ;; We need to fall back to `default' otherwise line numbers do not
-    ;; scale when using `text-scale-adjust'.
-    `(line-number ((,c :inherit (standard-themes-fixed-pitch shadow default))))
-    `(line-number-current-line ((,c :inherit (bold line-number) :foreground ,fg-main)))
-    `(line-number-major-tick ((,c :inherit (bold line-number) :foreground ,rainbow-0)))
-    `(line-number-minor-tick ((,c :inherit (bold line-number))))
+    ;; Here we cannot inherit `standard-themes-fixed-pitch'.  We need to
+    ;; fall back to `default' otherwise line numbers do not scale when
+    ;; using `text-scale-adjust'.
+    `(line-number ((,c :inherit ,(if standard-themes-mixed-fonts '(fixed-pitch default) 'default) :background ,bg-line-number-inactive :foreground ,fg-line-number-inactive)))
+    `(line-number-current-line ((,c :inherit (bold line-number) :background ,bg-line-number-active :foreground ,fg-line-number-active)))
+    `(line-number-major-tick ((,c :inherit line-number :foreground ,err)))
+    `(line-number-minor-tick ((,c :inherit line-number :foreground ,fg-alt)))
 ;;;; magit
     `(magit-bisect-bad ((,c :inherit error)))
     `(magit-bisect-good ((,c :inherit success)))
@@ -1529,7 +1467,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(magit-keyword ((,c :foreground ,keyword)))
     `(magit-keyword-squash ((,c :inherit bold :foreground ,warning)))
     `(magit-log-author ((,c :foreground ,name)))
-    `(magit-log-date ((,c :foreground ,date)))
+    `(magit-log-date ((,c :foreground ,date-common)))
     `(magit-log-graph ((,c :inherit shadow)))
     `(magit-mode-line-process ((,c :inherit bold :foreground ,modeline-info)))
     `(magit-mode-line-process-error ((,c :inherit bold :foreground ,modeline-err)))
@@ -1574,13 +1512,13 @@ Optional prefix argument MAPPINGS has the same meaning as for
 ;;;; marginalia
     `(marginalia-archive ((,c :foreground ,accent-0)))
     `(marginalia-char ((,c :foreground ,accent-2)))
-    `(marginalia-date ((,c :foreground ,date)))
+    `(marginalia-date ((,c :foreground ,date-common)))
     `(marginalia-documentation ((,c :inherit italic :foreground ,docstring)))
     `(marginalia-file-name (( )))
     `(marginalia-file-owner ((,c :inherit shadow)))
     `(marginalia-file-priv-dir (( )))
     `(marginalia-file-priv-exec ((,c :foreground ,rainbow-3)))
-    `(marginalia-file-priv-link ((,c :foreground ,link)))
+    `(marginalia-file-priv-link ((,c :foreground ,fg-link)))
     `(marginalia-file-priv-no ((,c :inherit shadow)))
     `(marginalia-file-priv-other ((,c :foreground ,rainbow-0)))
     `(marginalia-file-priv-rare ((,c :foreground ,rainbow-0)))
@@ -1642,17 +1580,16 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(message-separator ((,c :background ,bg-alt)))
 ;;;; mode-line
     `(mode-line ((,c :inherit standard-themes-ui-variable-pitch
-                     :background ,@(if standard-themes-mode-line-accented
-                                       (list bg-mode-line-accent)
-                                     (list bg-mode-line))
-                     :foreground ,fg-main)))
+                     :box ,border-mode-line-active
+                     :background ,bg-mode-line-active
+                     :foreground ,fg-mode-line-active)))
     `(mode-line-active ((,c :inherit mode-line :box (:line-width -1 :style released-button))))
     `(mode-line-buffer-id ((,c :inherit bold)))
     `(mode-line-emphasis ((,c :inherit bold :foreground ,modeline-info)))
     `(mode-line-highlight ((,c :inherit highlight)))
     `(mode-line-inactive ((,c :inherit standard-themes-ui-variable-pitch
-                              :box (:line-width -1 :color ,border)
-                              :background ,bg-mode-line-inactive :foreground ,fg-dim)))
+                              :box (:line-width -1 :color ,border-mode-line-inactive)
+                              :background ,bg-mode-line-inactive :foreground ,fg-mode-line-inactive)))
 ;;;; mu4e
     `(mu4e-attach-number-face ((,c :inherit bold :foreground ,fg-dim)))
     `(mu4e-cited-1-face ((,c :inherit message-cited-text-1)))
@@ -1667,7 +1604,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(mu4e-contact-face ((,c :inherit message-header-to)))
     `(mu4e-context-face ((,c :inherit bold)))
     `(mu4e-draft-face ((,c :foreground ,info)))
-    `(mu4e-flagged-face ((,c :foreground ,err)))
+    `(mu4e-flagged-face ((,c :foreground ,keyword)))
     `(mu4e-footer-face ((,c :inherit italic :foreground ,fg-alt)))
     `(mu4e-forwarded-face ((,c :inherit italic :foreground ,info)))
     `(mu4e-header-face ((,c :inherit shadow)))
@@ -1692,6 +1629,48 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(mu4e-url-number-face ((,c :inherit shadow)))
     `(mu4e-view-body-face (( )))
     `(mu4e-warning-face ((,c :inherit warning)))
+;;;;; nerd-icons
+    `(nerd-icons-blue ((,c :foreground ,blue-cooler)))
+    `(nerd-icons-blue-alt ((,c :foreground ,blue-warmer)))
+    `(nerd-icons-cyan ((,c :foreground ,cyan)))
+    `(nerd-icons-cyan-alt ((,c :foreground ,cyan-warmer)))
+    `(nerd-icons-dblue ((,c :foreground ,blue-faint)))
+    `(nerd-icons-dcyan ((,c :foreground ,cyan-faint)))
+    `(nerd-icons-dgreen ((,c :foreground ,green-faint)))
+    `(nerd-icons-dmaroon ((,c :foreground ,magenta-faint)))
+    `(nerd-icons-dorange ((,c :foreground ,red-faint)))
+    `(nerd-icons-dpink ((,c :foreground ,magenta-faint)))
+    `(nerd-icons-dpurple ((,c :foreground ,magenta-cooler)))
+    `(nerd-icons-dred ((,c :foreground ,red)))
+    `(nerd-icons-dsilver ((,c :foreground ,cyan-faint)))
+    `(nerd-icons-dyellow ((,c :foreground ,yellow-faint)))
+    `(nerd-icons-green ((,c :foreground ,green)))
+    `(nerd-icons-lblue ((,c :foreground ,blue-cooler)))
+    `(nerd-icons-lcyan ((,c :foreground ,cyan)))
+    `(nerd-icons-lgreen ((,c :foreground ,green-warmer)))
+    `(nerd-icons-lmaroon ((,c :foreground ,magenta-warmer)))
+    `(nerd-icons-lorange ((,c :foreground ,red-warmer)))
+    `(nerd-icons-lpink ((,c :foreground ,magenta)))
+    `(nerd-icons-lpurple ((,c :foreground ,magenta-faint)))
+    `(nerd-icons-lred ((,c :foreground ,red-faint)))
+    `(nerd-icons-lsilver ((,c :foreground "gray50")))
+    `(nerd-icons-lyellow ((,c :foreground ,yellow-warmer)))
+    `(nerd-icons-maroon ((,c :foreground ,magenta)))
+    `(nerd-icons-orange ((,c :foreground ,yellow-warmer)))
+    `(nerd-icons-pink ((,c :foreground ,magenta-warmer)))
+    `(nerd-icons-purple ((,c :foreground ,magenta-cooler)))
+    `(nerd-icons-purple-alt ((,c :foreground ,blue-warmer)))
+    `(nerd-icons-red ((,c :foreground ,red)))
+    `(nerd-icons-red-alt ((,c :foreground ,red-cooler)))
+    `(nerd-icons-silver ((,c :foreground "gray50")))
+    `(nerd-icons-yellow ((,c :foreground ,yellow)))
+;;;; nerd-icons-dired
+    `(nerd-icons-dired-dir-face ((,c :foreground ,accent-0)))
+;;;; nerd-icons-ibuffer
+    `(nerd-icons-ibuffer-dir-face ((,c :foreground ,accent-0)))
+    `(nerd-icons-ibuffer-file-face ((,c :foreground ,name)))
+    `(nerd-icons-ibuffer-mode-face ((,c :foreground ,constant)))
+    `(nerd-icons-ibuffer-size-face ((,c :foreground ,variable)))
 ;;;; neotree
     `(neo-banner-face ((,c :foreground ,accent-0)))
     `(neo-button-face ((,c :inherit button)))
@@ -1722,8 +1701,8 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(notmuch-jump-key ((,c :inherit standard-themes-key-binding)))
     `(notmuch-message-summary-face ((,c :inherit bold :background ,bg-dim)))
     `(notmuch-search-count ((,c :foreground ,fg-dim)))
-    `(notmuch-search-date ((,c :foreground ,date)))
-    `(notmuch-search-flagged-face ((,c :foreground ,err)))
+    `(notmuch-search-date ((,c :foreground ,date-common)))
+    `(notmuch-search-flagged-face ((,c :foreground ,keyword)))
     `(notmuch-search-matching-authors ((,c :foreground ,name)))
     `(notmuch-search-non-matching-authors ((,c :inherit shadow)))
     `(notmuch-search-subject ((,c :foreground ,fg-main)))
@@ -1731,7 +1710,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(notmuch-tag-added ((,c :underline ,underline-info)))
     `(notmuch-tag-deleted ((,c :strike-through ,underline-err)))
     `(notmuch-tag-face ((,c :foreground ,accent-0)))
-    `(notmuch-tag-flagged ((,c :foreground ,err)))
+    `(notmuch-tag-flagged ((,c :foreground ,keyword)))
     `(notmuch-tag-unread ((,c :foreground ,accent-1)))
     `(notmuch-tree-match-author-face ((,c :inherit notmuch-search-matching-authors)))
     `(notmuch-tree-match-date-face ((,c :inherit notmuch-search-date)))
@@ -1749,24 +1728,25 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(orderless-match-face-2 ((,c :inherit bold :foreground ,accent-2)))
     `(orderless-match-face-3 ((,c :inherit bold :foreground ,accent-3)))
 ;;;; org
-    `(org-agenda-calendar-event ((,c :foreground ,fg-alt)))
+    `(org-agenda-calendar-daterange ((,c :foreground ,date-range)))
+    `(org-agenda-calendar-event ((,c :foreground ,date-event)))
     `(org-agenda-calendar-sexp ((,c :inherit (italic org-agenda-calendar-event))))
     `(org-agenda-clocking ((,c :background ,bg-warning :foreground ,warning)))
     `(org-agenda-column-dateline ((,c :background ,bg-alt)))
-    `(org-agenda-current-time ((,c :foreground ,fg-main)))
-    `(org-agenda-date ((,c ,@(standard-themes--heading 'agenda-date) :foreground ,rainbow-1)))
+    `(org-agenda-current-time ((,c :foreground ,date-now)))
+    `(org-agenda-date ((,c ,@(standard-themes--heading 'agenda-date date-weekday))))
     `(org-agenda-date-today ((,c :inherit org-agenda-date :underline t)))
     `(org-agenda-date-weekend ((,c :inherit org-agenda-date)))
     `(org-agenda-date-weekend-today ((,c :inherit org-agenda-date-today)))
     `(org-agenda-diary ((,c :inherit org-agenda-calendar-sexp)))
     `(org-agenda-dimmed-todo-face ((,c :inherit shadow)))
-    `(org-agenda-done ((,c :inherit success)))
+    `(org-agenda-done ((,c :foreground ,info)))
     `(org-agenda-filter-category ((,c :inherit bold :foreground ,modeline-err)))
     `(org-agenda-filter-effort ((,c :inherit bold :foreground ,modeline-err)))
     `(org-agenda-filter-regexp ((,c :inherit bold :foreground ,modeline-err)))
     `(org-agenda-filter-tags ((,c :inherit bold :foreground ,modeline-err)))
     `(org-agenda-restriction-lock ((,c :background ,bg-dim :foreground ,fg-dim)))
-    `(org-agenda-structure ((,c ,@(standard-themes--heading 'agenda-structure) :foreground ,rainbow-0)))
+    `(org-agenda-structure ((,c ,@(standard-themes--heading 'agenda-structure fg-alt))))
     `(org-agenda-structure-filter ((,c :inherit org-agenda-structure :foreground ,rainbow-1)))
     `(org-agenda-structure-secondary ((,c :foreground ,rainbow-1)))
     `(org-archived ((,c :background ,bg-alt :foreground ,fg-main)))
@@ -1778,18 +1758,19 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(org-code ((,c :inherit standard-themes-fixed-pitch :foreground ,prose-code)))
     `(org-column ((,c :inherit default :background ,bg-alt)))
     `(org-column-title ((,c :inherit (bold default) :underline t :background ,bg-alt)))
-    `(org-date ((,c :inherit standard-themes-fixed-pitch :foreground ,date :underline t)))
-    `(org-date-selected ((,c :foreground ,date :inverse-video t)))
+    `(org-date ((,c :inherit standard-themes-fixed-pitch :foreground ,date-common :underline t)))
+    `(org-date-selected ((,c :foreground ,date-common :inverse-video t)))
     `(org-document-info ((,c :foreground ,rainbow-1)))
     `(org-document-info-keyword ((,c :inherit shadow)))
     `(org-document-title ((,c :inherit standard-themes-heading-0)))
     `(org-done ((,c :inherit bold :foreground ,info)))
     `(org-drawer ((,c :inherit standard-themes-fixed-pitch :foreground ,fnname)))
+    `(org-ellipsis ((,c :foreground ,yellow)))
     `(org-footnote ((,c :inherit link)))
     `(org-formula ((,c :inherit standard-themes-fixed-pitch :foreground ,comment)))
     `(org-hide ((,c :foreground ,bg-main)))
     `(org-indent ((,c :inherit (fixed-pitch org-hide))))
-    `(org-imminent-deadline ((,c :inherit bold :foreground ,err)))
+    `(org-imminent-deadline ((,c :inherit standard-themes-bold :foreground ,date-deadline)))
     `(org-latex-and-related ((,c :foreground ,type)))
     `(org-level-1 ((,c :inherit standard-themes-heading-1)))
     `(org-level-2 ((,c :inherit standard-themes-heading-2)))
@@ -1808,7 +1789,10 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(org-priority ((,c :foreground ,keyword)))
     `(org-property-value ((,c :inherit standard-themes-fixed-pitch :foreground ,fg-alt)))
     `(org-quote ((,c :inherit org-block)))
-    `(org-sexp-date ((,c :foreground ,date)))
+    `(org-scheduled ((,c :foreground ,date-scheduled)))
+    ;; `(org-scheduled-previously ((,c :inherit org-scheduled)))
+    `(org-scheduled-today ((,c :inherit (standard-themes-bold org-scheduled))))
+    `(org-sexp-date ((,c :foreground ,date-common)))
     `(org-special-keyword ((,c :inherit standard-themes-fixed-pitch :foreground ,keyword)))
     `(org-table ((,c :inherit standard-themes-fixed-pitch :foreground ,fg-alt)))
     `(org-table-header ((,c :inherit (bold org-table))))
@@ -1817,6 +1801,8 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(org-target ((,c :underline t)))
     `(org-time-grid ((,c :foreground ,fg-dim)))
     `(org-todo ((,c :inherit bold :foreground ,err)))
+    `(org-upcoming-deadline ((,c :foreground ,date-deadline)))
+    `(org-upcoming-distant-deadline ((,c :inherit org-upcoming-deadline)))
     `(org-verbatim ((,c :inherit standard-themes-fixed-pitch :foreground ,prose-verbatim)))
     `(org-verse ((,c :inherit org-block)))
     `(org-warning ((,c :inherit warning)))
@@ -1854,7 +1840,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(package-description ((,c :foreground ,docstring)))
     `(package-help-section-name ((,c :inherit bold)))
     `(package-name ((,c :inherit link)))
-    `(package-status-available ((,c :foreground ,date)))
+    `(package-status-available ((,c :foreground ,date-common)))
     `(package-status-avail-obso ((,c :inherit error)))
     `(package-status-built-in ((,c :foreground ,builtin)))
     `(package-status-dependency ((,c :foreground ,warning)))
@@ -1886,7 +1872,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(rainbow-delimiters-depth-7-face ((,c :foreground ,rainbow-6)))
     `(rainbow-delimiters-depth-8-face ((,c :foreground ,rainbow-7)))
     `(rainbow-delimiters-depth-9-face ((,c :foreground ,rainbow-8)))
-    `(rainbow-delimiters-mismatched-face ((,c :background ,bg-red :foreground ,fg-main)))
+    `(rainbow-delimiters-mismatched-face ((,c :background ,bg-red-intense :foreground ,fg-main)))
     `(rainbow-delimiters-unmatched-face ((,c :inherit (bold rainbow-delimiters-mismatched-face))))
 ;;;; rcirc
     `(rcirc-bright-nick ((,c :inherit error)))
@@ -1896,9 +1882,9 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(rcirc-nick-in-message ((,c :inherit rcirc-my-nick)))
     `(rcirc-nick-in-message-full-line ((,c :inherit rcirc-my-nick)))
     `(rcirc-other-nick ((,c :inherit bold :foreground ,accent-0)))
-    `(rcirc-prompt ((,c :inherit minibuffer-prompt)))
+    `(rcirc-prompt ((,c :inherit standard-themes-prompt)))
     `(rcirc-server ((,c :inherit font-lock-comment-face)))
-    `(rcirc-timestamp ((,c :foreground ,date)))
+    `(rcirc-timestamp ((,c :foreground ,date-common)))
     `(rcirc-track-keyword ((,c :inherit bold :foreground ,modeline-warning)))
     `(rcirc-track-nick ((,c :inherit rcirc-my-nick)))
     `(rcirc-url ((,c :inherit link)))
@@ -1906,10 +1892,10 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(recursion-indicator-general ((,c :foreground ,modeline-err)))
     `(recursion-indicator-minibuffer ((,c :foreground ,modeline-info)))
 ;;;; regexp-builder (re-builder)
-    `(reb-match-0 ((,c :background ,bg-green :foreground ,fg-main)))
-    `(reb-match-1 ((,c :background ,bg-red :foreground ,fg-main)))
-    `(reb-match-2 ((,c :background ,bg-magenta :foreground ,fg-main)))
-    `(reb-match-3 ((,c :background ,bg-blue :foreground ,fg-main)))
+    `(reb-match-0 ((,c :background ,bg-green-intense :foreground ,fg-main)))
+    `(reb-match-1 ((,c :background ,bg-red-intense :foreground ,fg-main)))
+    `(reb-match-2 ((,c :background ,bg-magenta-intense :foreground ,fg-main)))
+    `(reb-match-3 ((,c :background ,bg-blue-intense :foreground ,fg-main)))
     `(reb-regexp-grouping-backslash ((,c :inherit font-lock-regexp-grouping-backslash)))
     `(reb-regexp-grouping-construct ((,c :inherit font-lock-regexp-grouping-construct)))
 ;;;; ruler-mode
@@ -1926,7 +1912,7 @@ Optional prefix argument MAPPINGS has the same meaning as for
 ;;;; show-paren-mode
     `(show-paren-match ((,c :background ,bg-paren :foreground ,fg-main)))
     `(show-paren-match-expression ((,c :background ,bg-alt)))
-    `(show-paren-mismatch ((,c :background ,bg-red :foreground ,fg-main)))
+    `(show-paren-mismatch ((,c :background ,bg-red-intense :foreground ,fg-main)))
 ;;;; shell-script-mode (sh-mode)
     `(sh-heredoc ((,c :inherit font-lock-doc-face)))
     `(sh-quoted-exec ((,c :inherit font-lock-builtin-face)))
@@ -2027,15 +2013,15 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(vc-dir-file ((,c :foreground ,name)))
     `(vc-dir-header ((,c :inherit bold)))
     `(vc-dir-header-value ((,c :foreground ,string)))
-    `(vc-dir-mark-indicator ((,c :foreground ,fg-main)))
+    `(vc-dir-mark-indicator (( )))
     `(vc-dir-status-edited ((,c :inherit italic)))
     `(vc-dir-status-ignored ((,c :inherit shadow)))
     `(vc-dir-status-up-to-date ((,c :foreground ,info)))
     `(vc-dir-status-warning ((,c :inherit error)))
     `(vc-conflict-state ((,c :inherit error)))
     `(vc-edited-state ((,c :inherit italic)))
-    `(vc-git-log-edit-summary-max-warning ((,c :background ,bg-err :foreground ,err)))
-    `(vc-git-log-edit-summary-target-warning ((,c :background ,bg-warning :foreground ,warning)))
+    `(vc-git-log-edit-summary-max-warning ((,c :inherit error)))
+    `(vc-git-log-edit-summary-target-warning ((,c :inherit warning)))
     `(vc-locally-added-state ((,c :inherit italic)))
     `(vc-locked-state ((,c :inherit success)))
     `(vc-missing-state ((,c :inherit error)))
@@ -2046,6 +2032,11 @@ Optional prefix argument MAPPINGS has the same meaning as for
 ;;;; vertico
     `(vertico-current ((,c :background ,bg-completion)))
     `(vertico-group-title ((,c :inherit bold :foreground ,name)))
+;;;; vundo
+    `(vundo-default ((,c :inherit shadow)))
+    `(vundo-highlight ((,c :inherit (bold vundo-node) :foreground ,red)))
+    `(vundo-last-saved ((,c :inherit (bold vundo-node) :foreground ,blue-cooler)))
+    `(vundo-saved ((,c :inherit vundo-node :foreground ,cyan-cooler)))
 ;;;; wgrep
     `(wgrep-delete-face ((,c :inherit warning)))
     `(wgrep-done-face ((,c :background ,bg-info :foreground ,info)))
@@ -2053,22 +2044,31 @@ Optional prefix argument MAPPINGS has the same meaning as for
     `(wgrep-file-face ((,c :foreground ,fg-alt)))
     `(wgrep-reject-face ((,c :background ,bg-err :foreground ,err)))
 ;;;; which-function-mode
-    `(which-func ((,c :inherit bold :foreground ,modeline-warning)))
+    `(which-func ((,c :inherit bold :foreground ,modeline-warning))) ; same as `breadcrumb-imenu-leaf-face'
+;;;; which-key
+    `(which-key-command-description-face ((,c :foreground ,fg-main)))
+    `(which-key-group-description-face ((,c :foreground ,string)))
+    `(which-key-highlighted-command-face ((,c :foreground ,warning :underline t)))
+    `(which-key-key-face ((,c :inherit standard-themes-key-binding)))
+    `(which-key-local-map-description-face ((,c :foreground ,fg-main)))
+    `(which-key-note-face ((,c :inherit shadow)))
+    `(which-key-separator-face ((,c :inherit shadow)))
+    `(which-key-special-key-face ((,c :inherit error)))
 ;;;; whitespace-mode
-    `(whitespace-big-indent ((,c :background ,bg-err :foreground ,err)))
-    `(whitespace-empty ((,c :inherit whitespace-big-indent)))
-    `(whitespace-hspace ((,c :inherit whitespace-indentation)))
-    `(whitespace-indentation ((,c :background ,bg-dim :foreground ,fg-dim)))
-    `(whitespace-line ((,c :background ,bg-dim :foreground ,warning)))
-    `(whitespace-newline ((,c :inherit whitespace-indentation)))
-    `(whitespace-space ((,c :inherit whitespace-indentation)))
-    `(whitespace-space-after-tab ((,c :inherit whitespace-space-before-tab)))
-    `(whitespace-space-before-tab ((,c :background ,bg-red)))
-    `(whitespace-tab ((,c :inherit whitespace-indentation)))
-    `(whitespace-trailing ((,c :inherit whitespace-space-before-tab)))
+    `(whitespace-big-indent ((,c :background ,bg-space-err)))
+    `(whitespace-empty ((,c :inherit standard-themes-intense-magenta)))
+    `(whitespace-hspace ((,c :background ,bg-space :foreground ,fg-space)))
+    `(whitespace-indentation ((,c :background ,bg-space :foreground ,fg-space)))
+    `(whitespace-line ((,c :background ,bg-space :foreground ,warning)))
+    `(whitespace-newline ((,c :background ,bg-space :foreground ,fg-space)))
+    `(whitespace-space ((,c :background ,bg-space :foreground ,fg-space)))
+    `(whitespace-space-after-tab ((,c :inherit standard-themes-subtle-magenta)))
+    `(whitespace-space-before-tab ((,c :inherit standard-themes-subtle-cyan)))
+    `(whitespace-tab ((,c :background ,bg-space :foreground ,fg-space)))
+    `(whitespace-trailing ((,c :background ,bg-space-err)))
 ;;;; widget
-    `(widget-button ((,c :inherit bold :foreground ,link)))
-    `(widget-button-pressed ((,c :inherit widget-button :foreground ,link-alt)))
+    `(widget-button ((,c :inherit bold :foreground ,fg-link)))
+    `(widget-button-pressed ((,c :inherit widget-button :foreground ,fg-link-visited)))
     `(widget-documentation ((,c :inherit font-lock-doc-face)))
     `(widget-field ((,c :background ,bg-alt :foreground ,fg-main :extend nil)))
     `(widget-inactive ((,c :inherit shadow :background ,bg-dim)))

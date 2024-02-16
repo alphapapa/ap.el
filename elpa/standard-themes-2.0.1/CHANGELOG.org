@@ -1,0 +1,480 @@
+#+title: Change log of the Standard Themes
+#+author: Protesilaos Stavrou
+#+email: info@protesilaos.com
+#+options: ':nil toc:nil num:nil author:nil email:nil
+
+This document contains the release notes for each tagged commit on the
+project's main git repository: <https://git.sr.ht/~protesilaos/standard-themes>.
+
+The newest release is at the top.  For further details, please consult
+the manual: <https://protesilaos.com/emacs/standard-themes>.
+
+* Version 2.0.0 on 2023-11-27
+:PROPERTIES:
+:CUSTOM_ID: h:9c58f5e9-e471-4013-943d-4c1c59b11d0e
+:END:
+
+** Deprecated several user options that changed colours
+:PROPERTIES:
+:CUSTOM_ID: h:c3cd5ee4-45dc-4b54-be1d-9c0594611ab9
+:END:
+
+The following user options are deprecated in favour of palette
+overrides (more in the following section):
+
+- ~standard-themes-mode-line-accented~
+- ~standard-themes-links~
+- ~standard-themes-region~
+- ~standard-themes-fringes~
+
+In the same spirit, the user option ~standard-themes-prompts~ no
+longer affects colours.
+
+** All colour-related tweaks are done via palette overrides
+:PROPERTIES:
+:CUSTOM_ID: h:a114f9ed-9851-417a-80c2-30d21dee1d09
+:END:
+
+In previous versions of the themes, we provided certain hardcoded
+colour variations, such as for an "accented" mode line and more
+"intense" fringes. We no longer do so, in favour of a more flexible
+approach that empowers the user to pick the exact colour they like.
+
+The Standard themes provide the means to override every entry in their
+palette. Each palette defines named faces (such as what is the exact
+hexademical Red-Green-Blue value of =blue-warmer=) as well as semantic
+colour mappings (like =bg-mode-line-active=). Users can configure
+either the ~standard-themes-common-palette-overrides~ or the
+theme-specific ones, ~standard-dark-palette-overrides~,
+~standard-light-palette-overrides~.
+
+Refer to the manual for how this can be done:
+<https://protesilaos.com/emacs/standard-themes#h:34fe0582-960b-45dc-af5d-23c8f3e9d724>.
+And/or use the commands to preview the palette:
+~standard-themes-preview-colors~,
+~standard-themes-preview-colors-current~. Below is a sample:
+
+#+begin_src emacs-lisp
+(setq standard-themes-common-palette-overrides
+      '((cursor red-warmer)
+        (bg-mode-line-active bg-blue-subtle)))
+#+end_src
+
+[ This is the same functionality found in my =modus-themes= and
+  =ef-themes=. Modus has the most palette entries and widest package
+  support due to its maximalist scope. ]
+
+** The ~standard-themes-prompts~ accept any typographic weight
+:PROPERTIES:
+:CUSTOM_ID: h:ae1574ad-87b2-43b5-90d3-c30163b8aca8
+:END:
+
+This user option applies to prompt texts of all sorts, such as the
+minibuffer and command-line shells. It now accepts any supported
+typographic weight as part of its value. The list of weights are
+recorded in the documentation of the variable
+~standard-themes-weights~ as well as the manual.
+
+** Headings have more semantic colour mappings associated with them
+:PROPERTIES:
+:CUSTOM_ID: h:404de8e3-7a47-4b10-9b26-0594c55dc6e4
+:END:
+
+Apart from the foreground, each heading level from 0 to 8 now has a
+background and an overline. These new palette entries are set to the
+=unspecified= value, meaning that they do not have any visual effect.
+Users can set them to a colour via palette overrides to have headings
+with a background and/or an overline (per heading level).
+
+Building on the previous sample code with the overrides:
+
+#+begin_src emacs-lisp
+(setq standard-themes-common-palette-overrides
+      '((cursor red-warmer)
+        (bg-mode-line-active bg-blue-subtle)
+
+        ;; Extra space for didactic purposes
+
+        (fg-heading-1 rainbow-1)
+        (fg-heading-2 rainbow-2)
+
+        (bg-heading-1 bg-blue-nuanced)
+        (bg-heading-2 bg-yellow-nuanced)
+
+        (overline-heading-1 blue-faint)
+        (overline-heading-2 yellow-faint)
+
+        ))
+#+end_src
+
+Always remember to reload the theme for changes to take effect.
+
+Contact me if you need any help.
+
+** Space-related semantic colour mappings are available
+:PROPERTIES:
+:CUSTOM_ID: h:818e0d4a-1969-4982-be33-d5f85f075a64
+:END:
+
+The ~whitespace-mode~ and related faces now use new palette entries
+that are specific to them. This means that users can easily make space
+characters more intense/subtle. As part of this redesign, the
+background that was enabled by default is now removed to accommodate
+uses of ~whitespace-mode~ in spacing-sensitive programming modes: an
+intensely coloured background on every space makes it hard to edit the
+text.
+
+** The ~display-line-numbers-mode~ benefits from semantic colour mappings
+:PROPERTIES:
+:CUSTOM_ID: h:15002e3b-db06-4ca0-b3d0-f27a04374a2c
+:END:
+
+A new subset of palette entries applies to line numbers. It covers
+foreground and background values for the current/other line numbers.
+Users can style them as they see fit by using palette overrides. For
+example, this makes line numbers have a subtle grey backgrounds to not
+be mistaken for the contents of the buffer:
+
+#+begin_src emacs-lisp
+(setq standard-themes-common-palette-overrides
+      '((cursor red-warmer)
+        (bg-mode-line-active bg-blue-subtle)
+
+        ;; Extra space for didactic purposes
+
+        (fg-heading-1 rainbow-1)
+        (fg-heading-2 rainbow-2)
+
+        (bg-heading-1 bg-blue-nuanced)
+        (bg-heading-2 bg-yellow-nuanced)
+
+        (overline-heading-1 blue-faint)
+        (overline-heading-2 yellow-faint)
+
+        (bg-line-number-active bg-active)
+        (bg-line-number-inactive bg-dim)
+
+        ))
+#+end_src
+
+** More semantic colour mappings for dates
+:PROPERTIES:
+:CUSTOM_ID: h:0d762d7f-d433-40dd-95d9-2110292d43f7
+:END:
+
+The palette of each theme now defines an expanded subset of entries
+for dates. These include, among others, what we find in the Org agenda
+and the =M-x calendar=, such as =date-weekday=, =date-scheduled=, and
+more. Use palette overrides to tweak them accordingly.
+
+** More packages are supported
+:PROPERTIES:
+:CUSTOM_ID: h:5ba5fa40-8e95-405e-b368-4e9b14ce61c4
+:END:
+
+Support for more packages means that the theme looks consistent across
+a variety of interfaces (this is, after all, the original idea behind
+the ~standard-themes~ otherwise an unthemed Emacs looks too
+inconsistent---sorry!). For this version, we include the following in
+an already long list:
+
+- breadcrumb
+- centaur-tabs
+- corfu-candidate-overlay
+- jit-spell
+- nerd-icons
+- nerd-icons-dired
+- nerd-icons-ibuffer
+- vundo
+- which-key
+
+** Ediff faces do not implicitly depend on diff-mode
+:PROPERTIES:
+:CUSTOM_ID: h:8182cb1f-a5b2-4f62-ae5d-85d5b6dbe965
+:END:
+
+The Ediff faces used to inherit from the built-in ~diff-mode~. This
+introduced a dependency and so using something like =M-x ediff-files=
+before loading ~diff-mode~ would result in an error. Ediff faces are
+thus designed to stand on their own.
+
+** "Flagged" and "trashed" emails are now distinct
+:PROPERTIES:
+:CUSTOM_ID: h:c01b88a5-1592-4e4d-a652-1ca9e334a4fb
+:END:
+
+They used to have the same colour, but this is no more. The change
+covers the ~mu4e~ and ~notmuch~ packages.
+
+** Miscellaneous
+:PROPERTIES:
+:CUSTOM_ID: h:503f2289-c2be-4d5b-a5de-67716d194e84
+:END:
+
+- Revised the colour value of the ~standard-dark~ =bg-region= palette
+  entry. The previous one was the same as the original colour used by
+  the ~region~ face against a dark background: an intense blue. The
+  new value is still blue, though it is toned down to do what it needs
+  to do without exaggerations. (Remember that the point of the
+  ~standard-themes~ is to be faithful to the defaults, but I still
+  apply judgement where I think improvements can be made without
+  changing the character of the themes).
+
+- Added support for the ~appt-notification~ face (which I introduced
+  in Emacs 30).
+
+- Extended support for the various ~flymake~ "echo" and "end of line"
+  faces (e.g. ~flymake-error-echo~, ~flymake-end-of-line-diagnostics-face~).
+
+- Removed the deprecated ~consult-preview-cursor~ face. This was done
+  in commit =267b0c9= on the Consult Git repository. Discussed here:
+  <https://github.com/minad/consult/issues/764#issuecomment-1537491625>.
+
+- Revised colours used in the ~all-the-icons~ faces. They now look
+  more consistent.
+
+- Deleted the underline from the ~org-ellipsis~ face. Org files are
+  already too busy and we do not need more of that.
+
+- Made the ~eglot-diagnostic-tag-unnecessary-face~ look like a
+  warning. By default it inherits the 'shadow' face, which makes it
+  counter-intuitive as it dims the text instead of bringing it to our
+  attention. The intent of ~eglot-diagnostic-tag-unnecessary-face~ is
+  to highlight unused symbols, so this is better presented as a
+  warning.
+
+  Thanks to Augusto Stoffel for bringing this matter to my attention.
+  This was done via a private channel and the information is shared
+  with permission.
+
+- Rewrote most of the manual to remove the deprecated user options,
+  expand the documentation where necessary, and tweak the sample
+  configuration.
+
+- Expanded the ~deftheme~ definition of each theme's metadata. This is
+  to support new features in Emacs where themes can specify the set
+  they belong to, as well as whether they are light or dark. The
+  built-in command is ~theme-choose-variant~. This is in response to
+  Emacs bug#65468: <https://debbugs.gnu.org/cgi/bugreport.cgi?bug=65468>.
+  Thanks to Mauro Aranda for bringing this matter to my attention.
+
+- Replaced function calls that depended on ~cl-lib.el~ with equivalent
+  ones from ~seq.el~. The latter is loaded by default and we did not
+  need the CL features, anyway.
+
+* Version 1.2.0 on 2023-02-16
+:PROPERTIES:
+:CUSTOM_ID: h:ff36edbc-57c5-4660-9524-5ca5d5973a38
+:END:
+
+** Support for palette overrides
+:PROPERTIES:
+:CUSTOM_ID: h:97413700-4164-440c-a491-ed7bcb2eb054
+:END:
+
+It is now possible to override the palette of each Standard theme.
+This is the same feature that I implemented for the ~modus-themes~,
+except it is a bit more limited in scope (the Modus themes are
+maximalist due to their accessibility target).
+
+Overrides allow the user to tweak the presentation of either or both
+themes, such as to change the colour value of individual entries
+and/or remap how named colours are applied to semantic code
+constructs.
+
+For example, the user can change what the exact value of ~blue-warmer~
+is and then, say, make comments use a shade of green instead of red.
+
+There are three user options to this end:
+
++ ~standard-themes-common-palette-overrides~ which covers both themes.
++ ~standard-dark-palette-overrides~ which concerns the dark theme.
++ ~standard-light-palette-overrides~ which is for the light theme.
+
+The theme-specific overrides take precedence over the "common" ones.
+
+The theme's palette with named colors can be previewed with the
+commands ~standard-themes-preview-colors~ and
+~standard-themes-preview-colors-current~.  When called with a
+universal prefix argument (=C-u= with default key bindings) these
+commands produce a preview of the semantic colour mappings (e.g. what
+colour applies to level 2 headings).
+
+Use the preview as a reference to find entries to override.  And
+consult the manual for the technicalities.
+
+Thanks to Clemens Radermacher for fixing a mistake I made in the code
+that produces the palette previews.
+
+** Added the function ~standard-themes-get-color-value~
+:PROPERTIES:
+:CUSTOM_ID: h:5fa61127-274f-4f9b-b303-d6a3e7328f66
+:END:
+
+It returns the colour value of named =COLOR= for the current Standard
+theme.
+
+=COLOR= is a symbol that represents a named colour entry in the
+palette.
+
+If the value is the name of another colour entry in the palette (so a
+mapping), recur until you find the underlying colour value.
+
+With optional =OVERRIDES= as a non-nil value, account for palette
+overrides.  Else use the default palette.
+
+With optional =THEME= as a symbol among ~standard-themes-items~, use
+the palette of that item.  Else use the current Standard theme.
+
+If =COLOR= is not present in the palette, return the ~unspecified~
+symbol, which is safe when used as a face attribute's value.
+
+The manual provides this information and also links to relevant
+entries.  The example it uses, with the ~standard-light~ as current:
+
+#+begin_src emacs-lisp
+;; Here we show the recursion of palette mappings.  In general, it is
+;; better for the user to specify named colors to avoid possible
+;; confusion with their configuration, though those still work as
+;; expected.
+(setq standard-themes-common-palette-overrides
+      '((cursor red)
+        (prompt cursor)
+        (variable prompt)))
+
+;; Ignore the overrides and get the original value.
+(standard-themes-get-color-value 'variable)
+;; => "#a0522d"
+
+;; Read from the overrides and deal with any recursion to find the
+;; underlying value.
+(standard-themes-get-color-value 'variable :overrides)
+;; => "#b3303a"
+#+end_src
+
+** New user option ~standard-themes-disable-other-themes~
+:PROPERTIES:
+:CUSTOM_ID: h:801d194a-c849-4db8-ac1b-0281c234eb55
+:END:
+
+This user option is set to ~t~ by default.  This means that loading a
+Standard theme with the command ~standard-themes-toggle~ or the
+functions ~standard-theme-load-dark~,  ~standard-theme-load-light~
+will disable all ~custom-enabled-themes~.
+
+When the value of this user option is nil, themes are loaded without
+disabling other entries outside their family.  This retains the
+original (and in my opinion bad for most users) behaviour of Emacs
+where it blithely blends multiple enabled themes.
+
+I consider the blending a bad default because it undoes the work of
+the designer and often leads to highly inaccessible and unpredictable
+combinations.  Sure, experts can blend themes which is an argument in
+favour of making that behaviour opt-in.
+
+** Other changes
+:PROPERTIES:
+:CUSTOM_ID: h:fe84c508-126c-4fe7-8e5f-c2bbe6e29b3d
+:END:
+
++ Refined the ~standard-dark~ theme's ~bg-hl-line~ background.  This
+  makes it easier to read the underlying text of the currently
+  highlighted line in hl-line-mode.
+
+  Thanks to Manuel Uberti for the feedback on the mailing list:
+  <https://lists.sr.ht/~protesilaos/standard-themes/%3C6e218fc0-f2dc-e03f-4e42-da0cbf9bd79b%40inventati.org%3E>.
+
++ Clarified some statements in the documentation about the palette
+  overrides.  Thanks to Tassilo Horn for the feedback on the mailing
+  list: <https://lists.sr.ht/~protesilaos/standard-themes/%3C87cz8bjrwz.fsf%40gnu.org%3E>.
+
+** Acknowledgement
+:PROPERTIES:
+:CUSTOM_ID: h:ced52765-3287-44d0-a9d5-a47eed9fccd1
+:END:
+
+Thanks to Fritz Grabo who provided feedback via a private channel.
+With it, I was able to better understand the underlying patterns of
+the out-of-the-box Emacs faces and thus design the ~standard-themes~
+accordingly.  This information is shared with permission.
+
+As a reminder, the Standard themes are an interpretation of the
+default Emacs faces (which technically are not a "theme").  I have
+expanded the effective palette with harmonious entries, made mappings
+that are consistent with the patterns found in some base faces, and
+extended support for lots of packages.  At first sight, the Standard
+themes look like what you get with an unconfigured Emacs.  Though make
+no mistake: they are far more detail-oriented.
+
+* Version 1.1.0 on 2022-12-06
+:PROPERTIES:
+:CUSTOM_ID: h:f7a5799c-279c-4dfb-96ae-3eba58ee582e
+:END:
+
+** The ~standard-themes-headings~ now covers the Org agenda
+:PROPERTIES:
+:CUSTOM_ID: h:d7fa8d0c-b49c-447a-a24c-4dc18c6d755b
+:END:
+
+The user option ~standard-themes-headings~ lets the user control the
+height, weight, and use of proportionately spaced fonts
+(~variable-pitch~) on a per-heading basis.  Different combinations are
+possible, as explained in the option's doc string on the corresponding
+entry in the manual.
+
+I have now made it possible to specify the =agenda-date= and
+=agenda-structure= keys.  Both pertain to the Org agenda.  The former
+applies to date headings, while the latter styles the headings of each
+"block" of content.  In a generic agenda buffer, that block heading is
+the first line which reads =Week-agenda (W49):= or something like
+that, though we find such headings in more places as well.
+
+Here is a sample with various stylistic variants per heading:
+
+#+begin_src emacs-lisp
+(setq standard-themes-headings ; read the manual's entry or the doc string
+      '((0 . (variable-pitch light 1.9))
+        (1 . (variable-pitch light 1.8))
+        (2 . (semilight 1.7))
+        (3 . (semilight 1.6))
+        (4 . (1.5)) ; absence of weight means "regular"
+        (5 . (1.4))
+        (6 . (bold 1.3))
+        (7 . (bold 1.2))
+        (agenda-date . (semilight 1.5))
+        (agenda-structure . (variable-pitch light 1.9))
+        (t . (variable-pitch 1.1))))
+#+end_src
+
+Note that Org re-uses heading levels past 8.  This means that level 9
+will look the same as level 1.  This is not the theme's doing.  Check
+the user options ~org-level-faces~, ~org-n-level-faces~ for ways to
+change this.
+
+** =M-x theme-choose-variant= works as expected
+:PROPERTIES:
+:CUSTOM_ID: h:9c95de58-9d0c-44dd-bc24-63ce7691806e
+:END:
+
+Users of Emacs 29 have access to the command ~theme-choose-variant~:
+it toggles between two themes of the same family.  If the family
+has more members, it uses minibuffer completion instead.
+
+I registered the appropriate theme properties to make this work as
+intended.  However, it is still possible to use the command
+~standard-themes-toggle~.
+
+** Stylistic refinements
+:PROPERTIES:
+:CUSTOM_ID: h:33e6d85e-42cc-4a30-87d5-47d9b81cc769
+:END:
+
++ Simplified the Magit blame faces to avoid exaggerations.
++ Revised the colours of day headings in the =M-x calendar= buffer.
+  Weekends stand out, as is the case with physical calendars and many
+  established apps.
++ Made the ~edmacro-label~ face stand out in its context.  Otherwise
+  it was difficult to spot.  This is for Emacs 29 and applies to
+  headings in the keyboard macro editing buffer (e.g. with =C-x C-k
+  C-e= (~kmacro-edit-macro-repeat~)).
++ Added support for the =powerline= package.

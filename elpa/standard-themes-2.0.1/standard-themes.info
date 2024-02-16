@@ -1,4 +1,4 @@
-This is docN6y44M.info, produced by makeinfo version 6.7 from
+This is dochwCLei.info, produced by makeinfo version 6.8 from
 standard-themes.texi.
 
 Copyright (C) 2022-2023 Free Software Foundation, Inc.
@@ -20,7 +20,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docN6y44M.info,  Node: Top,  Next: About the Standard themes,  Up: (dir)
+File: dochwCLei.info,  Node: Top,  Next: About the Standard themes,  Up: (dir)
 
 standard-themes: Like the default theme but more consistent
 ***********************************************************
@@ -43,14 +43,18 @@ package called ‘standard-themes’, and provides every other piece of
 information pertinent to it.
 
    The documentation furnished herein corresponds to stable version
-1.2.0, released on 2023-02-16.  Any reference to a newer feature which
+2.0.0, released on 2023-11-27.  Any reference to a newer feature which
 does not yet form part of the latest tagged commit, is explicitly marked
 as such.
 
-   Current development target is 1.3.0-dev.
+   Current development target is 2.1.0-dev.
 
    • Package name (GNU ELPA): ‘standard-themes’
    • Official manual: <https://protesilaos.com/emacs/standard-themes>
+   • Change log:
+     <https://protesilaos.com/emacs/standard-themes-changelog>
+   • Sample pictures:
+     <https://protesilaos.com/emacs/standard-themes-pictures>
    • Git repo on SourceHut:
      <https://git.sr.ht/~protesilaos/standard-themes>
         • Mirrors:
@@ -89,17 +93,13 @@ Installation
 
 Customization options
 
-* Disable other themes::
-* Enable mixed fonts::
-* Accented mode line::
-* UI typeface::
-* Bold constructs::
-* Italic constructs::
-* Fringe visibility::
-* Link style::
+* Option to disable other themes::
+* Option to enable mixed fonts::
+* Option to control the UI typeface::
+* Option to enable more bold constructs::
+* Option to enable more italic constructs::
 * Option for command prompts::
 * Option for headings::
-* Style of region highlight::
 * Palette overrides::
 
 Do-It-Yourself customizations
@@ -126,7 +126,7 @@ Indices
 
 
 
-File: docN6y44M.info,  Node: About the Standard themes,  Next: Installation,  Prev: Top,  Up: Top
+File: dochwCLei.info,  Node: About the Standard themes,  Next: Installation,  Prev: Top,  Up: Top
 
 1 About the Standard themes
 ***************************
@@ -137,7 +137,7 @@ constitute a theme) while bringing to them thematic consistency,
 customizability, and extensibility.
 
 
-File: docN6y44M.info,  Node: Installation,  Next: Sample configuration,  Prev: About the Standard themes,  Up: Top
+File: dochwCLei.info,  Node: Installation,  Next: Sample configuration,  Prev: About the Standard themes,  Up: Top
 
 2 Installation
 **************
@@ -148,7 +148,7 @@ File: docN6y44M.info,  Node: Installation,  Next: Sample configuration,  Prev: A
 * Manual installation::
 
 
-File: docN6y44M.info,  Node: GNU ELPA package,  Next: Manual installation,  Up: Installation
+File: dochwCLei.info,  Node: GNU ELPA package,  Next: Manual installation,  Up: Installation
 
 2.1 GNU ELPA package
 ====================
@@ -167,7 +167,7 @@ archive.  Read:
 <https://protesilaos.com/codelog/2022-05-13-emacs-elpa-devel/>.
 
 
-File: docN6y44M.info,  Node: Manual installation,  Prev: GNU ELPA package,  Up: Installation
+File: dochwCLei.info,  Node: Manual installation,  Prev: GNU ELPA package,  Up: Installation
 
 2.2 Manual installation
 =======================
@@ -194,7 +194,7 @@ following commands in a shell prompt:
    Everything is in place to set up the package.
 
 
-File: docN6y44M.info,  Node: Sample configuration,  Next: Customization options,  Prev: Installation,  Up: Top
+File: dochwCLei.info,  Node: Sample configuration,  Next: Customization options,  Prev: Installation,  Up: Top
 
 3 Sample configuration
 **********************
@@ -207,17 +207,10 @@ File: docN6y44M.info,  Node: Sample configuration,  Next: Customization options,
      ;; sample values.
      (setq standard-themes-bold-constructs t
            standard-themes-italic-constructs t
+           standard-themes-disable-other-themes t
            standard-themes-mixed-fonts t
            standard-themes-variable-pitch-ui t
-           standard-themes-mode-line-accented t
-
-           ;; Accepts a symbol value:
-           standard-themes-fringes 'subtle
-
-           ;; The following accept lists of properties
-           standard-themes-links '(neutral-underline)
-           standard-themes-region '(no-extend neutral intense)
-           standard-themes-prompts '(bold italic)
+           standard-themes-prompts '(extrabold italic)
 
            ;; more complex alist to set weight, height, and optional
            ;; `variable-pitch' per heading level (t is for any level not
@@ -231,55 +224,50 @@ File: docN6y44M.info,  Node: Sample configuration,  Next: Customization options,
              (5 . (variable-pitch 1.4))
              (6 . (variable-pitch 1.3))
              (7 . (variable-pitch 1.2))
+             (agenda-date . (1.3))
+             (agenda-structure . (variable-pitch light 1.8))
              (t . (variable-pitch 1.1))))
 
-     ;; Disable all other themes to avoid awkward blending:
-     (mapc #'disable-theme custom-enabled-themes)
-
-     (load-theme 'standard-light :no-confirm)
+     (standard-themes-load-light) ; OR (standard-themes-load-dark)
 
      (define-key global-map (kbd "<f5>") #'standard-themes-toggle)
 
 
-File: docN6y44M.info,  Node: Customization options,  Next: Loading a theme,  Prev: Sample configuration,  Up: Top
+File: dochwCLei.info,  Node: Customization options,  Next: Loading a theme,  Prev: Sample configuration,  Up: Top
 
 4 Customization options
 ***********************
 
 The ‘standard-themes’ provide user options which tweak secondary aspects
 of the theme.  All customizations need to be evaluated before loading a
-theme.  Any change after the theme has been loaded require a re-load
+theme.  Any change after the theme has been loaded requires a re-load
 (*note Loading a theme::).
 
 * Menu:
 
-* Disable other themes::
-* Enable mixed fonts::
-* Accented mode line::
-* UI typeface::
-* Bold constructs::
-* Italic constructs::
-* Fringe visibility::
-* Link style::
+* Option to disable other themes::
+* Option to enable mixed fonts::
+* Option to control the UI typeface::
+* Option to enable more bold constructs::
+* Option to enable more italic constructs::
 * Option for command prompts::
 * Option for headings::
-* Style of region highlight::
 * Palette overrides::
 
 
-File: docN6y44M.info,  Node: Disable other themes,  Next: Enable mixed fonts,  Up: Customization options
+File: dochwCLei.info,  Node: Option to disable other themes,  Next: Option to enable mixed fonts,  Up: Customization options
 
-4.1 Disable other themes
-========================
+4.1 Option to disable other themes
+==================================
 
-The user option ‘standard-themes-disable-other-themes’ controls which
-themes to disable when loading a Standard theme (*note Loading a
+The user option ‘standard-themes-disable-other-themes’ controls whether
+to disable other themes when loading a Standard theme (*note Loading a
 theme::).
 
    When the value is non-nil, the command ‘standard-themes-toggle’ as
 well as the functions ‘standard-themes-load-dark’ and
 ‘standard-themes-load-light’, will disable all other themes while
-loading the specified Standard theme.  This is done to ensure that Emacs
+loading the given Standard theme.  This is done to ensure that Emacs
 does not blend two or more themes: such blends lead to awkward results
 that undermine the work of the designer.
 
@@ -292,14 +280,14 @@ customizations.  Users who use such customization bundles must set this
 variable to a nil value.
 
 
-File: docN6y44M.info,  Node: Enable mixed fonts,  Next: Accented mode line,  Prev: Disable other themes,  Up: Customization options
+File: dochwCLei.info,  Node: Option to enable mixed fonts,  Next: Option to control the UI typeface,  Prev: Option to disable other themes,  Up: Customization options
 
-4.2 Enable mixed fonts
-======================
+4.2 Option to enable mixed fonts
+================================
 
 The user option ‘standard-themes-mixed-fonts’ controls whether strictly
 spacing-sensitive constructs inherit from ‘fixed-pitch’ (a monospaced
-font family).
+font family) to ensure proper alignment at all times.
 
    By default (a ‘nil’ value for this user option) no face inherits from
 ‘fixed-pitch’: they all use the default font family, regardless of
@@ -307,42 +295,34 @@ whether it is monospaced or not.
 
    When ‘standard-themes-mixed-fonts’ is set to a non-‘nil’ value, faces
 such as for Org tables, inline code, code blocks, and the like, are
-rendered in a monospaced font at all times.  The user can thus set their
-default font family to a proportionately spaced font without worrying
-about breaking the alignment of relevant elements, or if they simply
-prefer the aesthetics of mixed mono and proportionately spaced font
-families.
+rendered in a monospaced font (the inherit the ‘fixed-pitch’ face).  The
+user can thus set their default font family to a proportionately spaced
+font without worrying about breaking the alignment of relevant elements
+(or if they simply prefer the aesthetics of mixed mono and
+proportionately spaced font families).
 
    A temporary switch to a proportionately spaced font (known in Emacs
 as ‘variable-pitch’) can be enabled in the current buffer with the
-activation of the built-in ‘variable-pitch-mode’.
+activation of the built-in ‘variable-pitch-mode’.  Mixed fonts work well
+in this case.
 
    To get consistent typography, the user may need to edit the font
 family of the ‘fixed-pitch’ and ‘variable-pitch’ faces.  The ‘fontaine’
 package on GNU ELPA (by Protesilaos) can be helpful in this regard.
 
 
-File: docN6y44M.info,  Node: Accented mode line,  Next: UI typeface,  Prev: Enable mixed fonts,  Up: Customization options
+File: dochwCLei.info,  Node: Option to control the UI typeface,  Next: Option to enable more bold constructs,  Prev: Option to enable mixed fonts,  Up: Customization options
 
-4.3 Accented mode line
-======================
-
-The user option ‘standard-themes-mode-line-accented’ handles the
-background color of the active mode line.  When the value is ‘nil’, the
-color is gray, while non-‘nil’ uses an accent value.
-
-
-File: docN6y44M.info,  Node: UI typeface,  Next: Bold constructs,  Prev: Accented mode line,  Up: Customization options
-
-4.4 UI typeface
-===============
+4.3 Option to control the UI typeface
+=====================================
 
 The user option ‘standard-themes-variable-pitch-ui’ controls whether the
 elements of the User Interface (UI) use a proportionately spaced font.
-By default (a ‘nil’ value), all UI elements use the default font family.
-When this user option is set to a non-‘nil’ value, all UI elements will
-inherit the face ‘variable-pitch’, thus rendering them in a
-proportionately spaced font.
+
+   By default (a ‘nil’ value), all UI elements use the default font
+family.  When this user option is set to a non-‘nil’ value, all UI
+elements will inherit the face ‘variable-pitch’, thus rendering them in
+a proportionately spaced font.
 
    In this context, the UI elements are:
 
@@ -356,10 +336,10 @@ family of the ‘fixed-pitch’ and ‘variable-pitch’ faces.  The ‘fontaine
 package on GNU ELPA (by Protesilaos) can be helpful in this regard.
 
 
-File: docN6y44M.info,  Node: Bold constructs,  Next: Italic constructs,  Prev: UI typeface,  Up: Customization options
+File: dochwCLei.info,  Node: Option to enable more bold constructs,  Next: Option to enable more italic constructs,  Prev: Option to control the UI typeface,  Up: Customization options
 
-4.5 Bold constructs
-===================
+4.4 Option to enable more bold constructs
+=========================================
 
 The user option ‘standard-themes-bold-constructs’ determines whether
 select faces will inherit the ‘bold’ face.  When the value is non-‘nil’,
@@ -369,10 +349,10 @@ builtins, and a few other elements.
    *note Configure bold and italic faces::.
 
 
-File: docN6y44M.info,  Node: Italic constructs,  Next: Fringe visibility,  Prev: Bold constructs,  Up: Customization options
+File: dochwCLei.info,  Node: Option to enable more italic constructs,  Next: Option for command prompts,  Prev: Option to enable more bold constructs,  Up: Customization options
 
-4.6 Italic constructs
-=====================
+4.5 Option to enable more italic constructs
+===========================================
 
 The user option ‘standard-themes-italic-constructs’ determines whether
 select faces will inherit the ‘italic’ face.  When the value is
@@ -382,104 +362,64 @@ comments, doc strings, and a few other minor elements.
    *note Configure bold and italic faces::.
 
 
-File: docN6y44M.info,  Node: Fringe visibility,  Next: Link style,  Prev: Italic constructs,  Up: Customization options
+File: dochwCLei.info,  Node: Option for command prompts,  Next: Option for headings,  Prev: Option to enable more italic constructs,  Up: Customization options
 
-4.7 Fringe visibility
-=====================
-
-The user option ‘standard-themes-fringes’ controls the visibility and
-intensity of the fringes.  With regular Emacs settings “Fringe” is a
-small surface area to either side of the Emacs window: it is where
-certain indicators are displayed, such as continuation lines.
-
-   When the value is ‘nil’, do not apply a distinct background color.
-
-   With a value of ‘subtle’, use a gray background color that is visible
-yet close to the main background color.  This is the default style.
-
-   With ‘intense’, use a more pronounced gray background color.
-
-
-File: docN6y44M.info,  Node: Link style,  Next: Option for command prompts,  Prev: Fringe visibility,  Up: Customization options
-
-4.8 Link style
-==============
-
-The user option ‘standard-themes-links’ controls the style of links.
-The value is a list of properties, each designated by a symbol.  The
-default (a ‘nil’ value or an empty list) is a prominent text color,
-typically blue, with an underline of the same color.
-
-   For the style of the underline, a ‘neutral-underline’ property turns
-the color of the line into a subtle gray, while the ‘no-underline’
-property removes the line altogether.  If both of those are set, the
-latter takes precedence.
-
-   For text coloration, a ‘faint’ property desaturates the color of the
-text and the underline, unless the underline is affected by the
-aforementioned properties.
-
-   A ‘bold’ property applies a heavy typographic weight to the text of
-the link.
-
-   An ‘italic’ property adds a slant to the link’s text (italic or
-oblique forms, depending on the typeface).
-
-   Combinations of any of those properties are expressed as a list, like
-in these examples:
-
-     (faint)
-     (no-underline faint)
-
-   The order in which the properties are set is not significant.
-
-   In user configuration files the form may look like this:
-
-     (setq standard-themes-links '(neutral-underline faint))
-
-   The placement of the underline, meaning its proximity to the text, is
-controlled by ‘x-use-underline-position-properties’,
-‘x-underline-at-descent-line’, ‘underline-minimum-offset’.  Please refer
-to their documentation strings.
-
-
-File: docN6y44M.info,  Node: Option for command prompts,  Next: Option for headings,  Prev: Link style,  Up: Customization options
-
-4.9 Option for command prompts
+4.6 Option for command prompts
 ==============================
 
 The user option ‘standard-themes-prompts’ controls the style of all
 prompts, such as those of the minibuffer and REPLs.
 
-   The value is a list of properties, each designated by a symbol.  The
-default (a ‘nil’ value or an empty list) means to only use an accented
-foreground color.
+   Possible values are expressed as a list of properties (default is
+‘nil’ or an empty list).  The list can include any of the following
+symbols:
 
-   The property ‘background’ applies a background color to the prompt’s
-text and adjusts the foreground accordingly.
+   • ‘italic’
+   • A font weight, which must be supported by the underlying typeface:
+        • ‘thin’
+        • ‘ultralight’
+        • ‘extralight’
+        • ‘light’
+        • ‘semilight’
+        • ‘regular’
+        • ‘medium’
+        • ‘semibold’
+        • ‘bold’
+        • ‘heavy’
+        • ‘extrabold’
+        • ‘ultrabold’
 
-   The property ‘bold’ makes the text use a bold typographic weight.
-Similarly, ‘italic’ adds a slant to the font’s forms (italic or oblique
-forms, depending on the typeface).
+   The default (a ‘nil’ value or an empty list) means to only use a
+foreground color without any typographic additions.
+
+   The ‘italic’ property adds a slant to the font’s forms (italic or
+oblique forms, depending on the typeface).
+
+   The symbol of a font weight attribute such as ‘light’, ‘semibold’, et
+cetera, adds the given weight to links.  Valid symbols are defined in
+the variable ‘standard-themes-weights’.  The absence of a weight means
+that the one of the underlying text will be used.
 
    Combinations of any of those properties are expressed as a list, like
 in these examples:
 
-     (background)
      (bold italic)
-     (background bold italic)
+     (italic semibold)
 
    The order in which the properties are set is not significant.
 
    In user configuration files the form may look like this:
 
-     (setq standard-themes-prompts '(background bold))
+     (setq standard-themes-prompts '(extrabold italic))
+
+   The foreground and background colors of prompts can be modified by
+applying palette overrides (*note Palette overrides::).
 
 
-File: docN6y44M.info,  Node: Option for headings,  Next: Style of region highlight,  Prev: Option for command prompts,  Up: Customization options
+File: dochwCLei.info,  Node: Option for headings,  Next: Palette overrides,  Prev: Option for command prompts,  Up: Customization options
 
-4.10 Option for headings
-========================
+4.7 Option for headings
+=======================
 
 The user option ‘standard-themes-headings’ provides support for
 individual heading styles for regular heading levels 0 through 8, as
@@ -499,42 +439,56 @@ described below.  Here is a complete sample with various stylistic
 combinations, followed by a presentation of all available properties:
 
      (setq standard-themes-headings
-           '((1 . (light variable-pitch 1.5))
-             (2 . (regular 1.3))
-             (3 . (1.1))
+           '((1 . (variable-pitch 1.5))
+             (2 . (1.3))
              (agenda-date . (1.3))
              (agenda-structure . (variable-pitch light 1.8))
-             (t . (variable-pitch))))
+             (t . (1.1))))
+
+   Properties:
+
+   • A font weight, which must be supported by the underlying typeface:
+        • ‘thin’
+        • ‘ultralight’
+        • ‘extralight’
+        • ‘light’
+        • ‘semilight’
+        • ‘regular’
+        • ‘medium’
+        • ‘semibold’
+        • ‘bold’ (default)
+        • ‘heavy’
+        • ‘extrabold’
+        • ‘ultrabold’
+   • A floating point as a height multiple of the default or a cons cell
+     in the form of ‘(height . FLOAT)’.
 
    By default (a ‘nil’ value for this variable), all headings have a
-normal typographic weight, a font family that is the same as the
-‘default’ face (typically monospaced), and a height that is equal to the
-‘default’ face’s height.
+bold typographic weight and use a desaturated text color.
 
-   • A ‘variable-pitch’ property changes the font family of the heading
-     to that of the ‘variable-pitch’ face (normally a proportionately
-     spaced typeface).  Also check the ‘fontaine’ package (by
-     Protesilaos) for tweaking fonts via faces.
+   A ‘variable-pitch’ property changes the font family of the heading to
+that of the ‘variable-pitch’ face (normally a proportionately spaced
+typeface).
 
-   • The symbol of a weight attribute adjusts the font of the heading
-     accordingly, such as ‘light’, ‘semibold’, etc.  Valid symbols are
-     defined in the variable ‘standard-themes-weights’.  The absence of
-     a weight means that no distinct weight will be used.
+   The symbol of a weight attribute adjusts the font of the heading
+accordingly, such as ‘light’, ‘semibold’, etc.  Valid symbols are
+defined in the variable ‘standard-themes-weights’.  The absence of a
+weight means that bold will be used by virtue of inheriting the ‘bold’
+face.
 
-   • A number, expressed as a floating point (e.g.  1.5), adjusts the
-     height of the heading to that many times the base font size.  The
-     default height is the same as 1.0, though it need not be explicitly
-     stated.  Instead of a floating point, an acceptable value can be in
-     the form of a cons cell like ‘(height . FLOAT)’ or ‘(height
-     FLOAT)’, where ‘FLOAT’ is the given number.
+   A number, expressed as a floating point (e.g.  1.5), adjusts the
+height of the heading to that many times the base font size.  The
+default height is the same as 1.0, though it need not be explicitly
+stated.  Instead of a floating point, an acceptable value can be in the
+form of a cons cell like ‘(height . FLOAT)’ or ‘(height FLOAT)’, where
+FLOAT is the given number.
 
    Combinations of any of those properties are expressed as a list, like
 in these examples:
 
      (semibold)
-     (variable-pitch semibold)
      (variable-pitch semibold 1.3)
-     (variable-pitch semibold (height 1.3))   ; same as above
+     (variable-pitch semibold (height 1.3)) ; same as above
      (variable-pitch semibold (height . 1.3)) ; same as above
 
    The order in which the properties are set is not significant.
@@ -542,65 +496,39 @@ in these examples:
    In user configuration files the form may look like this:
 
      (setq standard-themes-headings
-           '((1 . (light variable-pitch 1.5))
-             (2 . (regular 1.3))
-             (3 . (1.1))
-             (t . (variable-pitch))))
+           '((1 . (variable-pitch 1.5))
+             (2 . (1.3))
+             (agenda-date . (1.3))
+             (agenda-structure . (variable-pitch light 1.8))
+             (t . (1.1))))
 
    When defining the styles per heading level, it is possible to pass a
-non-‘nil’ value (t) instead of a list of properties.  This will retain
+non-‘nil’ value (‘t’) instead of a list of properties.  This will retain
 the original aesthetic for that level.  For example:
 
      (setq standard-themes-headings
            '((1 . t)           ; keep the default style
-             (2 . (variable-pitch 1.2))
-             (t . (variable-pitch)))) ; style for all unspecified headings
+             (2 . (semibold 1.2))
+             (t . (rainbow)))) ; style for all other headings
 
      (setq standard-themes-headings
-           '((1 . (variable-pitch 1.6))
-             (2 . (1.3))
-             (t . t))) ; default style for all unspecified levels
+           '((1 . (variable-pitch 1.5))
+             (2 . (semibold))
+             (t . t))) ; default style for all other levels
+
+   Note that the text color of headings, of their background, and
+overline can all be set via the overrides.  It is possible to have any
+color combination for any heading level (something that could not be
+done in older versions of the themes).
+
+   The foreground, background, and overline colors of headings can be
+modified by applying palette overrides (*note Palette overrides::).
 
 
-File: docN6y44M.info,  Node: Style of region highlight,  Next: Palette overrides,  Prev: Option for headings,  Up: Customization options
+File: dochwCLei.info,  Node: Palette overrides,  Prev: Option for headings,  Up: Customization options
 
-4.11 Style of region highlight
-==============================
-
-The user option ‘standard-themes-region’ controls the appearance of the
-‘region’ face (the highlighted selection of an area).
-
-   The value it accepts is a list of symbols.
-
-   If ‘nil’ or an empty list (the default), use a subtle background for
-the region and preserve the color of selected text.
-
-   The ‘no-extend’ symbol limits the highlighted area to the end of the
-line, so that it does not reach the edge of the window.
-
-   The ‘neutral’ symbol makes the highlighted area’s background gray (or
-more gray, depending on the theme).
-
-   The ‘intense’ symbol amplifies the intensity of the highlighted
-area’s background color.  It also overrides any text color to keep it
-legible.
-
-   Combinations of those symbols are expressed in any order.
-
-   In user configuration files the form may look like this:
-
-     (setq standard-themes-region '(intense no-extend))
-
-   Other examples:
-
-     (setq standard-themes-region '(intense))
-     (setq standard-themes-region '(intense no-extend neutral))
-
-
-File: docN6y44M.info,  Node: Palette overrides,  Prev: Style of region highlight,  Up: Customization options
-
-4.12 Palette overrides
-======================
+4.8 Palette overrides
+=====================
 
 The Standard themes define their own color palette as well as semantic
 color mappings.  The former is the set of color values such as what
@@ -663,7 +591,7 @@ is the override and the second is the original one.
    Contact me if you need further help with this.
 
 
-File: docN6y44M.info,  Node: Loading a theme,  Next: Preview theme colors,  Prev: Customization options,  Up: Top
+File: dochwCLei.info,  Node: Loading a theme,  Next: Preview theme colors,  Prev: Customization options,  Up: Top
 
 5 Loading a theme
 *****************
@@ -672,7 +600,7 @@ Emacs can load and maintain enabled multiple themes at once.  This
 typically leads to awkward styling and weird combinations.  The theme
 looks broken and the designer’s intent is misunderstood.  Before loading
 either of the ‘standard-themes’, the user is encouraged to disable all
-others (*note Disable other themes::):
+others (*note Disable other themes: Option to disable other themes.):
 
      (mapc #'disable-theme custom-enabled-themes)
 
@@ -688,15 +616,15 @@ such as ‘init.el’.
 
    As the Standard themes are extensible, another way to load the theme
 of choice is to use either ‘standard-themes-load-dark’ or
-‘standard-themes-load-light’.  These functions take care of (i)
-disabling other themes, (ii) loading the specified Standard theme, and
-(iii) running the ‘standard-themes-post-load-hook’ which is useful for
-do-it-yourself customizations (*note The general approach to DIY
-changes: The general approach to advanced DIY changes.).  These two
-functions are also called by the command ‘standard-themes-toggle’.
+‘standard-themes-load-light’.  These functions take care to (i) disable
+other themes, (ii) load the specified Standard theme, and (iii) run the
+‘standard-themes-post-load-hook’ which is useful for do-it-yourself
+customizations (*note The general approach to DIY changes: The general
+approach to advanced DIY changes.).  These two functions are also called
+by the command ‘standard-themes-toggle’.
 
 
-File: docN6y44M.info,  Node: Preview theme colors,  Next: Use colors from the active Standard theme,  Prev: Loading a theme,  Up: Top
+File: dochwCLei.info,  Node: Preview theme colors,  Next: Use colors from the active Standard theme,  Prev: Loading a theme,  Up: Top
 
 6 Preview theme colors
 **********************
@@ -732,7 +660,7 @@ colors and ‘=*standard-light-list-mappings*’ for the semantic color
 mappings.
 
 
-File: docN6y44M.info,  Node: Use colors from the active Standard theme,  Next: Do-It-Yourself customizations,  Prev: Preview theme colors,  Up: Top
+File: dochwCLei.info,  Node: Use colors from the active Standard theme,  Next: Do-It-Yourself customizations,  Prev: Preview theme colors,  Up: Top
 
 7 Use colors from the active Standard theme
 *******************************************
@@ -761,7 +689,7 @@ or color mapping are still possible.  At any rate, we will not outright
 break any code that uses ‘standard-themes-with-colors’.
 
 
-File: docN6y44M.info,  Node: Do-It-Yourself customizations,  Next: Faces defined by the Standard themes,  Prev: Use colors from the active Standard theme,  Up: Top
+File: dochwCLei.info,  Node: Do-It-Yourself customizations,  Next: Faces defined by the Standard themes,  Prev: Use colors from the active Standard theme,  Up: Top
 
 8 Do-It-Yourself customizations
 *******************************
@@ -781,7 +709,7 @@ liking, often by employing the ‘standard-themes-with-colors’ macro
 * Tweak goto-address-mode faces::
 
 
-File: docN6y44M.info,  Node: Get a single color from the palette,  Next: The general approach to advanced DIY changes,  Up: Do-It-Yourself customizations
+File: dochwCLei.info,  Node: Get a single color from the palette,  Next: The general approach to advanced DIY changes,  Up: Do-It-Yourself customizations
 
 8.1 Get a single color from the palette
 =======================================
@@ -835,7 +763,7 @@ with/without overrides and when recursive mappings are introduced.
      ;; => "#b3303a"
 
 
-File: docN6y44M.info,  Node: The general approach to advanced DIY changes,  Next: A theme-agnostic hook for theme loading,  Prev: Get a single color from the palette,  Up: Do-It-Yourself customizations
+File: dochwCLei.info,  Node: The general approach to advanced DIY changes,  Next: A theme-agnostic hook for theme loading,  Prev: Get a single color from the palette,  Up: Do-It-Yourself customizations
 
 8.2 The general approach to advanced DIY changes
 ================================================
@@ -926,7 +854,7 @@ mechanism.  We are willing to help and shall provide comprehensive
 documentation where necessary.
 
 
-File: docN6y44M.info,  Node: A theme-agnostic hook for theme loading,  Next: Add support for hl-todo,  Prev: The general approach to advanced DIY changes,  Up: Do-It-Yourself customizations
+File: dochwCLei.info,  Node: A theme-agnostic hook for theme loading,  Next: Add support for hl-todo,  Prev: The general approach to advanced DIY changes,  Up: Do-It-Yourself customizations
 
 8.3 A theme-agnostic hook for theme loading
 ===========================================
@@ -978,7 +906,7 @@ though the user can replace it with ‘after-enable-theme-hook’ should
 they need to (provided they understand the implications).
 
 
-File: docN6y44M.info,  Node: Add support for hl-todo,  Next: Configure bold and italic faces,  Prev: A theme-agnostic hook for theme loading,  Up: Do-It-Yourself customizations
+File: dochwCLei.info,  Node: Add support for hl-todo,  Next: Configure bold and italic faces,  Prev: A theme-agnostic hook for theme loading,  Up: Do-It-Yourself customizations
 
 8.4 Add support for hl-todo
 ===========================
@@ -1022,7 +950,7 @@ the latter method.
 commands for previewing the palette (*note Preview theme colors::).
 
 
-File: docN6y44M.info,  Node: Configure bold and italic faces,  Next: Tweak org-modern timestamps,  Prev: Add support for hl-todo,  Up: Do-It-Yourself customizations
+File: dochwCLei.info,  Node: Configure bold and italic faces,  Next: Tweak org-modern timestamps,  Prev: Add support for hl-todo,  Up: Do-It-Yourself customizations
 
 8.5 Configure bold and italic faces
 ===================================
@@ -1074,7 +1002,7 @@ pick fonts that work in tandem):
 provides the means to configure font families via faces.
 
 
-File: docN6y44M.info,  Node: Tweak org-modern timestamps,  Next: Tweak goto-address-mode faces,  Prev: Configure bold and italic faces,  Up: Do-It-Yourself customizations
+File: dochwCLei.info,  Node: Tweak org-modern timestamps,  Next: Tweak goto-address-mode faces,  Prev: Configure bold and italic faces,  Up: Do-It-Yourself customizations
 
 8.6 Tweak ‘org-modern’ timestamps
 =================================
@@ -1099,12 +1027,13 @@ by adding this to the init file:
 
    Alignment in tables will also depend on the use of proportionately
 spaced fonts.  Enable the relevant option to work with those without any
-further trouble (*note Enable mixed fonts::).
+further trouble (*note Enable mixed fonts: Option to enable mixed
+fonts.).
 
    For any further issues, you are welcome to ask for help.
 
 
-File: docN6y44M.info,  Node: Tweak goto-address-mode faces,  Prev: Tweak org-modern timestamps,  Up: Do-It-Yourself customizations
+File: dochwCLei.info,  Node: Tweak goto-address-mode faces,  Prev: Tweak org-modern timestamps,  Up: Do-It-Yourself customizations
 
 8.7 Tweak goto-address-mode faces
 =================================
@@ -1129,7 +1058,7 @@ addresses stand out more, due to the use of the uncommon ‘@’ caharacter
 but also because they are often enclosed in angled brackets).
 
 
-File: docN6y44M.info,  Node: Faces defined by the Standard themes,  Next: Supported packages or face groups,  Prev: Do-It-Yourself customizations,  Up: Top
+File: dochwCLei.info,  Node: Faces defined by the Standard themes,  Next: Supported packages or face groups,  Prev: Do-It-Yourself customizations,  Up: Top
 
 9 Faces defined by the Standard themes
 **************************************
@@ -1158,18 +1087,37 @@ packages, like Dired, Trashed, Ibuffer.
    • ‘standard-themes-heading-6’
    • ‘standard-themes-heading-7’
    • ‘standard-themes-heading-8’
+   • ‘standard-themes-intense-blue’
+   • ‘standard-themes-intense-cyan’
+   • ‘standard-themes-intense-green’
+   • ‘standard-themes-intense-magenta’
+   • ‘standard-themes-intense-red’
+   • ‘standard-themes-intense-yellow’
    • ‘standard-themes-italic’
    • ‘standard-themes-key-binding’
    • ‘standard-themes-mark-delete’
    • ‘standard-themes-mark-other’
    • ‘standard-themes-mark-select’
+   • ‘standard-themes-nuanced-blue’
+   • ‘standard-themes-nuanced-cyan’
+   • ‘standard-themes-nuanced-green’
+   • ‘standard-themes-nuanced-magenta’
+   • ‘standard-themes-nuanced-red’
+   • ‘standard-themes-nuanced-yellow’
+   • ‘standard-themes-prompt’
+   • ‘standard-themes-subtle-blue’
+   • ‘standard-themes-subtle-cyan’
+   • ‘standard-themes-subtle-green’
+   • ‘standard-themes-subtle-magenta’
+   • ‘standard-themes-subtle-red’
+   • ‘standard-themes-subtle-yellow’
    • ‘standard-themes-ui-variable-pitch’
    • ‘standard-themes-underline-error’
    • ‘standard-themes-underline-info’
    • ‘standard-themes-underline-warning’
 
 
-File: docN6y44M.info,  Node: Supported packages or face groups,  Next: Acknowledgements,  Prev: Faces defined by the Standard themes,  Up: Top
+File: dochwCLei.info,  Node: Supported packages or face groups,  Next: Acknowledgements,  Prev: Faces defined by the Standard themes,  Up: Top
 
 10 Supported packages or face groups
 ************************************
@@ -1186,7 +1134,7 @@ already covers everything most users need.
 * Packages that are hard to support::
 
 
-File: docN6y44M.info,  Node: Explicitly supported packages or face groups,  Next: Implicitly supported packages or face groups,  Up: Supported packages or face groups
+File: dochwCLei.info,  Node: Explicitly supported packages or face groups,  Next: Implicitly supported packages or face groups,  Up: Supported packages or face groups
 
 10.1 Explicitly supported packages or face groups
 =================================================
@@ -1198,10 +1146,12 @@ File: docN6y44M.info,  Node: Explicitly supported packages or face groups,  Next
    • ansi-color
    • auctex
    • auto-dim-other-buffers
+   • breadcrumb
    • bongo
    • bookmark
    • calendar and diary
    • cider
+   • centaur-tabs
    • change-log and log-view (part of VC)
    • chart
    • clojure-mode
@@ -1210,6 +1160,7 @@ File: docN6y44M.info,  Node: Explicitly supported packages or face groups,  Next
    • completions
    • consult
    • corfu
+   • corfu-candidate-overlay
    • custom (‘M-x customize’)
    • denote
    • dictionary
@@ -1241,6 +1192,7 @@ File: docN6y44M.info,  Node: Explicitly supported packages or face groups,  Next
    • image-dired
    • info
    • isearch, occur, query-replace
+   • jit-spell
    • keycast
    • lin
    • line numbers (‘display-line-numbers-mode’ and global variant)
@@ -1251,6 +1203,9 @@ File: docN6y44M.info,  Node: Explicitly supported packages or face groups,  Next
    • messages
    • mode-line
    • mu4e
+   • nerd-icons
+   • nerd-icons-dired
+   • nerd-icons-ibuffer
    • neotree
    • notmuch
    • olivetti
@@ -1285,15 +1240,17 @@ File: docN6y44M.info,  Node: Explicitly supported packages or face groups,  Next
    • tty-menu
    • vc (‘vc-dir.el’, ‘vc-hooks.el’)
    • vertico
+   • vundo
    • wgrep
    • which-function-mode
+   • which-key
    • whitespace-mode
    • widget
    • writegood-mode
    • woman
 
 
-File: docN6y44M.info,  Node: Implicitly supported packages or face groups,  Next: Packages that are hard to support,  Prev: Explicitly supported packages or face groups,  Up: Supported packages or face groups
+File: dochwCLei.info,  Node: Implicitly supported packages or face groups,  Next: Packages that are hard to support,  Prev: Explicitly supported packages or face groups,  Up: Supported packages or face groups
 
 10.2 Implicitly supported packages or face groups
 =================================================
@@ -1317,7 +1274,7 @@ in perfectly.  If there are refinements we need to made, then we need to
 intervene (*note Explicitly supported packages or face groups::).
 
 
-File: docN6y44M.info,  Node: Packages that are hard to support,  Prev: Implicitly supported packages or face groups,  Up: Supported packages or face groups
+File: dochwCLei.info,  Node: Packages that are hard to support,  Prev: Implicitly supported packages or face groups,  Up: Supported packages or face groups
 
 10.3 Packages that are hard to support
 ======================================
@@ -1385,7 +1342,7 @@ web-mode
    The above list is non-exhaustive though you get the idea.
 
 
-File: docN6y44M.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Supported packages or face groups,  Up: Top
+File: dochwCLei.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Supported packages or face groups,  Up: Top
 
 11 Acknowledgements
 *******************
@@ -1400,10 +1357,10 @@ Contributions to code
      Clemens Radermacher.
 
 Ideas and/or user feedback
-     Fritz Grabo, Manuel Uberti, Tassilo Horn.
+     Fritz Grabo, Manuel Uberti, Tassilo Horn, Zack Weinberg.
 
 
-File: docN6y44M.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
+File: dochwCLei.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
 
 12 GNU Free Documentation License
 *********************************
@@ -1885,7 +1842,7 @@ software license, such as the GNU General Public License, to permit
 their use in free software.
 
 
-File: docN6y44M.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
+File: dochwCLei.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
 
 13 Indices
 **********
@@ -1897,7 +1854,7 @@ File: docN6y44M.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up
 * Concept index::
 
 
-File: docN6y44M.info,  Node: Function index,  Next: Variable index,  Up: Indices
+File: dochwCLei.info,  Node: Function index,  Next: Variable index,  Up: Indices
 
 13.1 Function index
 ===================
@@ -1919,7 +1876,7 @@ File: docN6y44M.info,  Node: Function index,  Next: Variable index,  Up: Indices
                                                                (line  6)
 
 
-File: docN6y44M.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
+File: dochwCLei.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
 
 13.2 Variable index
 ===================
@@ -1927,25 +1884,25 @@ File: docN6y44M.info,  Node: Variable index,  Next: Concept index,  Prev: Functi
  [index ]
 * Menu:
 
-* standard-themes-bold-constructs:       Bold constructs.      (line  6)
+* standard-themes-bold-constructs:       Option to enable more bold constructs.
+                                                               (line  6)
 * standard-themes-common-palette-overrides: Palette overrides. (line 17)
-* standard-themes-disable-other-themes:  Disable other themes. (line  6)
-* standard-themes-fringes:               Fringe visibility.    (line  6)
+* standard-themes-disable-other-themes:  Option to disable other themes.
+                                                               (line  6)
 * standard-themes-headings:              Option for headings.  (line  6)
-* standard-themes-italic-constructs:     Italic constructs.    (line  6)
-* standard-themes-links:                 Link style.           (line  6)
-* standard-themes-mixed-fonts:           Enable mixed fonts.   (line  6)
-* standard-themes-mode-line-accented:    Accented mode line.   (line  6)
+* standard-themes-italic-constructs:     Option to enable more italic constructs.
+                                                               (line  6)
+* standard-themes-mixed-fonts:           Option to enable mixed fonts.
+                                                               (line  6)
 * standard-themes-post-load-hook:        The general approach to advanced DIY changes.
                                                                (line 14)
 * standard-themes-prompts:               Option for command prompts.
                                                                (line  6)
-* standard-themes-region:                Style of region highlight.
+* standard-themes-variable-pitch-ui:     Option to control the UI typeface.
                                                                (line  6)
-* standard-themes-variable-pitch-ui:     UI typeface.          (line  6)
 
 
-File: docN6y44M.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
+File: dochwCLei.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
 
 13.3 Concept index
 ==================
@@ -1964,46 +1921,42 @@ File: docN6y44M.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
 
 Tag Table:
 Node: Top873
-Node: About the Standard themes4162
-Node: Installation4572
-Node: GNU ELPA package4776
-Node: Manual installation5346
-Node: Sample configuration6151
-Node: Customization options7942
-Node: Disable other themes8637
-Node: Enable mixed fonts9677
-Node: Accented mode line11064
-Node: UI typeface11440
-Node: Bold constructs12378
-Node: Italic constructs12846
-Node: Fringe visibility13339
-Node: Link style14074
-Node: Option for command prompts15684
-Node: Option for headings16827
-Node: Style of region highlight20567
-Node: Palette overrides21794
-Node: Loading a theme24579
-Node: Preview theme colors25993
-Node: Use colors from the active Standard theme27559
-Node: Do-It-Yourself customizations28782
-Node: Get a single color from the palette29483
-Node: The general approach to advanced DIY changes31556
-Node: A theme-agnostic hook for theme loading35999
-Node: Add support for hl-todo38582
-Node: Configure bold and italic faces40524
-Node: Tweak org-modern timestamps42932
-Node: Tweak goto-address-mode faces44325
-Node: Faces defined by the Standard themes45426
-Node: Supported packages or face groups47023
-Node: Explicitly supported packages or face groups47647
-Node: Implicitly supported packages or face groups49868
-Node: Packages that are hard to support50713
-Node: Acknowledgements52856
-Node: GNU Free Documentation License53284
-Node: Indices78629
-Node: Function index78807
-Node: Variable index79837
-Node: Concept index81179
+Node: About the Standard themes4326
+Node: Installation4736
+Node: GNU ELPA package4940
+Node: Manual installation5510
+Node: Sample configuration6315
+Node: Customization options7864
+Node: Option to disable other themes8556
+Node: Option to enable mixed fonts9640
+Node: Option to control the UI typeface11188
+Node: Option to enable more bold constructs12229
+Node: Option to enable more italic constructs12807
+Node: Option for command prompts13397
+Node: Option for headings15276
+Node: Palette overrides19630
+Node: Loading a theme22407
+Node: Preview theme colors23843
+Node: Use colors from the active Standard theme25409
+Node: Do-It-Yourself customizations26632
+Node: Get a single color from the palette27333
+Node: The general approach to advanced DIY changes29406
+Node: A theme-agnostic hook for theme loading33849
+Node: Add support for hl-todo36432
+Node: Configure bold and italic faces38374
+Node: Tweak org-modern timestamps40782
+Node: Tweak goto-address-mode faces42204
+Node: Faces defined by the Standard themes43305
+Node: Supported packages or face groups45703
+Node: Explicitly supported packages or face groups46327
+Node: Implicitly supported packages or face groups48732
+Node: Packages that are hard to support49577
+Node: Acknowledgements51720
+Node: GNU Free Documentation License52163
+Node: Indices77508
+Node: Function index77686
+Node: Variable index78716
+Node: Concept index80080
 
 End Tag Table
 

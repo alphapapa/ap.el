@@ -40,22 +40,29 @@
 (eval-and-compile
   (require 'standard-themes)
 
+;;;###theme-autoload
   (deftheme standard-light
-    "Like the unthemed light Emacs, but more consistent.")
+    "Like the unthemed light Emacs, but more consistent."
+    :background-mode 'light
+    :kind 'color-scheme
+    :family 'standard)
 
   (defconst standard-light-palette
-    '(;; Basic tones
+    '(
+;;; Basic values
+
       (bg-main     "#ffffff")
       (fg-main     "#000000")
       (bg-dim      "#ededed")
       (fg-dim      "#7f7f7f")
       (bg-alt      "#dcdcdc")
       (fg-alt      "#193f8f")
-
       (bg-active   "#bfbfbf")
       (bg-inactive "#f5f5f5")
+      (border      "#bababa")
 
-      ;; Basic hues for foreground values
+;;; Basic accent foregrounds
+
       (red             "#b3303a")
       (red-warmer      "#e00033")
       (red-cooler      "#ce2b50")
@@ -81,15 +88,31 @@
       (cyan-cooler     "#008b8b")
       (cyan-faint      "#3f7a80")
 
-      ;; Basic hues for background values
-      (bg-red      "#ff8f88")
-      (bg-green    "#7ae070")
-      (bg-yellow   "#fac200")
-      (bg-blue     "#6bcfff")
-      (bg-magenta  "#cf9fff")
-      (bg-cyan     "#a8efff")
+;;; Common accent backgrounds
 
-      ;; Diffs
+      (bg-red-intense     "#ff8f88")
+      (bg-green-intense   "#8adf80")
+      (bg-yellow-intense  "#f3d000")
+      (bg-blue-intense    "#bfc9ff")
+      (bg-magenta-intense "#dfa0f0")
+      (bg-cyan-intense    "#a4d5f9")
+
+      (bg-red-subtle      "#ffcfbf")
+      (bg-green-subtle    "#b3fabf")
+      (bg-yellow-subtle   "#fff576")
+      (bg-blue-subtle     "#ccdfff")
+      (bg-magenta-subtle  "#ffddff")
+      (bg-cyan-subtle     "#bfefff")
+
+      (bg-red-nuanced     "#fff1f0")
+      (bg-green-nuanced   "#ecf7ed")
+      (bg-yellow-nuanced  "#fff3da")
+      (bg-blue-nuanced    "#f3f3ff")
+      (bg-magenta-nuanced "#fdf0ff")
+      (bg-cyan-nuanced    "#ebf6fa")
+
+;;; Diffs
+
       (bg-added          "#c0f8d0")
       (bg-added-faint    "#d0ffe0")
       (bg-added-refine   "#b4e8c4")
@@ -105,12 +128,19 @@
       (bg-removed-refine "#f3b5af")
       (fg-removed        "#a02a2a")
 
-      ;; Marks
-      (bg-mark-alt  "#c0effa") (fg-mark-alt  "#1f6fb0")
-      (bg-mark-del  "#ffd5ea") (fg-mark-del  "#b32230")
-      (bg-mark-sel  "#fafa7b") (fg-mark-sel  "#805f00")
+;;; Marks
 
-      ;; Graphs
+      (bg-mark-alt  "#c0effa")
+      (fg-mark-alt  "#1f6fb0")
+
+      (bg-mark-del  "#ffd5ea")
+      (fg-mark-del  "#b32230")
+
+      (bg-mark-sel  "#fafa7b")
+      (fg-mark-sel  "#805f00")
+
+;;; Graphs
+
       (red-graph-0-bg     "#ef7969")
       (red-graph-1-bg     "#ffaab4")
       (green-graph-0-bg   "#4faa09")
@@ -124,21 +154,26 @@
       (cyan-graph-0-bg    "#70d3f0")
       (cyan-graph-1-bg    "#afefff")
 
-      ;; Special hues
-      (bg-mode-line  "#b3b3b3") (bg-mode-line-inactive "#e5e5e5")
+;;; Special hues
+
       (bg-accent     "#0000cc")
       (bg-completion "#bfe8ff")
       (bg-hover      "#aaeccf")
       (bg-hover-alt  "#ffff00")
       (bg-hl-line    "#b4eeb4")
       (bg-region     "#eedc82")
+      (fg-region     unspecified)
       (bg-paren      "#40e0d0")
       (bg-err        "#ffd5ea") ; check with err
       (bg-warning    "#ffeabb") ; check with warning
       (bg-info       "#d0efda") ; check with info
 
-      (border        "#bababa")
-      (cursor        "#000000")
+      (bg-mode-line-active        "#b3b3b3")
+      (fg-mode-line-active        "#000000")
+      (border-mode-line-active    "#5a5a5a")
+      (bg-mode-line-inactive      "#e5e5e5")
+      (fg-mode-line-inactive      "#7f7f7f")
+      (border-mode-line-inactive  "#bababa")
 
       (bg-tab              "#d9d9d9")
       (bg-tab-inactive     "#bfbfbf")
@@ -152,24 +187,37 @@
       (underline-warning "#bf5f00")
       (underline-info    "#02af52")
 
-      ;; Conditional hues
-      (bg-prompt           "#daccff")
-      (bg-region-intense   "#eeb422")
-      (bg-mode-line-accent "#9fbaff")
+;;; Mappings
 
-      ;; Mappings
+;;;; General mappings
+
+      (cursor fg-main)
+      (fringe bg-dim)
+      (name green-cooler)
+      (keybind blue)
+
       (err red-warmer)
       (warning yellow-warmer)
       (info green)
 
-      (link blue-warmer)
-      (link-alt magenta)
-      (link-faint blue-faint)
-      (link-alt-faint magenta-faint)
-      (date cyan-warmer)
-      (name green-cooler)
-      (keybind blue)
-      (prompt blue-cooler)
+;;;; Date mappings
+
+      (date-common cyan-warmer)
+      (date-deadline red)
+      (date-event fg-alt)
+      (date-holiday red-cooler)
+      (date-now fg-main)
+      (date-range fg-alt)
+      (date-scheduled green)
+      (date-weekday cyan-warmer)
+      (date-weekend red)
+
+;;;; Prompt mappings
+
+      (bg-prompt unspecified)
+      (fg-prompt blue-cooler)
+
+;;;; Code mappings
 
       (builtin blue-faint)
       (comment red-faint)
@@ -181,23 +229,45 @@
       (string magenta-warmer)
       (type green)
       (variable yellow-cooler)
-
       (rx-escape green) ; compare with `string'
       (rx-construct fg-main)
+
+;;;; Accent mappings
 
       (accent-0 blue)
       (accent-1 red-cooler)
       (accent-2 green)
       (accent-3 magenta-cooler)
 
-      (mail-0 red-cooler)
-      (mail-1 magenta)
-      (mail-2 green)
-      (mail-3 cyan-cooler)
+;;;; Line number mappings
+
+      (fg-line-number-inactive fg-dim)
+      (fg-line-number-active fg-main)
+      (bg-line-number-inactive unspecified)
+      (bg-line-number-active unspecified)
+
+;;;; Link mappings
+
+      (fg-link blue-warmer)
+      (bg-link unspecified)
+      (underline-link blue-warmer)
+
+      (fg-link-visited magenta)
+      (bg-link-visited unspecified)
+      (underline-link-visited magenta)
+
+;;;; Mail mappings
+
+      (mail-0 magenta)
+      (mail-1 cyan-cooler)
+      (mail-2 yellow-cooler)
+      (mail-3 red-warmer)
       (mail-4 blue-warmer)
       (mail-recipient blue)
       (mail-subject magenta-cooler)
       (mail-other cyan)
+
+;;;; Rainbow mappings
 
       (rainbow-0 "#191970")
       (rainbow-1 blue-cooler)
@@ -209,9 +279,49 @@
       (rainbow-7 blue-faint)
       (rainbow-8 magenta-warmer)
 
+;;;; Space mappings
+
+      (bg-space unspecified)
+      (fg-space border)
+      (bg-space-err bg-red-intense)
+
+;;;; Prose mappings
+
       (prose-code cyan-cooler)
       (prose-macro green-warmer)
-      (prose-verbatim magenta))
+      (prose-verbatim magenta)
+
+;;;; Heading mappings
+
+      (fg-heading-0 rainbow-0)
+      (fg-heading-1 rainbow-1)
+      (fg-heading-2 rainbow-2)
+      (fg-heading-3 rainbow-3)
+      (fg-heading-4 rainbow-4)
+      (fg-heading-5 rainbow-5)
+      (fg-heading-6 rainbow-6)
+      (fg-heading-7 rainbow-7)
+      (fg-heading-8 rainbow-8)
+
+      (bg-heading-0 unspecified)
+      (bg-heading-1 unspecified)
+      (bg-heading-2 unspecified)
+      (bg-heading-3 unspecified)
+      (bg-heading-4 unspecified)
+      (bg-heading-5 unspecified)
+      (bg-heading-6 unspecified)
+      (bg-heading-7 unspecified)
+      (bg-heading-8 unspecified)
+
+      (overline-heading-0 unspecified)
+      (overline-heading-1 unspecified)
+      (overline-heading-2 unspecified)
+      (overline-heading-3 unspecified)
+      (overline-heading-4 unspecified)
+      (overline-heading-5 unspecified)
+      (overline-heading-6 unspecified)
+      (overline-heading-7 unspecified)
+      (overline-heading-8 unspecified))
     "The `standard-light' palette.
 Color values have the form (COLOR-NAME HEX-VALUE) with the former
 as a symbol and the latter as a string.
@@ -245,8 +355,5 @@ represents."
                          standard-light-palette-overrides)
 
   (provide-theme 'standard-light))
-
-;;;###theme-autoload
-(put 'standard-light 'theme-properties '(:background-mode light :kind color-scheme :family standard))
 
 ;;; standard-light-theme.el ends here

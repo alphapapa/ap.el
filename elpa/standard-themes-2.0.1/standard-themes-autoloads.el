@@ -11,12 +11,12 @@
 
 ;;; Generated autoloads from standard-dark-theme.el
 
-(put 'standard-dark 'theme-properties '(:background-mode dark :kind color-scheme :family standard))
+(put 'standard-dark 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'standard))
 
 
 ;;; Generated autoloads from standard-light-theme.el
 
-(put 'standard-light 'theme-properties '(:background-mode light :kind color-scheme :family standard))
+(put 'standard-light 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'standard))
 
 
 ;;; Generated autoloads from standard-themes.el
