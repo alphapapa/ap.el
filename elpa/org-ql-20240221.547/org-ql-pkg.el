@@ -1,4 +1,4 @@
-(define-package "org-ql" "20240113.47" "Org Query Language, search command, and agenda-like view"
+(define-package "org-ql" "20240221.547" "Org Query Language, search command, and agenda-like view"
   '((emacs "27.1")
     (compat "29.1")
     (dash "2.18.1")
