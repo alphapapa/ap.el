@@ -627,6 +627,8 @@ Like it used to."
         ("N" . #'org-notely-here))
   (:map embark-url-map
         ("F" . #'browse-url-firefox))
+  (:map embark-file-map
+        ("O" . ap/xdg-open))
 
   :init
   (setq prefix-help-command #'embark-prefix-help-command))
