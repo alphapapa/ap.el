@@ -651,6 +651,27 @@ Like it used to."
 
 (use-package faces
   :config
+
+  (progn
+    ;; The tab-bar tabs should be "NK57 Monospace" condensed, but
+    ;; the rest of the tab-bar line should be variable-pitch to
+    ;; save space.
+    (add-hook 'enable-theme-functions #'ap/modify-tab-bar-faces)
+    (ap/modify-tab-bar-faces)
+
+    (defun ap/modify-tab-bar-faces (&rest _)
+      (ap/modify-faces
+       '(tab-bar :family nil :inherit (variable-pitch header-line))
+       '(tab-bar-tab :family "NK57 Monospace" :width condensed :weight bold
+                     :inherit (tab-bar))
+       '(tab-bar-tab-inactive :inherit (tab-bar-tab))))
+
+    (defun ap/modify-faces (&rest faces)
+      (pcase-dolist (`(,face . ,spec) faces)
+        (map-do (lambda (attribute value)
+                  (set-face-attribute face nil attribute value))
+                spec))))
+
   (defvar ap/random-fonts
     `(
       ;; A list of lists or alists. Alists should be in (STRING
