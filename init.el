@@ -1672,11 +1672,28 @@ boundaries."
   ;; be needed, or Vertico may be close enough.  Let's leave it on and
   ;; try it.
   :init (vertico-mode)
+
+  :config
+  (defun vertico-insert-or-prepend ()
+    "Insert or prepend current candidate in minibuffer.
+When `crm-completion-table' is non-nil, assume
+`completing-read-multiple' is active, and append the candidate to
+the minibuffer input (preserving the trailing input so as to
+preserve the existing candidates)."
+    (interactive)
+    (when (> vertico--total 0)
+      (let ((vertico--index (max 0 vertico--index)))
+        (if crm-completion-table
+            (save-excursion
+              (goto-char (+ (point-min) (minibuffer-prompt-width)))
+              (insert (vertico--candidate) crm-separator))
+          (vertico-insert)))))
+
   :bind (:map vertico-map
               ("TAB" . vertico-next)
               ("<backtab>" . vertico-previous)
               ;; NOTE: Not completely satisfied with this binding.
-              ("M-i" . vertico-insert)))
+              ("M-i" . vertico-insert-or-prepend)))
 
 (use-package window
   :general ("C-x w d" #'ap/toggle-window-dedicated-p
