@@ -1,6 +1,6 @@
 ;;; consult-kmacro.el --- Provides the command `consult-kmacro' -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; This file is part of GNU Emacs.
 
@@ -80,13 +80,11 @@ Macros containing mouse clicks are omitted."
              (lambda (cand)
                (get-text-property 0 'consult-kmacro--annotation cand))
              :lookup #'consult--lookup-candidate)))
-    (unless km (user-error "No kmacro selected"))
-    (funcall
-     ;; Kmacros are lambdas (oclosures) on Emacs 29
-     (if (eval-when-compile (> emacs-major-version 28))
-         km
-       (kmacro-lambda-form km))
-     arg)))
+    ;; Kmacros are lambdas (oclosures) on Emacs 29
+    (funcall (if (eval-when-compile (> emacs-major-version 28))
+                 km
+               (kmacro-lambda-form km))
+             arg)))
 
 (provide 'consult-kmacro)
 ;;; consult-kmacro.el ends here

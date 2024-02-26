@@ -40,8 +40,8 @@ local actions, comparable to a context menu. These actions operate on the
 selected candidate in the minibuffer or at point in normal buffers. For example,
 when selecting from a list of files, Embark offers an action to delete the file.
 Additionally Embark offers a facility to collect completion candidates in a
-collect buffer. The section [[#embark-integration][Embark integration]] documents in greater detail how
-Consult and Embark work together.
+collect buffer. The section [[#embark-integration][Embark integration]] documents in detail how Consult
+and Embark work together.
 
 #+toc: headlines 8
 
@@ -86,14 +86,14 @@ their descriptions.
 #+findex: consult-buffer
 #+findex: consult-buffer-other-window
 #+findex: consult-buffer-other-frame
+#+findex: consult-buffer-other-tab
 #+findex: consult-project-buffer
 #+findex: consult-recent-file
 #+findex: consult-bookmark
-- =consult-buffer= (=-other-window=, =-other-frame=): Enhanced version
-  of =switch-to-buffer= with support for virtual buffers. Supports live preview
-  of buffers and narrowing to the virtual buffer types. You can type =f SPC= in
-  order to narrow to recent files. Press =SPC= to show ephemeral buffers.
-  Supported narrowing keys:
+- =consult-buffer=: Enhanced version of =switch-to-buffer= with support for virtual
+  buffers. Supports live preview of buffers and narrowing to the virtual buffer
+  types. You can type =f SPC= in order to narrow to recent files. Press =SPC= to
+  show ephemeral buffers. Supported narrowing keys:
   - b Buffers
   - SPC Hidden buffers
   - * Modified buffers
@@ -102,6 +102,8 @@ their descriptions.
   - m Bookmarks
   - p Project
   - Custom [[#multiple-sources][other sources]] configured in =consult-buffer-sources=.
+- =consult-buffer-other-window=, =consult-buffer-other-frame=,
+  =consult-buffer-other-tab=: Variants of =consult-buffer=.
 - =consult-project-buffer=: Variant of =consult-buffer= restricted to buffers and
   recent files of the current project. You can add custom sources to
   =consult-project-buffer-sources=. The command may prompt you for a project if
@@ -241,6 +243,7 @@ their descriptions.
 #+findex: consult-ripgrep
 #+findex: consult-git-grep
 #+findex: consult-find
+#+findex: consult-fd
 #+findex: consult-locate
 - =consult-grep=, =consult-ripgrep=, =consult-git-grep=: Search for regular expression
   in files. Consult invokes Grep asynchronously, while you enter the search
@@ -260,12 +263,12 @@ their descriptions.
   Otherwise the =default-directory= is searched. If =consult-grep= is invoked
   with prefix argument =C-u M-s g=, you can specify one or more comma-separated files
   and directories manually.
-- =consult-find=, =consult-locate=: Find file by matching the path against a regexp.
-  Like for =consult-grep=, either the project root or the current directory is the
-  root directory for the search. The input string is treated similarly to
-  =consult-grep=, where the first part is passed to find, and the second part is
-  used for Emacs filtering.  Prefix arguments to =consult-find= work just like those
-  for the consult grep commands.
+- =consult-find=, =consult-fd=, =consult-locate=: Find file by matching the path
+  against a regexp. Like for =consult-grep=, either the project root or the
+  current directory is the root directory for the search. The input string is
+  treated similarly to =consult-grep=, where the first part is passed to find, and
+  the second part is used for Emacs filtering. Prefix arguments to =consult-find=
+  work just like those for the consult grep commands.
 
 ** Compilation
 :properties:
@@ -331,12 +334,13 @@ their descriptions.
 
 #+findex: consult-org-heading
 #+findex: consult-org-agenda
-- =consult-org-heading=: Similar to =consult-outline=, for Org
-  buffers. Supports narrowing by heading level, priority and TODO
-  state, as well as live preview and recursive editing.
-- =consult-org-agenda=: Jump to an agenda heading. Supports
-  narrowing by heading level, priority and TODO state, as well as
-  live preview and recursive editing.
+- =consult-org-heading=: Variant of =consult-imenu= or =consult-outline= for Org
+  buffers. The headline and its ancestors headlines are separated by slashes.
+  Supports narrowing by heading level, priority and TODO keyword, as well as live
+  preview and recursive editing.
+- =consult-org-agenda=: Jump to an Org agenda heading. Supports narrowing by
+  heading level, priority and TODO keyword, as well as live preview and
+  recursive editing.
 ** Help
 :properties:
 :description: Searching through help
@@ -396,15 +400,15 @@ their descriptions.
                    #'completion--in-region)
                  args)))
   #+end_src
-  Instead of =consult-completion-in-region=, you may prefer to see the
-  completions directly in the buffer as a small popup. In that case, I recommend
-  either the [[https://github.com/minad/corfu][Corfu]] or the [[https://github.com/company-mode/company-mode][Company]] package. There is a technical limitation of
-  =consult-completion-in-region= in combination with Lsp-mode or Eglot. The Lsp
-  server relies on the input at point, in order to generate refined candidate
-  strings. Since the completion is transferred from the original buffer to the
-  minibuffer, the server does not receive the updated input. LSP completion
-  works with Corfu or Company though, which perform the completion directly in
-  the original buffer.
+  Instead of =consult-completion-in-region=, you may prefer to see the completions
+  directly in the buffer as a small popup. In that case, I recommend the [[https://github.com/minad/corfu][Corfu]]
+  package. There is a technical limitation of =consult-completion-in-region= in
+  combination with the Lsp modes. The Lsp server relies on the input at point,
+  in order to generate refined candidate strings. Since the completion is
+  transferred from the original buffer to the minibuffer, the server does not
+  receive the updated input. In contrast, in-buffer Lsp completion for example
+  via Corfu works properly since the completion takes place directly in the
+  original buffer.
 
 * Special features
 :properties:
@@ -482,10 +486,9 @@ for [[https://github.com/minad/org-modern][org-modern]] and [[https://github.com
 (add-to-list 'consult-preview-allowed-hooks 'global-hl-todo-mode-check-buffers)
 #+end_src
 
-Files larger than =consult-preview-raw-size= are previewed literally without
-syntax highlighting and without changing the major mode. Delaying the preview is
-also useful for =consult-theme=, since the theme preview is slow. The delay
-results in a smoother UI experience.
+Files larger than =consult-preview-partial-size= are previewed partially. Delaying
+the preview is also useful for =consult-theme=, since the theme preview is slow.
+The delay results in a smoother UI experience.
 
 #+begin_src emacs-lisp
 ;; Preview on any key press, but delay 0.5s
@@ -653,36 +656,8 @@ configure a manual preview as follows.
 #+end_src
 
 Sources can be added directly to the =consult-buffer-source= list for convenience.
-For example views/perspectives can be added to the list of virtual buffers from
-a library like [[https://github.com/minad/bookmark-view/][bookmark-view]].
-
-#+begin_src emacs-lisp
-;; Configure new bookmark-view source
-(add-to-list 'consult-buffer-sources
-              (list :name     "View"
-                    :narrow   ?v
-                    :category 'bookmark
-                    :face     'font-lock-keyword-face
-                    :history  'bookmark-view-history
-                    :action   #'consult--bookmark-action
-                    :items    #'bookmark-view-names)
-              'append)
-
-;; Modify bookmark source, such that views are hidden
-(setq consult--source-bookmark
-      (plist-put
-       consult--source-bookmark :items
-       (lambda ()
-         (bookmark-maybe-load-default-file)
-         (mapcar #'car
-                 (seq-remove (lambda (x)
-                               (eq #'bookmark-view-handler
-                                   (alist-get 'handler (cdr x))))
-                             bookmark-alist)))))
-#+end_src
-
-Another useful source lists all Org buffers and lets you create new ones. One
-can create similar sources for other major modes, e.g., for Eshell.
+For example, the following source lists all Org buffers and lets you create new
+ones.
 
 #+begin_src emacs-lisp
 (defvar org-source
@@ -700,19 +675,15 @@ can create similar sources for other major modes, e.g., for Eshell.
             (consult--buffer-action (current-buffer))))
         :items
         (lambda ()
-          (mapcar #'buffer-name
-                  (seq-filter
-                   (lambda (x)
-                     (eq (buffer-local-value 'major-mode x) 'org-mode))
-                   (buffer-list))))))
+          (consult--buffer-query :mode 'org-mode :as #'buffer-name))))
 
 (add-to-list 'consult-buffer-sources 'org-source 'append)
 #+end_src
 
-For more details, see the documentation of =consult-buffer= and of the
-internal =consult--multi= API. The =consult--multi= function can be used to
-create new multi-source commands, but is part of the internal API as of now,
-since some details may still change.
+One can create similar sources for other major modes. See the [[https://github.com/minad/consult/wiki][Consult wiki]] for
+many additional source examples. See also the documentation of =consult-buffer=
+and of the internal =consult--multi= API. The function =consult--multi= can be used
+to create new multi-source commands.
 
 ** Embark integration
 :properties:
@@ -763,9 +734,9 @@ repository via other non-standard package managers.
 There is the [[https://github.com/minad/consult/wiki][Consult wiki]], where additional configuration examples can be
 contributed.
 
-*IMPORTANT:* It is strongly recommended that you enable [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Lexical-Binding.html][lexical binding]] in your
-configuration. Consult relies on lambdas and lexical closures. For this reason
-many Consult-related snippets require lexical binding.
+*IMPORTANT:* It is recommended that you enable [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Lexical-Binding.html][lexical binding]] in your
+configuration. Many Consult-related code snippets require lexical binding, since
+they use lambdas and closures.
 
 ** Use-package example
 :properties:
@@ -801,6 +772,7 @@ configuration examples.
          ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
          ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
          ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ("C-x t b" . consult-buffer-other-tab)    ;; orig. switch-to-buffer-other-tab
          ("C-x r b" . consult-bookmark)            ;; orig. bookmark-jump
          ("C-x p b" . consult-project-buffer)      ;; orig. project-switch-to-buffer
          ;; Custom M-# bindings for fast register access
@@ -820,8 +792,8 @@ configuration examples.
          ("M-g i" . consult-imenu)
          ("M-g I" . consult-imenu-multi)
          ;; M-s bindings in `search-map'
-         ("M-s d" . consult-find)
-         ("M-s D" . consult-locate)
+         ("M-s d" . consult-find)                  ;; Alternative: consult-fd
+         ("M-s c" . consult-locate)
          ("M-s g" . consult-grep)
          ("M-s G" . consult-git-grep)
          ("M-s r" . consult-ripgrep)
@@ -917,48 +889,49 @@ configuration examples.
 values and abbreviated description. Alternatively, type =C-h a ^consult= to get
 an overview of all Consult variables and functions with their descriptions.
 
-| Variable                         | Description                                           |
-|----------------------------------+-------------------------------------------------------|
-| consult-after-jump-hook          | Functions to call after jumping to a location         |
-| consult-async-input-debounce     | Input debounce for asynchronous commands              |
-| consult-async-input-throttle     | Input throttle for asynchronous commands              |
-| consult-async-min-input          | Minimum numbers of letters needed for async process   |
-| consult-async-refresh-delay      | Refresh delay for asynchronous commands               |
-| consult-async-split-style        | Splitting style used for async commands               |
-| consult-async-split-styles-alist | Available splitting styles used for async commands    |
-| consult-bookmark-narrow          | Narrowing configuration for =consult-bookmark=          |
-| consult-buffer-filter            | Filter for =consult-buffer=                             |
-| consult-buffer-sources           | List of virtual buffer sources                        |
-| consult-find-args                | Command line arguments for find                       |
-| consult-fontify-max-size         | Buffers larger than this limit are not fontified      |
-| consult-fontify-preserve         | Preserve fontification for line-based commands.       |
-| consult-git-grep-args            | Command line arguments for git-grep                   |
-| consult-goto-line-numbers        | Show line numbers for =consult-goto-line=               |
-| consult-grep-max-columns         | Maximal number of columns of the matching lines       |
-| consult-grep-args                | Command line arguments for grep                       |
-| consult-imenu-config             | Mode-specific configuration for =consult-imenu=         |
-| consult-line-numbers-widen       | Show absolute line numbers when narrowing is active.  |
-| consult-line-start-from-top      | Start the =consult-line= search from the top            |
-| consult-locate-args              | Command line arguments for locate                     |
-| consult-man-args                 | Command line arguments for man                        |
-| consult-mode-command-filter      | Filter for =consult-mode-command=                       |
-| consult-mode-histories           | Mode-specific history variables                       |
-| consult-narrow-key               | Narrowing prefix key during completion                |
-| consult-point-placement          | Placement of the point when jumping to matches        |
-| consult-preview-key              | Keys which triggers preview                           |
-| consult-preview-allowed-hooks    | List of =find-file= hooks to enable during preview      |
-| consult-preview-excluded-files   | Regexps matched against file names during preview     |
-| consult-preview-max-count        | Maximum number of files to keep open during preview   |
-| consult-preview-max-size         | Files larger than this size are not previewed         |
-| consult-preview-raw-size         | Files larger than this size are previewed in raw form |
-| consult-preview-variables        | Alist of variables to bind during preview             |
-| consult-project-buffer-sources   | List of virtual project buffer sources                |
-| consult-project-function         | Function which returns current project root           |
-| consult-register-prefix          | Prefix string for register keys during completion     |
-| consult-ripgrep-args             | Command line arguments for ripgrep                    |
-| consult-themes                   | List of themes to be presented for selection          |
-| consult-widen-key                | Widening key during completion                        |
-| consult-yank-rotate              | Rotate kill ring                                      |
+| Variable                         | Description                                         |
+|----------------------------------+-----------------------------------------------------|
+| consult-after-jump-hook          | Functions to call after jumping to a location       |
+| consult-async-input-debounce     | Input debounce for asynchronous commands            |
+| consult-async-input-throttle     | Input throttle for asynchronous commands            |
+| consult-async-min-input          | Minimum numbers of input characters                 |
+| consult-async-refresh-delay      | Refresh delay for asynchronous commands             |
+| consult-async-split-style        | Splitting style used for async commands             |
+| consult-async-split-styles-alist | Available splitting styles used for async commands  |
+| consult-bookmark-narrow          | Narrowing configuration for =consult-bookmark=        |
+| consult-buffer-filter            | Filter for =consult-buffer=                           |
+| consult-buffer-sources           | List of virtual buffer sources                      |
+| consult-fd-args                  | Command line arguments for fd                       |
+| consult-find-args                | Command line arguments for find                     |
+| consult-fontify-max-size         | Buffers larger than this limit are not fontified    |
+| consult-fontify-preserve         | Preserve fontification for line-based commands.     |
+| consult-git-grep-args            | Command line arguments for git-grep                 |
+| consult-goto-line-numbers        | Show line numbers for =consult-goto-line=             |
+| consult-grep-max-columns         | Maximal number of columns of the matching lines     |
+| consult-grep-args                | Command line arguments for grep                     |
+| consult-imenu-config             | Mode-specific configuration for =consult-imenu=       |
+| consult-line-numbers-widen       | Show absolute line numbers when narrowing is active |
+| consult-line-start-from-top      | Start the =consult-line= search from the top          |
+| consult-locate-args              | Command line arguments for locate                   |
+| consult-man-args                 | Command line arguments for man                      |
+| consult-mode-command-filter      | Filter for =consult-mode-command=                     |
+| consult-mode-histories           | Mode-specific history variables                     |
+| consult-narrow-key               | Narrowing prefix key during completion              |
+| consult-point-placement          | Placement of the point when jumping to matches      |
+| consult-preview-key              | Keys which triggers preview                         |
+| consult-preview-allowed-hooks    | List of =find-file= hooks to enable during preview    |
+| consult-preview-excluded-files   | Regexps matched against file names during preview   |
+| consult-preview-max-count        | Maximum number of files to keep open during preview |
+| consult-preview-partial-size     | Files larger than this size are previewed partially |
+| consult-preview-partial-chunk    | Size of the file chunk which is previewed partially |
+| consult-preview-variables        | Alist of variables to bind during preview           |
+| consult-project-buffer-sources   | List of virtual project buffer sources              |
+| consult-project-function         | Function which returns current project root         |
+| consult-register-prefix          | Prefix string for register keys during completion   |
+| consult-ripgrep-args             | Command line arguments for ripgrep                  |
+| consult-themes                   | List of themes to be presented for selection        |
+| consult-widen-key                | Widening key during completion                      |
+| consult-yank-rotate              | Rotate kill ring                                    |
 
 ** Fine-tuning of individual commands
 :properties:
@@ -1037,15 +1010,15 @@ I use and recommend this combination of packages:
 - [[https://github.com/minad/marginalia][marginalia]]: Annotations for the completion candidates
 - [[https://github.com/oantolin/embark][embark and embark-consult]]: Action commands, which can act on the completion candidates
 - [[https://github.com/oantolin/orderless][orderless]]: Completion style which offers flexible candidate filtering
+- [[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]]: Editing of grep buffers. Use with =consult-grep= via =embark-export=.
 
-There exist many other fine completion UIs beside Vertico, which are supported
-by Consult. Give them a try and find out which interaction model fits best for
-you.
+There exist multiple fine completion UIs beside Vertico, which are supported by
+Consult. Give them a try and find out which interaction model fits best for you.
 
 - The builtin completion UI, which pops up the =*Completions*= buffer.
-- The builtin =icomplete-vertical-mode= in Emacs 28.
+- The builtin =icomplete-vertical-mode= in Emacs 28 or newer.
 - [[https://git.sr.ht/~protesilaos/mct][mct by Protesilaos Stavrou]]: Minibuffer and Completions in Tandem, which builds
-  on the default completion UI (development currently [[https://protesilaos.com/codelog/2022-04-14-emacs-discontinue-mct/][discontinued]]).
+  on the default completion UI.
 
 Note that all packages are independent and can be exchanged with alternative
 components, since there exist no hard dependencies. Furthermore it is possible
@@ -1055,50 +1028,9 @@ annotations. I highly recommend the Embark package, but in order to familiarize
 yourself with the other components, you can first start without it - or you could
 use with Embark right away and add the other components later on.
 
-* Auxiliary packages
-:properties:
-:description: Integrations with the wider ecosystem
-:end:
-
-You can integrate Consult with special programs or with other packages in the
-wider Emacs ecosystem. You may want to install some of theses packages depending
-on your preferences and requirements.
-
-- [[https://github.com/yadex205/consult-ag][consult-ag]]: Support for the [[https://github.com/ggreer/the_silver_searcher][Silver Searcher]] in the style of =consult-grep=.
-- [[https://github.com/youngker/consult-codesearch.el][consult-codesearch]]: Integration with [[https://github.com/google/codesearch][Code Search]].
-- [[https://github.com/mohkale/consult-company][consult-company]]: Completion at point using the [[https://github.com/company-mode/company-mode][Company]] backends.
-- [[https://github.com/mohkale/consult-compile-multi][consult-compile-multi]]: Integration with [[https://github.com/mohkale/compile-multi][compile-multi]].
-- [[https://github.com/karthink/consult-dir][consult-dir]]: Directory jumper using Consult multi sources.
-- [[https://codeberg.org/ravi/consult-dash][consult-dash]]: Consult interface to [[https://github.com/dash-docs-el/dash-docs][Dash documentation]]
-- [[https://github.com/mohkale/consult-eglot][consult-eglot]]: Integration with Eglot (LSP client).
-- [[https://github.com/minad/consult-flycheck][consult-flycheck]]: Additional Flycheck integration.
-- [[https://gitlab.com/OlMon/consult-flyspell][consult-flyspell]]: Additional Flyspell integration.
-- [[https://github.com/ghosty141/consult-git-log-grep][consult-git-log-grep]]: Consult interface to git log.
-- [[https://github.com/Nyoho/consult-hatena-bookmark][consult-hatena-bookmark]]: Access Hatena bookmarks.
-- [[https://github.com/rcj/consult-ls-git][consult-ls-git]]: List files from git via Consult.
-- [[https://github.com/gagbo/consult-lsp][consult-lsp]]: Integration with Lsp-mode (LSP client).
-- [[https://codeberg.org/jao/consult-notmuch][consult-notmuch]]: Access the [[https://notmuchmail.org/][Notmuch]] email system using Consult.
-- [[https://github.com/mclear-tools/consult-notes][consult-notes]]: Searching notes with Consult.
-- [[https://github.com/jgru/consult-org-roam][consult-org-roam]]: Integration with [[https://github.com/org-roam/org-roam][Org-roam]].
-- [[https://github.com/Qkessler/consult-project-extra/][consult-project-extra]]: Additional project.el extras and buffer sources.
-- [[https://gitlab.com/OlMon/consult-projectile/][consult-projectile]]: Additional [[https://github.com/bbatsov/projectile][Projectile]] integration and buffer sources.
-- [[https://codeberg.org/jao/consult-recoll][consult-recoll]]: Access the [[https://www.lesbonscomptes.com/recoll/][Recoll]] desktop full-text search using Consult.
-- [[https://codeberg.org/jao/espotify][consult-spotify]]: Access the Spotify API and control your local music player.
-- [[https://github.com/mohkale/consult-yasnippet][consult-yasnippet]]: Integration with Yasnippet.
-- [[https://github.com/minad/affe][affe]]: Asynchronous Fuzzy Finder for Emacs based on Consult.
-
-Not directly related to Consult, but maybe still of interest are the following
-packages. These packages should work well with Consult, follow a similar spirit or
-offer functionality based on ~completing-read~.
-
-- [[https://github.com/minad/corfu][corfu]]: Completion systems for =completion-at-point= using small popups (Alternative to [[https://github.com/company-mode/company-mode][Company]]).
-- [[https://github.com/minad/cape][cape]]: Completion At Point Extensions, which can be used with =consult-completion-in-region= and [[https://github.com/minad/corfu][Corfu]].
-- [[https://github.com/minad/bookmark-view][bookmark-view]]: Store window configuration as bookmarks, possible integration with =consult-buffer=.
-- [[https://github.com/bdarcus/citar][citar]]: Versatile package for citation insertion and bibliography management.
-- [[https://github.com/astoff/devdocs.el][devdocs]]: Emacs viewer for [[https://devdocs.io/][DevDocs]] with a convenient completion interface.
-- [[https://github.com/d12frosted/flyspell-correct][flyspell-correct]]: Apply spelling corrections by selecting via =completing-read=.
-- [[https://github.com/mhayashi1120/Emacs-wgrep][wgrep]]: Editing of grep buffers, use together with =consult-grep= via =embark-export=.
-- [[https://github.com/iyefrat/all-the-icons-completion][all-the-icons-completion]], [[https://github.com/rainstormstudio/nerd-icons-completion][nerd-icons-completion]]: Icons for the completion UI.
+We document a [[https://github.com/minad/consult/wiki/Auxiliary-packages][list of auxiliary packages]] in the Consult wiki. These packages
+integrate Consult with special programs or with other packages in the wider
+Emacs ecosystem.
 
 * Bug reports
 :properties:
@@ -1112,7 +1044,7 @@ out the following steps:
    has been resolved eventually) in the meantime.
 2. *Remove all packages involved in the suspected bug from your installation.*
 3. *Reinstall the newest version of all relevant packages*. Updating alone is not
-   sufficient, since package.el is known to cause miscompilation. The list of
+   sufficient, since package.el sometimes causes miscompilation. The list of
    packages includes Consult, Compat, Vertico or other completion UIs,
    Marginalia, Embark and Orderless.
 4. Either use the default completion UI or ensure that exactly one of
@@ -1149,14 +1081,13 @@ Please provide the necessary important information with your bug report:
 - Your completion UI (Default completion, Vertico, Mct or Icomplete).
 - A stack trace in case the bug triggers an exception.
 - Your Emacs version, since bugs may be fixed or introduced in newer versions.
-- Your operating system, since Emacs behavior varies between Linux, Mac and
-  Windows.
-- The package manager, e.g., straight.el or package.el, used to install
-  the Emacs packages, in order to exclude update issues. Did you install
-  Consult as part of the Doom or Spacemacs Emacs distributions?
-- Do you use Evil or other packages which apply deep changes?
-  Consult does not provide Evil integration out of the box, but there is some
-  support in [[https://github.com/emacs-evil/evil-collection][evil-collection]].
+- Your operating system, since Emacs behavior varies subtly between Linux, Mac
+  and Windows.
+- The package manager, e.g., straight.el or package.el, used to install the
+  Emacs packages, in order to exclude update issues. Did you install Consult as
+  part of the Doom Emacs distribution?
+- Do you use Evil? Consult does not provide Evil integration out of the box, but
+  there is some support in [[https://github.com/emacs-evil/evil-collection][evil-collection]].
 
 When evaluating Consult-related code snippets you should enable [[https://www.gnu.org/software/emacs/manual/html_node/elisp/Lexical-Binding.html][lexical binding]].
 Consult often relies on lambdas and lexical closures.
@@ -1187,62 +1118,18 @@ commands originated in the Counsel package or the wiki of the Selectrum package.
 This package exists only thanks to the help of these great contributors and
 thanks to the feedback of many users. Thank you!
 
-Code contributions:
-- [[https://github.com/oantolin/][Omar Antolín Camarena]]
-- [[https://github.com/s-kostyaev/][Sergey Kostyaev]]
-- [[https://github.com/okamsn/][Earl Hyatt]]
-- [[https://github.com/clemera/][Clemens Radermacher]]
-- [[https://github.com/tomfitzhenry/][Tom Fitzhenry]]
-- [[https://github.com/jakanakaevangeli][jakanakaevangeli]]
-- [[https://hg.serna.eu][Iñigo Serna]]
-- [[https://github.com/aspiers/][Adam Spiers]]
-- [[https://github.com/omar-polo][Omar Polo]]
-- [[https://github.com/astoff][Augusto Stoffel]]
-- [[https://github.com/noctuid][Fox Kiester]]
-- [[https://github.com/tecosaur][Tecosaur]]
-- [[https://github.com/mohamed-abdelnour][Mohamed Abdelnour]]
-- [[https://github.com/thisirs][Sylvain Rousseau]]
-- [[https://github.com/jdtsmith][J.D. Smith]]
-- [[https://github.com/mohkale][Mohsin Kaleem]]
-- [[https://github.com/jyp][Jean-Philippe Bernardy]]
-- [[https://github.com/aagon][Aymeric Agon-Rambosson]]
-- [[https://github.com/geolessel][Geoffrey Lessel]]
-- [[https://github.com/piotrkwiecinski][Piotr Kwiecinski]]
-- [[https://github.com/rswgnu][Robert Weiner]]
+Code contributions: [[https://github.com/aagon][Aymeric Agon-Rambosson]], [[https://github.com/amosbird][Amos Bird]], [[https://github.com/ashton314][Ashton Wiersdorf]], [[https://github.com/aspiers/][Adam
+Spiers]], [[https://github.com/astoff][Augusto Stoffel]], [[https://github.com/clemera/][Clemens Radermacher]], [[https://github.com/fuzy112][Zhengyi]], [[https://github.com/geolessel][Geoffrey Lessel]], [[https://github.com/iostapyshyn][Illia
+Ostapyshyn]], [[https://github.com/jakanakaevangeli][jakanakaevangeli]], [[https://github.com/jdtsmith][JD Smith]], [[https://github.com/jyp][Jean-Philippe Bernardy]], [[https://github.com/mattiasdrp][mattiasdrp]],
+[[https://github.com/mohamed-abdelnour][Mohamed Abdelnour]], [[https://github.com/mohkale][Mohsin Kaleem]], [[https://github.com/noctuid][Fox Kiester]], [[https://github.com/oantolin/][Omar Antolín Camarena]], [[https://github.com/okamsn/][Earl
+Hyatt]], [[https://github.com/omar-polo][Omar Polo]], [[https://github.com/piotrkwiecinski][Piotr Kwiecinski]], [[https://github.com/rswgnu][Robert Weiner]], [[https://github.com/s-kostyaev/][Sergey Kostyaev]], [[https://github.com/scvalex][Alexandru
+Scvorțov]], [[https://github.com/tecosaur][Tecosaur]], [[https://github.com/thisirs][Sylvain Rousseau]], [[https://github.com/tomfitzhenry/][Tom Fitzhenry]], [[https://hg.serna.eu][Iñigo Serna]] and [[https://github.com/akreisher][Alex
+Kreisher]].
 
-Advice and useful discussions:
-- [[https://github.com/clemera/][Clemens Radermacher]]
-- [[https://github.com/oantolin/][Omar Antolín Camarena]]
-- [[https://protesilaos.com][Protesilaos Stavrou]]
-- [[https://github.com/purcell/][Steve Purcell]]
-- [[https://github.com/alphapapa/][Adam Porter]]
-- [[https://github.com/manuel-uberti/][Manuel Uberti]]
-- [[https://github.com/tomfitzhenry/][Tom Fitzhenry]]
-- [[https://github.com/hmelman/][Howard Melman]]
-- [[https://github.com/monnier/][Stefan Monnier]]
-- [[https://github.com/dgutov/][Dmitry Gutov]]
-- [[https://github.com/iyefrat][Itai Y. Efrat]]
-- [[https://github.com/bdarcus][Bruce d'Arcus]]
-- [[https://github.com/jdtsmith][J.D. Smith]]
-- [[https://github.com/Qkessler][Enrique Kessler Martínez]]
-- [[https://github.com/raxod502][Radon Rosborough]]
-
-Authors of supplementary =consult-*= packages:
-
-- [[https://codeberg.org/jao/][Jose A Ortega Ruiz]] ([[https://codeberg.org/jao/consult-notmuch][consult-notmuch]], [[https://codeberg.org/jao/consult-recoll][consult-recoll]], [[https://codeberg.org/jao/espotify][consult-spotify]])
-- [[https://github.com/gagbo/][Gerry Agbobada]] ([[https://github.com/gagbo/consult-lsp][consult-lsp]])
-- [[https://github.com/karthink][Karthik Chikmagalur]] ([[https://github.com/karthink/consult-dir][consult-dir]])
-- [[https://github.com/mohkale][Mohsin Kaleem]] ([[https://github.com/mohkale/consult-company][consult-company]], [[https://github.com/mohkale/consult-compile-multi][consult-compile-multi]], [[https://github.com/mohkale/consult-eglot][consult-eglot]], [[https://github.com/mohkale/consult-yasnippet][consult-yasnippet]])
-- [[https://gitlab.com/OlMon][Marco Pawłowski]] ([[https://gitlab.com/OlMon/consult-flyspell][consult-flyspell]], [[https://gitlab.com/OlMon/consult-projectile][consult-projectile]])
-- [[https://github.com/Qkessler][Enrique Kessler Martínez]] ([[https://github.com/Qkessler/consult-project-extra][consult-project-extra]])
-- [[https://github.com/jgru][Jan Gru]] ([[https://github.com/jgru/consult-org-roam][consult-org-roam]])
-- [[https://github.com/yadex205][Kanon Kakuno]] ([[https://github.com/yadex205/consult-ag][consult-ag]])
-- [[https://github.com/rcj][Robin Joy]] ([[https://github.com/rcj/consult-ls-git][consult-ls-git]])
-- [[https://codeberg.org/ravi][Ravi R Kiran]] [[https://codeberg.org/ravi/consult-dash][(consult-dash]])
-- [[https://github.com/mclearc][Colin McLear]] ([[https://github.com/mclear-tools/consult-notes][consult-notes]])
-- [[https://github.com/Nyoho][Yukinori Kitadai]] ([[https://github.com/Nyoho/consult-hatena-bookmark][consult-hatena-bookmark]])
-- [[https://github.com/ghosty141][ghosty141]] ([[https://github.com/ghosty141/consult-git-log-grep][consult-git-log-grep]])
-- [[https://github.com/youngker][YoungJoo Lee]] ([[https://github.com/youngker/consult-codesearch.el][consult-codesearch]])
+Advice and useful discussions: [[https://github.com/Qkessler][Enrique Kessler Martínez]], [[https://github.com/alphapapa/][Adam Porter]], [[https://github.com/bdarcus][Bruce
+d'Arcus]], [[https://github.com/clemera/][Clemens Radermacher]], [[https://github.com/dgutov/][Dmitry Gutov]], [[https://github.com/hmelman/][Howard Melman]], [[https://github.com/iyefrat][Itai Y. Efrat]], [[https://github.com/jdtsmith][JD
+Smith]], [[https://github.com/manuel-uberti/][Manuel Uberti]], [[https://github.com/monnier/][Stefan Monnier]], [[https://github.com/oantolin/][Omar Antolín Camarena]], [[https://github.com/purcell/][Steve Purcell]],
+[[https://github.com/raxod502][Radon Rosborough]], [[https://github.com/tomfitzhenry/][Tom Fitzhenry]] and [[https://protesilaos.com][Protesilaos Stavrou]].
 
 #+html: <!--
 

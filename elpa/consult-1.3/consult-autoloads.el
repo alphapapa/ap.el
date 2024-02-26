@@ -35,8 +35,11 @@ These configuration options are supported:
 (autoload 'consult-outline "consult" "\
 Jump to an outline heading, obtained by matching against `outline-regexp'.
 
-This command supports narrowing to a heading level and candidate preview.
-The symbol at point is added to the future history." t)
+This command supports narrowing to a heading level and candidate
+preview.  The initial narrowing LEVEL can be given as prefix
+argument.  The symbol at point is added to the future history.
+
+(fn &optional LEVEL)" t)
 (autoload 'consult-mark "consult" "\
 Jump to a marker in MARKERS list (defaults to buffer-local `mark-ring').
 
@@ -69,7 +72,7 @@ Search for a matching line in multiple buffers.
 By default search across all project buffers.  If the prefix
 argument QUERY is non-nil, all buffers are searched.  Optional
 INITIAL input can be provided.  The symbol at point and the last
-`isearch-string' is added to the future history.In order to
+`isearch-string' is added to the future history.  In order to
 search a subset of buffers, QUERY can be set to a plist according
 to `consult--buffer-query'.
 
@@ -199,9 +202,11 @@ Enhanced `project-switch-to-buffer' command with support for virtual buffers.
 The command may prompt you for a project directory if it is invoked from
 outside a project.  See `consult-buffer' for more details." t)
 (autoload 'consult-buffer-other-window "consult" "\
-Variant of `consult-buffer' which opens in other window." t)
+Variant of `consult-buffer', switching to a buffer in another window." t)
 (autoload 'consult-buffer-other-frame "consult" "\
-Variant of `consult-buffer' which opens in other frame." t)
+Variant of `consult-buffer', switching to a buffer in another frame." t)
+(autoload 'consult-buffer-other-tab "consult" "\
+Variant of `consult-buffer', switching to a buffer in another tab." t)
 (autoload 'consult-grep "consult" "\
 Search with `grep' for files in DIR where the content matches a regexp.
 
@@ -258,9 +263,17 @@ See `consult-grep' for details.
 
 (fn &optional DIR INITIAL)" t)
 (autoload 'consult-find "consult" "\
-Search for files in DIR matching input regexp given INITIAL input.
-See `consult-grep' for details regarding the asynchronous search
-and the arguments.
+Search for files with `find' in DIR.
+The file names must match the input regexp.  INITIAL is the
+initial minibuffer input.  See `consult-grep' for details
+regarding the asynchronous search and the arguments.
+
+(fn &optional DIR INITIAL)" t)
+(autoload 'consult-fd "consult" "\
+Search for files with `fd' in DIR.
+The file names must match the input regexp.  INITIAL is the
+initial minibuffer input.  See `consult-grep' for details
+regarding the asynchronous search and the arguments.
 
 (fn &optional DIR INITIAL)" t)
 (autoload 'consult-locate "consult" "\

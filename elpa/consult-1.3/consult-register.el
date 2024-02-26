@@ -1,6 +1,6 @@
 ;;; consult-register.el --- Consult commands for registers -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; This file is part of GNU Emacs.
 
@@ -67,8 +67,7 @@ Each element of the list must have the form (char . name).")
   "Describe marker register VAL."
   (with-current-buffer (marker-buffer val)
     (save-excursion
-      (save-restriction
-        (widen)
+      (without-restriction
         (goto-char val)
         (let* ((line (line-number-at-pos))
                (str (propertize (consult--line-with-mark val)
@@ -283,7 +282,7 @@ This function is derived from `register-read-with-preview'."
             (setq action (logxor #x8000000 key)))
            ((characterp key)
             (setq reg key))
-           (t (error "Non-character input"))))
+           (t (user-error "Non-character input"))))
       (when (timerp timer)
         (cancel-timer timer))
       (let ((w (get-buffer-window buffer)))

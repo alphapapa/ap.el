@@ -1,6 +1,6 @@
 ;;; consult-imenu.el --- Consult commands for imenu -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; This file is part of GNU Emacs.
 
@@ -64,17 +64,14 @@ ARGS are the arguments to the special item function."
 (defun consult-imenu--normalize (pos)
   "Return normalized imenu POS."
   (pcase pos
-    ;; Simple marker item
-    ((pred markerp) nil)
-    ;; Simple integer item
+    ;; Create marker from integer item
     ((pred integerp) (setq pos (copy-marker pos)))
     ;; Semantic uses overlay for positions
     ((pred overlayp) (setq pos (copy-marker (overlay-start pos))))
     ;; Wrap special item
     (`(,pos ,fn . ,args)
      (setq pos `(,pos ,#'consult-imenu--switch-buffer ,(current-buffer)
-                      ,fn ,@args)))
-    (_ (error "Unknown imenu item: %S" pos)))
+                      ,fn ,@args))))
   (if (or (consp pos)
           (eq imenu-default-goto-function #'imenu-default-goto-function))
       pos
@@ -117,8 +114,7 @@ TYPES is the mode-specific types configuration."
          ;; Generate imenu, see `imenu--make-index-alist'.
          (items (imenu--truncate-items
                  (save-excursion
-                   (save-restriction
-                     (widen)
+                   (without-restriction
                      (funcall imenu-create-index-function)))))
          (config (cdr (seq-find (lambda (x) (derived-mode-p (car x))) consult-imenu-config))))
     ;; Fix toplevel items, e.g., emacs-lisp-mode toplevel items are functions

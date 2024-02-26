@@ -1,6 +1,6 @@
 ;;; consult-xref.el --- Xref integration for Consult -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; This file is part of GNU Emacs.
 
@@ -91,6 +91,8 @@ FETCHER and ALIST arguments."
   (let* ((consult-xref--fetcher fetcher)
          (candidates (consult-xref--candidates))
          (display (alist-get 'display-action alist)))
+    (unless candidates
+      (user-error "No xref locations"))
     (xref-pop-to-location
      (if (cdr candidates)
          (apply
