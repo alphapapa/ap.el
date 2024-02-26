@@ -1,12 +1,12 @@
 ;;; vertico-directory.el --- Ido-like directory navigation for Vertico -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (vertico "1.1"))
+;; Version: 1.7
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4") (vertico "1.7"))
 ;; Homepage: https://github.com/minad/vertico
 
 ;; This file is part of GNU Emacs.
@@ -27,9 +27,9 @@
 ;;; Commentary:
 
 ;; This package is a Vertico extension, which provides Ido-like
-;; directory navigation commands. The commands can be bound in the
-;; `vertico-map'. Furthermore a cleanup function for shadowed file paths
-;; is provided.
+;; directory navigation commands.  The commands can be bound in the
+;; `vertico-map'.  Furthermore a cleanup function for shadowed file
+;; paths is provided.
 ;;
 ;; (keymap-set vertico-map "RET" #'vertico-directory-enter)
 ;; (keymap-set vertico-map "DEL" #'vertico-directory-delete-char)
@@ -42,27 +42,31 @@
 (eval-when-compile (require 'subr-x))
 
 ;;;###autoload
-(defun vertico-directory-enter ()
-  "Enter directory or exit completion with current candidate."
-  (interactive)
-  (if-let (((>= vertico--index 0))
+(defun vertico-directory-enter (&optional arg)
+  "Enter directory or exit completion with current candidate.
+Exit with current input if prefix ARG is given."
+  (interactive "P")
+  (if-let (((not arg))
+           ((>= vertico--index 0))
            ((eq 'file (vertico--metadata-get 'category)))
            ;; Check vertico--base for stepwise file path completion
            ((not (equal vertico--base "")))
            (cand (vertico--candidate))
            ((or (string-suffix-p "/" cand)
                 (and (vertico--remote-p cand)
-                     (string-suffix-p ":" cand)))))
+                     (string-suffix-p ":" cand))))
+           ;; Handle /./ and /../ manually instead of via `expand-file-name'
+           ;; and `abbreviate-file-name', such that we don't accidentally
+           ;; perform unwanted substitutions in the existing completion.
+           ((progn
+              (setq cand (string-replace "/./" "/" cand))
+              (unless (string-suffix-p "/../../" cand)
+                (setq cand (replace-regexp-in-string "/[^/|:]+/\\.\\./\\'" "/" cand)))
+              (not (equal (minibuffer-contents-no-properties) cand)))))
       (progn
-        ;; Handle ./ and ../ manually instead of via `expand-file-name' and
-        ;; `abbreviate-file-name', such that we don't accidentially perform
-        ;; unwanted substitutions in the existing completion.
-        (setq cand (replace-regexp-in-string "/\\./" "/" cand))
-        (unless (string-suffix-p "/../../" cand)
-          (setq cand (replace-regexp-in-string "/[^/|:]+/\\.\\./\\'" "/" cand)))
         (delete-minibuffer-contents)
         (insert cand))
-    (vertico-exit)))
+    (vertico-exit arg)))
 
 ;;;###autoload
 (defun vertico-directory-up (&optional n)
@@ -70,7 +74,8 @@
   (interactive "p")
   (when (and (> (point) (minibuffer-prompt-end))
              (eq 'file (vertico--metadata-get 'category)))
-    (let ((path (buffer-substring (minibuffer-prompt-end) (point))) found)
+    (let ((path (buffer-substring-no-properties (minibuffer-prompt-end) (point)))
+          found)
       (when (string-match-p "\\`~[^/]*/\\'" path)
         (delete-minibuffer-contents)
         (insert (expand-file-name path)))
@@ -87,7 +92,7 @@
   "Delete N directories or chars before point."
   (interactive "p")
   (unless (and (eq (char-before) ?/) (vertico-directory-up n))
-    (backward-delete-char n)))
+    (delete-char (- n))))
 
 ;;;###autoload
 (defun vertico-directory-delete-word (&optional n)

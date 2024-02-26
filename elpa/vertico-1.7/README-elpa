@@ -1,6 +1,6 @@
-	     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-	      VERTICO.EL - VERTICAL INTERACTIVE COMPLETION
-	     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              VERTICO.EL - VERTICAL INTERACTIVE COMPLETION
+             ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 
 Vertico provides a performant and minimalistic vertical completion UI
@@ -32,7 +32,7 @@ Table of Contents
 10. Debugging Vertico
 11. Problematic completion commands
 .. 1. `org-refile'
-.. 2. `org-agenda-filter'
+.. 2. `org-agenda-filter' and `org-tags-view'
 .. 3. `tmm-menubar'
 .. 4. `ffap-menu'
 .. 5. `completion-table-dynamic'
@@ -48,17 +48,17 @@ Table of Contents
 1 Features
 ══════════
 
-  • Vertical display with arrow key navigation. See the [extensions] for
-    additional display modes.
+  • Vertical display with arrow key navigation. Many additional display
+    modes are provided as [extensions].
   • Prompt shows the current candidate index and the total number of
     candidates.
   • The current candidate is inserted with `TAB' and selected with
     `RET'.
   • Non-existing candidates can be submitted with `M-RET' or by moving
     the point to the prompt.
-  • Configurable sorting by history position, length and alphabetically.
+  • Efficient sorting by history position, length and alphabetically.
   • Long candidates with newlines are formatted to take up less space.
-  • Deferred completion style highlighting for performance.
+  • Lazy completion candidate highlighting for performance.
   • Annotations are displayed next to the candidates (`annotation-' and
     `affixation-function').
   • Support for candidate grouping and group cycling commands
@@ -76,8 +76,7 @@ Table of Contents
   Vertico defines its own local keymap in the minibuffer which is
   derived from `minibuffer-local-map'. The keymap keeps most of the
   `fundamental-mode' keybindings intact and remaps and binds only a
-  handful of commands. Note in particular the binding of `TAB' to
-  `vertico-insert' and the bindings of `vertico-exit/exit-input'.
+  handful of commands.
 
   • `beginning-of-buffer', `minibuffer-beginning-of-buffer' ->
     `vertico-first'
@@ -93,6 +92,16 @@ Table of Contents
   • `kill-ring-save' -> `vertico-save'
   • `M-RET' -> `vertico-exit-input'
   • `TAB' -> `vertico-insert'
+
+  Note in particular the binding of `TAB' to `vertico-insert', which
+  inserts the currently selected candidate, and the binding of `RET' and
+  `M-RET' to `vertico-exit' and `vertico-exit-input'
+  respectively. `vertico-exit' exits with the currently selected
+  candidate, while `vertico-exit-input' exits with the minibuffer input
+  instead. You should exit with the current input for example when you
+  want to create a new buffer or a new file with `find-file' or
+  `switch-to-buffer'. As an alternative to pressing `M-RET', move the
+  selection first to the input prompt and then press `RET'.
 
 
 3 Configuration
@@ -165,7 +174,7 @@ Table of Contents
   │ (use-package orderless
   │   :init
   │   ;; Configure a custom style dispatcher (see the Consult wiki)
-  │   ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  │   ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
   │   ;;       orderless-component-separator #'orderless-escapable-split-on-space)
   │   (setq completion-styles '(orderless basic)
   │ 	completion-category-defaults nil
@@ -175,13 +184,13 @@ Table of Contents
   The `basic' completion style is specified as fallback in addition to
   `orderless' in order to ensure that completion commands which rely on
   dynamic completion tables, e.g., `completion-table-dynamic' or
-  `completion-table-in-turn', work correctly. See `+orderless-dispatch'
-  in the [Consult wiki] for an advanced Orderless style
-  dispatcher. Additionally enable `partial-completion' for file path
-  expansion. `partial-completion' is important for file wildcard
-  support. Multiple files can be opened at once with `find-file' if you
-  enter a wildcard. You may also give the `initials' completion style a
-  try.
+  `completion-table-in-turn', work correctly. See the [Consult wiki] for
+  my advanced Orderless configuration with style
+  dispatchers. Additionally enable `partial-completion' for file path
+  expansion. `partial-completion' is important for file wildcard support
+  in `find-file'. In order to open multiple files with a wildcard at
+  once, you have to submit the prompt with `M-RET'. Alternative first
+  move to the prompt and then press `RET'.
 
   See also the [Vertico Wiki] for additional configuration tips. For
   more general documentation read the chapter about completion in the
@@ -191,7 +200,8 @@ Table of Contents
 
 [GNU ELPA] <https://elpa.gnu.org/packages/vertico.html>
 
-[Consult wiki] <https://github.com/minad/consult/wiki>
+[Consult wiki]
+<https://github.com/minad/consult/wiki#minads-orderless-configuration>
 
 [Vertico Wiki] <https://github.com/minad/vertico/wiki>
 
@@ -205,37 +215,44 @@ Table of Contents
 ────────────────────────────────────────
 
   The bindings of the `minibuffer-local-completion-map' are not
-  available in Vertico by default. This means that TAB works differently
-  from what you may expect from the default Emacs completion system.
+  available in Vertico by default. This means that `TAB' works
+  differently from what you may expect from shells like Bash or the
+  default Emacs completion system. In Vertico `TAB' inserts the
+  currently selected candidate.
 
-  If you prefer to have the default completion commands a key press away
-  you can add new bindings or even replace the Vertico bindings. Then
-  the default completion commands behave as usual. For example you can
-  use `M-TAB' to cycle between candidates if you have set
-  `completion-cycle-threshold'.
+  If you prefer to have the default completion commands available you
+  can add new bindings or even replace the Vertico bindings. For example
+  you can use `M-TAB' to expand the prefix of candidates (TAB complete)
+  or cycle between candidates if `completion-cycle-threshold' is
+  non-nil.
 
   ┌────
+  │ ;; Option 1: Additional bindings
   │ (keymap-set vertico-map "?" #'minibuffer-completion-help)
   │ (keymap-set vertico-map "M-RET" #'minibuffer-force-complete-and-exit)
   │ (keymap-set vertico-map "M-TAB" #'minibuffer-complete)
+  │ 
+  │ ;; Option 2: Replace `vertico-insert' to enable TAB prefix expansion.
+  │ ;; (keymap-set vertico-map "TAB" #'minibuffer-complete)
   └────
 
-  The `orderless' completion style does not support completion of a
-  common prefix substring, as you may be familiar with from shells or
-  the basic default completion system. The reason is that the Orderless
-  input string is usually not a prefix. In order to support completing
-  prefixes you may want to combine `orderless' with `substring' in your
-  `completion-styles' configuration.
+  The `orderless' completion style does not support expansion of a
+  common candidate prefix, as supported by shells or the basic default
+  completion system. The reason is that the Orderless input string is
+  usually not a prefix. In order to support completing prefixes, combine
+  `orderless' with `substring' in your `completion-styles'
+  configuration.
 
   ┌────
   │ (setq completion-styles '(substring orderless basic))
   └────
 
-  Alternatively you can experiment with the built-in completion-styles,
-  e.g., adding `partial-completion' or `flex'. The `partial-completion'
-  style is important to add if you want to open multiple files at once
-  with `find-file' using wildcards.  In order to open multiple files at
-  once, you have to move to the prompt and then press `RET'.
+  Alternatively you can use the built-in completion-styles, e.g.,
+  `partial-completion', `flex' or `initials'. The `partial-completion'
+  style is important if you want to open multiple files at once with
+  `find-file' using wildcards. In order to open multiple files with a
+  wildcard at once, you have to submit the prompt with
+  `M-RET'. Alternative first move to the prompt and then press `RET'.
 
   ┌────
   │ (setq completion-styles '(basic substring partial-completion flex))
@@ -257,9 +274,11 @@ Table of Contents
 3.2 Completion-at-point and completion-in-region
 ────────────────────────────────────────────────
 
-  The `completion-at-point' command is usually bound to `M-TAB' or
-  `TAB'. In case you want to use Vertico for
-  completion-at-point/completion-in-region, you can use the function
+  The tab completion command `completion-at-point' command is usually
+  bound to `M-TAB' or `TAB'. Tab completion is also used in the
+  minibuffer by `M-:' (`eval-expression').  In case you want to use
+  Vertico to show the completion candidates of `completion-at-point' and
+  `completion-in-region', you can use the function
   `consult-completion-in-region' provided by the Consult package.
 
   ┌────
@@ -273,13 +292,10 @@ Table of Contents
   │ 	       args)))
   └────
 
-  The `completion-in-region-function' setting also affects TAB
-  completion in the minibuffer when `M-:' (`eval-expression') is used.
-
   You may also want to look into my [Corfu] package, which provides a
   minimal completion system for `completion-in-region' in a child frame
-  popup. Corfu is also a narrowly focused package and developed in the
-  same spirit as Vertico.
+  popup. Corfu is a narrowly focused package and developed in the same
+  spirit as Vertico. You can even use Corfu in the minibuffer.
 
 
 [Corfu] <https://github.com/minad/corfu>
@@ -297,8 +313,8 @@ Table of Contents
   extensions. Currently the following extensions come with the Vertico
   ELPA package:
 
-  • [vertico-buffer]: `vertico-buffer-mode' to display Vertico in a
-    separate buffer.
+  • [vertico-buffer]: `vertico-buffer-mode' to display Vertico like a
+    regular buffer.
   • [vertico-directory]: Commands for Ido-like directory navigation.
   • [vertico-flat]: `vertico-flat-mode' to enable a flat, horizontal
     display.
@@ -313,10 +329,12 @@ Table of Contents
   • [vertico-repeat]: The command `vertico-repeat' repeats the last
     completion session.
   • [vertico-reverse]: `vertico-reverse-mode' to reverse the display.
+  • [vertico-suspend]: The command `vertico-suspend' suspends and
+    restores the current session.
   • [vertico-unobtrusive]: `vertico-unobtrusive-mode' displays only the
     topmost candidate.
 
-  See the Commentary of those files for configuration details. With
+  See the commentary of those files for configuration details. With
   these extensions it is possible to adapt Vertico such that it matches
   your preference or behaves similar to other familiar UIs. For example,
   the combination `vertico-flat' plus `vertico-directory' resembles Ido
@@ -375,6 +393,9 @@ Table of Contents
 [vertico-reverse]
 <https://github.com/minad/vertico/blob/main/extensions/vertico-reverse.el>
 
+[vertico-suspend]
+<https://github.com/minad/vertico/blob/main/extensions/vertico-suspend.el>
+
 [vertico-unobtrusive]
 <https://github.com/minad/vertico/blob/main/extensions/vertico-unobtrusive.el>
 
@@ -417,11 +438,12 @@ Table of Contents
   `vertico-multiform-map'. You can of course change these bindings if
   you like.
 
-  • `M-V' -> `vertico-multiform-vertical'
-  • `M-G' -> `vertico-multiform-grid'
+  • `M-B' -> `vertico-multiform-buffer'
   • `M-F' -> `vertico-multiform-flat'
+  • `M-G' -> `vertico-multiform-grid'
   • `M-R' -> `vertico-multiform-reverse'
   • `M-U' -> `vertico-multiform-unobtrusive'
+  • `M-V' -> `vertico-multiform-vertical'
 
   For special configuration you can use your own functions or even
   lambdas to configure the completion behavior per command or per
@@ -604,9 +626,7 @@ Table of Contents
     `*Completions*' buffer displays all matching candidates. This has
     the advantage that you can interact freely with the candidates and
     jump around with Isearch or Avy. On the other hand it necessarily
-    causes a slowdown. Mct supports completion in region via its
-    `mct-region-mode'. Note that Mct development has been [discontinued]
-    due to recent developments of the default completion UI in Emacs 29.
+    causes a slowdown.
   • [Selectrum]: Selectrum is the predecessor of Vertico has been
     deprecated in favor of Vertico. Read the [migration guide] when
     migrating from Selectrum.  Vertico was designed specifically to
@@ -620,9 +640,6 @@ Table of Contents
 
 
 [Mct] <https://git.sr.ht/~protesilaos/mct>
-
-[discontinued]
-<https://protesilaos.com/codelog/2022-04-14-emacs-discontinue-mct/>
 
 [Selectrum] <https://github.com/radian-software/selectrum>
 
@@ -742,11 +759,19 @@ Consult] <https://www.youtube.com/watch?v=UtqE-lR2HCA>
   │ ;; Alternative 1: Use the basic completion style
   │ (setq org-refile-use-outline-path 'file
   │       org-outline-path-complete-in-steps t)
-  │ (advice-add #'org-olpath-completing-read :around
-  │ 	    (lambda (&rest args)
-  │ 	      (minibuffer-with-setup-hook
-  │ 		  (lambda () (setq-local completion-styles '(basic)))
-  │ 		(apply args))))
+  │ 
+  │ (advice-add #'org-olpath-completing-read :around #'org-enforce-basic-completion)
+  │ 
+  │ (defun org-enforce-basic-completion (&rest args)
+  │   (minibuffer-with-setup-hook
+  │       (:append
+  │        (lambda ()
+  │ 	 (let ((map (make-sparse-keymap)))
+  │ 	   (define-key map [tab] #'minibuffer-complete)
+  │ 	   (use-local-map (make-composed-keymap (list map) (current-local-map))))
+  │ 	 (setq-local completion-styles (cons 'basic completion-styles)
+  │ 		     vertico-preselect 'prompt)))
+  │     (apply args)))
   └────
 
   Alternatively you may want to disable the outline path completion in
@@ -762,17 +787,26 @@ Consult] <https://www.youtube.com/watch?v=UtqE-lR2HCA>
   └────
 
 
-11.2 `org-agenda-filter'
-────────────────────────
+11.2 `org-agenda-filter' and `org-tags-view'
+────────────────────────────────────────────
 
-  Similar to `org-refile', the `org-agenda-filter' completion function
-  (`org-agenda-filter-completion-function') does not make use of
-  completion boundaries. Unfortunately `TAB' completion
-  (`minibuffer-complete') does not work for this reason. This affects
-  Vertico and also the Emacs default completion system.  For example if
-  you enter `+tag<0 TAB' the input is replaced with `0:10' which is not
-  correct. With preserved completion boundaries, the expected result
-  would be `+tag<0:10'.
+  Similar to `org-refile', the commands `org-agenda-filter' and
+  `org-tags-view' do not make use of completion boundaries. The internal
+  completion tables are `org-agenda-filter-completion-function' and
+  `org-tags-completion-function'.  Unfortunately `TAB' completion
+  (`minibuffer-complete') does not work for this reason with arbitrary
+  completion styles like `substring', `flex' or `orderless'. This
+  affects Vertico and also the Emacs default completion system. For
+  example if you enter `+tag<0 TAB' the input is replaced with `0:10'
+  which is not correct. With preserved completion boundaries, the
+  expected result would be `+tag<0:10'. Completion boundaries are used
+  for example by file completion, where each part of the path can be
+  completed separately. Ideally this issue would be fixed in Org.
+
+  ┌────
+  │ (advice-add #'org-make-tags-matcher :around #'org-enforce-basic-completion)
+  │ (advice-add #'org-agenda-filter :around #'org-enforce-basic-completion)
+  └────
 
 
 11.3 `tmm-menubar'
@@ -785,7 +819,7 @@ Consult] <https://www.youtube.com/watch?v=UtqE-lR2HCA>
   you may also overwrite the default F10 keybinding.
 
   ┌────
-  │ (global-set-key [f10] #'tmm-menubar)
+  │ (keymap-global-set "<f10>" #'tmm-menubar)
   │ (advice-add #'tmm-add-prompt :after #'minibuffer-hide-completions)
   └────
 
@@ -862,11 +896,9 @@ Consult] <https://www.youtube.com/watch?v=UtqE-lR2HCA>
 11.7 Tramp hostname and username completion
 ───────────────────────────────────────────
 
-  *NOTE:* On upcoming Emacs 30 and the upcoming Tramp 2.6.0.2 the
-  workarounds described in this section will likely become unnecessary,
-  since the Tramp maintainer improved the relevant completion
-  tables. Confirmation would be welcome if you already use a very recent
-  build of Emacs master.
+  *NOTE:* On upcoming Emacs 29.2 and Tramp 2.6.1.5 the workarounds
+  described in this section are not necessary anymore, since the
+  relevant completion tables have been improved.
 
   In combination with Orderless or other non-prefix completion styles
   like `substring' or `flex', host names and user names are not made
@@ -878,13 +910,15 @@ Consult] <https://www.youtube.com/watch?v=UtqE-lR2HCA>
 
   ┌────
   │ (setq completion-styles '(orderless basic)
+  │       completion-category-defaults nil
   │       completion-category-overrides '((file (styles basic partial-completion))))
   └────
 
-  For users who are familiar with the `completion-style' machinery and
-  who want to dig a bit deeper. You may also define a custom completion
-  style which sets in only for remote files. This way `orderless' will
-  stay the preferred style in most cases.
+  If you are familiar with the `completion-style' machinery, you may
+  also define a custom completion style which activates only for remote
+  files. The custom completion style ensures that you can always match
+  substrings within non-remote file names, since `orderless' will stay
+  the preferred style for non-remote files.
 
   ┌────
   │ (defun basic-remote-try-completion (string table pred point)
@@ -897,5 +931,6 @@ Consult] <https://www.youtube.com/watch?v=UtqE-lR2HCA>
   │  'completion-styles-alist
   │  '(basic-remote basic-remote-try-completion basic-remote-all-completions nil))
   │ (setq completion-styles '(orderless basic)
+  │       completion-category-defaults nil
   │       completion-category-overrides '((file (styles basic-remote partial-completion))))
   └────

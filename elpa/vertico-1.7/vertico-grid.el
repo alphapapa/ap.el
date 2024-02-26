@@ -1,12 +1,12 @@
 ;;; vertico-grid.el --- Grid display for Vertico -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (vertico "1.1"))
+;; Version: 1.7
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4") (vertico "1.7"))
 ;; Homepage: https://github.com/minad/vertico
 
 ;; This file is part of GNU Emacs.
@@ -36,16 +36,23 @@
 ;;; Code:
 
 (require 'vertico)
-(eval-when-compile (require 'cl-lib))
+(eval-when-compile
+  (require 'cl-lib)
+  (require 'subr-x))
 
 (defcustom vertico-grid-min-columns 2
   "Minimal number of grid columns."
-  :type 'integer
+  :type 'natnum
   :group 'vertico)
 
 (defcustom vertico-grid-max-columns 8
   "Maximal number of grid columns."
-  :type 'integer
+  :type 'natnum
+  :group 'vertico)
+
+(defcustom vertico-grid-annotate 0
+  "Reserved characters for the annotations."
+  :type 'natnum
   :group 'vertico)
 
 (defcustom vertico-grid-separator
@@ -54,15 +61,10 @@
   :type 'string
   :group 'vertico)
 
-(defcustom vertico-grid-rows 6
-  "Number of grid rows."
-  :type 'integer
-  :group 'vertico)
-
 (defcustom vertico-grid-lookahead 100
   "Number of candidates to lookahead for column number computation.
 When scrolling beyond this limit, candidates may be truncated."
-  :type 'integer
+  :type 'natnum
   :group 'vertico)
 
 (defvar-keymap vertico-grid-map
@@ -107,19 +109,18 @@ When scrolling beyond this limit, candidates may be truncated."
   "Grid display for Vertico."
   :global t :group 'vertico
   ;; Shrink current minibuffer window
-  (when-let (win (active-minibuffer-window))
+  (when-let ((win (active-minibuffer-window)))
     (unless (frame-root-window-p win)
       (window-resize win (- (window-pixel-height win)) nil nil 'pixelwise)))
-  (if vertico-grid-mode
-      (add-to-list 'minor-mode-map-alist `(vertico--input . ,vertico-grid-map))
-    (setq minor-mode-map-alist (delete `(vertico--input . ,vertico-grid-map) minor-mode-map-alist))))
+  (cl-callf2 rassq-delete-all vertico-grid-map minor-mode-map-alist)
+  (when vertico-grid-mode
+    (push `(vertico--input . ,vertico-grid-map) minor-mode-map-alist)))
 
 (cl-defmethod vertico--arrange-candidates (&context (vertico-grid-mode (eql t)))
   (when (<= vertico--index 0)
-    (let ((cand vertico--candidates) (w 1) (n 0))
-      (while (and cand (< n vertico-grid-lookahead))
-        (setq w (max w (length (car cand))) n (1+ n))
-        (pop cand))
+    (let ((w 1))
+      (cl-loop repeat vertico-grid-lookahead for cand in vertico--candidates do
+               (setq w (max w (+ vertico-grid-annotate (length cand)))))
       (setq vertico-grid--columns
             (max vertico-grid-min-columns
                  (min vertico-grid-max-columns
@@ -128,22 +129,23 @@ When scrolling beyond this limit, candidates may be truncated."
          (count (* vertico-count vertico-grid--columns))
          (start (* count (floor (max 0 vertico--index) count)))
          (width (- (/ (vertico--window-width) vertico-grid--columns) sep))
-         (cands
-          (seq-map-indexed (lambda (cand index)
-                             (cl-incf index start)
-                             (when (string-search "\n" cand)
-                               (setq cand (vertico--truncate-multiline cand width)))
-                             (truncate-string-to-width
-                              (string-trim
-                               (replace-regexp-in-string
-                                "[ \t]+"
-                                (lambda (x) (apply #'propertize " " (text-properties-at 0 x)))
-                                (vertico--format-candidate cand "" "" index start)))
-                              width))
-                           (funcall vertico--highlight
-                                    (seq-subseq vertico--candidates start
-                                                (min (+ start count)
-                                                     vertico--total)))))
+         (cands (funcall (if (> vertico-grid-annotate 0) #'vertico--affixate #'identity)
+                         (cl-loop repeat count for c in (nthcdr start vertico--candidates)
+                                  collect (funcall vertico--hilit (substring c)))))
+         (cands (cl-loop
+                 for cand in cands for index from 0 collect
+                 (let (prefix suffix)
+                   (when (consp cand)
+                     (setq prefix (cadr cand) suffix (caddr cand) cand (car cand)))
+                   (when (string-search "\n" cand)
+                     (setq cand (vertico--truncate-multiline cand width)))
+                   (truncate-string-to-width
+                    (string-trim
+                     (replace-regexp-in-string
+                      "[ \t]+"
+                      (lambda (x) (apply #'propertize " " (text-properties-at 0 x)))
+                      (vertico--format-candidate cand prefix suffix (+ index start) start)))
+                    width))))
          (width (make-vector vertico-grid--columns 0)))
     (dotimes (col vertico-grid--columns)
       (dotimes (row vertico-count)
@@ -155,7 +157,7 @@ When scrolling beyond this limit, candidates may be truncated."
     (cl-loop for row from 0 to (1- (min vertico-count vertico--total)) collect
              (let ((line (list "\n")))
                (cl-loop for col from (1- vertico-grid--columns) downto 0 do
-                        (when-let (cand (nth (+ row (* col vertico-count)) cands))
+                        (when-let ((cand (nth (+ row (* col vertico-count)) cands)))
                           (push cand line)
                           (when (> col 0)
                             (push vertico-grid-separator line)

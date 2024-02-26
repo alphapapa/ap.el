@@ -1,12 +1,12 @@
 ;;; vertico-reverse.el --- Reverse the Vertico display -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (vertico "1.1"))
+;; Version: 1.7
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4") (vertico "1.7"))
 ;; Homepage: https://github.com/minad/vertico
 
 ;; This file is part of GNU Emacs.
@@ -37,6 +37,7 @@
 ;;; Code:
 
 (require 'vertico)
+(eval-when-compile (require 'cl-lib))
 
 (defvar-keymap vertico-reverse-map
   :doc "Additional keymap activated in reverse mode."
@@ -58,11 +59,11 @@
   :global t :group 'vertico
   ;; Reset overlays
   (dolist (buf (buffer-list))
-    (when-let (ov (buffer-local-value 'vertico--candidates-ov buf))
+    (when-let ((ov (buffer-local-value 'vertico--candidates-ov buf)))
       (overlay-put ov 'before-string nil)))
-  (if vertico-reverse-mode
-      (add-to-list 'minor-mode-map-alist `(vertico--input . ,vertico-reverse-map))
-    (setq minor-mode-map-alist (delete `(vertico--input . ,vertico-reverse-map) minor-mode-map-alist))))
+  (cl-callf2 rassq-delete-all vertico-reverse-map minor-mode-map-alist)
+  (when vertico-reverse-mode
+    (push `(vertico--input . ,vertico-reverse-map) minor-mode-map-alist)))
 
 (cl-defmethod vertico--display-candidates (lines &context (vertico-reverse-mode (eql t)))
   (move-overlay vertico--candidates-ov (point-min) (point-min))

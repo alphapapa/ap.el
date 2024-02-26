@@ -1,0 +1,73 @@
+#+title: vertico.el - Changelog
+#+author: Daniel Mendler
+#+language: en
+
+* Version 1.7 (2024-01-23)
+
+- =vertico-buffer-mode=: Simplify mode line format.
+- =vertico-buffer-mode=: Reduce vscroll value when =vertico-buffer-hide-prompt= is
+  non-nil to avoid redisplay performance issues.
+
+* Version 1.6 (2023-12-27)
+
+- ~vertico-multiform-buffer~: New display toggle command.
+- ~vertico-buffer-mode~: Support toggling during an active minibuffer session.
+- ~vertico-buffer-mode~: Highlight active region.
+- ~vertico-suspend~: Support the setting ~read-minibuffer-restore-windows=nil~.
+
+* Version 1.5 (2023-12-01)
+
+- =vertico-suspend=: New extension to suspend and resume the current Vertico
+  completion session.
+- =vertico-directory-enter=: Exit with input if prefix argument is given. Mirrors
+  the behavior of =vertico-exit=.
+- =vertico-mouse-map=: New keymap.
+- =vertico-repeat-select=: Do not display selected candidate.
+- =vertico-repeat=: Store active display mode if the mode was temporarily toggled
+  via =vertico-multiform-mode=.
+- =vertico-repeat-previous=, =vertico-repeat-next=: New commands to step over input
+  history during an active Vertico completion session.
+- =vertico-repeat-last=: Deprecated in favor of =vertico-repeat-previous=.
+- Optimize truncation of multi-line candidates (=vertico--truncate-multiline=).
+  This affects commands like =yank-from-kill-ring=.
+- =vertico-quick=: Use a slightly different scheme to support more candidates.
+
+* Version 1.4 (2023-07-02)
+
+- =vertico-grid-annotate=: Fix width computation.
+- =vertico--display-string=: Fix display issue with =consult-line= and =org-modern=.
+- Set =scroll-margin=0= in the minibuffer.
+
+* Version 1.3 (2023-04-25)
+
+- =vertico-grid-annotate= and =vertico-flat-annotate=: New customization variables
+  to enable annotations in grid and flat display mode.
+- =vertico-buffer-display=: Add more choices for the display action to the
+  customizable variable.
+- =vertico--history-hash=: Deprioritize current file when sorting by history.
+- Fix sorting by history position for =project-find-file=.
+
+* Version 1.2 (2023-03-11)
+
+- =vertico-buffer=: Inherit =cursor-type= in minibuffer window, instead of always
+  using the =box= cursor type. This change is particularly useful for Evil users,
+  where the cursor reflect the Evil editing state.
+- =vertico-indexed=: Fix a regression introduced in version 1.1.
+- Use =natnum= custom type, ported back by the Compat package, version 29.1.4.0.
+
+* Version 1.1 (2023-02-17)
+
+- Add =vertico-preselect= configuration option.
+- =vertico-directory-up= moves up even if point is not located directly after /.
+- Use =cl-defgeneric= internally as mechanism to allow extensions to override
+  functionality, e.g., the candidate formatting and display.
+- =vertico-multiform-mode=: Add =vertico-multiform-map= with default key bindings.
+
+* Version 1.0 (2022-12-22)
+
+- Emacs 29: Add support for =REQUIRE-MATCH= functions
+- =vertico-directory-enter=: Handle selection of ./ and ../ candidates specially.
+
+* Version 0.29 (2022-11-22)
+
+- Start of changelog.

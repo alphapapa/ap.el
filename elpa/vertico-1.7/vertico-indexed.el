@@ -1,12 +1,12 @@
 ;;; vertico-indexed.el --- Select indexed candidates -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (vertico "1.1"))
+;; Version: 1.7
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4") (vertico "1.7"))
 ;; Homepage: https://github.com/minad/vertico
 
 ;; This file is part of GNU Emacs.
@@ -43,7 +43,7 @@
 (defcustom vertico-indexed-start 0
   "Start of the indexing."
   :group 'vertico
-  :type 'integer)
+  :type 'natnum)
 
 (defvar vertico-indexed--commands
   '(vertico-insert vertico-exit vertico-directory-enter))
@@ -60,12 +60,12 @@
     (let ((index (+ vertico-indexed--min
                     (- (prefix-numeric-value prefix-arg)
                        vertico-indexed-start))))
-        (if (and (>= index vertico-indexed--min)
-                 (< index vertico-indexed--max)
-                 (/= vertico--total 0))
-            (setq vertico--index index)
-          (minibuffer-message "Out of range")
-          (setq this-command #'ignore)))))
+      (if (and (>= index vertico-indexed--min)
+               (<= index vertico-indexed--max)
+               (/= vertico--total 0))
+          (setq vertico--index index prefix-arg nil)
+        (minibuffer-message "Out of range")
+        (setq this-command #'ignore)))))
 
 (cl-defmethod vertico--format-candidate :around
   (cand prefix suffix index start &context (vertico-indexed-mode (eql t)))

@@ -1,12 +1,12 @@
 ;;; vertico-quick.el --- Quick keys for Vertico -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (vertico "1.1"))
+;; Version: 1.7
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4") (vertico "1.7"))
 ;; Homepage: https://github.com/minad/vertico
 
 ;; This file is part of GNU Emacs.
@@ -64,7 +64,7 @@
   :type 'string
   :group 'vertico)
 
-(defcustom vertico-quick2 "jkl"
+(defcustom vertico-quick2 "jkluionm"
   "Two level quick keys."
   :type 'string
   :group 'vertico)
@@ -74,13 +74,12 @@
 INDEX is the current candidate index.
 START is the index of the first displayed candidate.
 TWO is non-nil if two keys should be displayed."
-  (let* ((fst (length vertico-quick1))
-         (snd (length vertico-quick2))
-         (idx (- index start))
-         (len (+ fst snd)))
+  (let ((fst (length vertico-quick1))
+        (snd (length vertico-quick2))
+        (idx (- index start)))
     (if (>= idx fst)
-        (let ((first (elt vertico-quick2 (mod (/ (- idx fst) len) snd)))
-              (second (elt (concat vertico-quick1 vertico-quick2) (mod (- idx fst) len))))
+        (let ((first (elt vertico-quick2 (mod (/ (- idx fst) fst) snd)))
+              (second (elt vertico-quick1 (mod (- idx fst) fst))))
           (cond
            ((eq first two)
             (list

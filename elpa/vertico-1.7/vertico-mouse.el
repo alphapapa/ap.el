@@ -1,12 +1,12 @@
 ;;; vertico-mouse.el --- Mouse support for Vertico -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2021
-;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (vertico "1.1"))
+;; Version: 1.7
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4") (vertico "1.7"))
 ;; Homepage: https://github.com/minad/vertico
 
 ;; This file is part of GNU Emacs.
@@ -37,23 +37,27 @@
   "Face used for mouse highlighting."
   :group 'vertico-faces)
 
-(defun vertico-mouse--candidate-click (index key)
-  "Return command handling click on candidate with INDEX.
-The command will behave like KEY."
-  (when-let ((cmd (keymap-lookup vertico-map key)))
-    (lambda ()
-      (interactive)
-      ;; Ensure that the command is always executed in the minibuffer.
-      ;; Mouse clicks can also happen if another window is selected.
-      (with-selected-window (active-minibuffer-window)
-        (let ((vertico--index index))
-          (funcall cmd))))))
+(defun vertico-mouse--index (event)
+  "Return candidate index at EVENT."
+  (when-let ((object (posn-object (event-end event)))
+             ((consp object)))
+    (get-text-property (cdr object) 'vertico-mouse--index (car object))))
 
-(defun vertico-mouse--candidate-map (index)
-  "Return keymap for candidate with INDEX."
-  (define-keymap
-    "<mouse-1>" (vertico-mouse--candidate-click index "RET")
-    "<mouse-3>" (vertico-mouse--candidate-click index "TAB")))
+(defun vertico-mouse--click (key)
+  "Create command handling mouse click, behave like KEY press."
+  (lambda (event)
+    (interactive "e")
+    ;; Mouse clicks can even happen if another window is selected.
+    (with-selected-window (active-minibuffer-window)
+      (when-let ((vertico--index (vertico-mouse--index event))
+                 (cmd (keymap-local-lookup key)))
+        (funcall cmd)))))
+
+(defvar-keymap vertico-mouse-map
+  :doc "Additional keymap activated in mouse mode."
+  "<mouse-1>" (vertico-mouse--click "RET")
+  "<mouse-3>" (vertico-mouse--click "TAB"))
+(fset 'vertico-mouse-map vertico-mouse-map)
 
 (defun vertico-mouse--scroll-up (n)
   "Scroll up by N lines."
@@ -70,19 +74,20 @@ The command will behave like KEY."
 
 (cl-defmethod vertico--format-candidate
   :around (cand prefix suffix index start &context (vertico-mouse-mode (eql t)))
-  (setq cand (cl-call-next-method cand prefix suffix index start))
-  (when (equal suffix "")
-    (setq cand (concat (substring cand 0 -1)
-                       (propertize " " 'display '(space :align-to right))
-                       "\n"))
-    (when (= index vertico--index)
-      (add-face-text-property 0 (length cand) 'vertico-current 'append cand)))
+  (setq cand (cl-call-next-method cand prefix
+                                  (concat suffix #(" " 0 1 (display (space :align-to right))))
+                                  index start))
   (add-text-properties 0 (1- (length cand))
-                       `(mouse-face vertico-mouse keymap ,(vertico-mouse--candidate-map index))
+                       `(vertico-mouse--index ,index
+                         mouse-face vertico-mouse keymap vertico-mouse-map)
                        cand)
   cand)
 
 (cl-defmethod vertico--setup :after (&context (vertico-mouse-mode (eql t)))
+  (when (boundp 'mwheel-coalesce-scroll-events)
+    (setq-local mwheel-coalesce-scroll-events t))
+  (when (boundp 'pixel-scroll-precision-mode)
+    (setq-local pixel-scroll-precision-mode nil))
   (setq-local mwheel-scroll-up-function #'vertico-mouse--scroll-up
               mwheel-scroll-down-function #'vertico-mouse--scroll-down))
 
