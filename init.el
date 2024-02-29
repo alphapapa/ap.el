@@ -1660,7 +1660,10 @@ boundaries."
 
 (use-package unpackaged
   :quelpa
-  (unpackaged :fetcher github :repo "alphapapa/unpackaged.el"))
+  (unpackaged :fetcher github :repo "alphapapa/unpackaged.el")
+
+  :general ( :keymaps 'org-mode-map
+             "RET" #'unpackaged/org-return-dwim))
 
 (use-package vertico
   ;; Commenting out for now, because `selectrum-prescient-mode' is
