@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/hammy.el
-;; Package-Version: 20231122.2352
+;; Package-Version: 20240301.243
 ;; Version: 0.3-pre
 ;; Package-Requires: ((emacs "28.1") (svg-lib "0.2.5") (ts "0.2.2"))
 ;; Keywords: convenience
@@ -875,6 +875,9 @@ Summary includes elapsed times, etc."
 (defvar hammy-mode-update-mode-line-timer nil
   "Timer used to update the mode line.")
 
+(defvar hammy-mode-lighter nil)
+(put 'hammy-mode-lighter 'risky-local-variable t)
+
 (defface hammy-mode-lighter-pie '((t (:inherit mode-line)))
   "Hammy progress pies.
 If showing progress in the mode line or tab bar, inherit from the
@@ -899,7 +902,7 @@ appropriate face to ensure proper appearance.")
 (define-minor-mode hammy-mode
   "Show active hammy in the mode line."
   :global t
-  (let ((lighter '(hammy-mode (:eval (hammy-mode-lighter)))))
+  (let ((lighter '(hammy-mode hammy-mode-lighter)))
     (if hammy-mode
         (progn
           (when hammy-mode-update-mode-line-continuously
@@ -919,7 +922,7 @@ appropriate face to ensure proper appearance.")
             (remove lighter global-mode-string)))))
 
 (defun hammy-mode-lighter ()
-  "Return the mode-line lighter for `hammy-mode'."
+  "Return lighter for `hammy-mode'."
   (cl-labels
       ((format-hammy (hammy)
          (let ((remaining
@@ -970,8 +973,7 @@ appropriate face to ensure proper appearance.")
 
 (defun hammy--mode-line-update (&rest _ignore)
   "Force updating of all mode lines when a hammy is active."
-  (when hammy-active
-    (force-mode-line-update 'all)))
+  (setf hammy-mode-lighter (hammy-mode-lighter)))
 
 (defun hammy--pie (hammy)
   "Return HAMMY's pie, updating it if necessary."
