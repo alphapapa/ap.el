@@ -1609,13 +1609,16 @@ boundaries."
   ([remap scroll-up-command] #'scrollkeeper-down))
 
 (use-package switchy-window
-  :general
-  (:map switchy-window-minor-mode-map
-        ;; TODO: Figure out how to use repeat-mode to make "C-x o o o" work like this does.
-        [remap other-window] (defrepeater 'repeat-switchy-window #'switchy-window))
+  ;; TODO: Figure out how to use repeat-mode to make "C-x o o o" work like this does.
   :init
   (switchy-window-minor-mode)
+
   :config
+  (define-key switchy-window-minor-mode-map [remap other-window]
+              ;; NOTE: We manually use `define-key' because `defrepeater' warns if
+              ;; the symbol is already a function, and `use-package' with :bind
+              ;; makes an autoload, which defines it as one.
+              (defrepeater 'repeat-switchy-window #'switchy-window))
   (add-hook 'window-selection-change-functions
             (defun ap/pulse-line-on-window-selection-change (frame)
               "For use in `window-selection-change-functions', with `switchy-window-minor-mode'."
