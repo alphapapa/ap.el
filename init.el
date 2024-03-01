@@ -652,15 +652,9 @@ Like it used to."
             [mouse-9] #'eww-forward-url))
 
 (use-package faces
-  :config
+  :init
 
   (progn
-    ;; The tab-bar tabs should be "NK57 Monospace" condensed, but
-    ;; the rest of the tab-bar line should be variable-pitch to
-    ;; save space.
-    (add-hook 'enable-theme-functions #'ap/modify-tab-bar-faces)
-    (ap/modify-tab-bar-faces)
-
     (defun ap/modify-tab-bar-faces (&rest _)
       (ap/modify-faces
        '(tab-bar :family nil :inherit (variable-pitch header-line))
