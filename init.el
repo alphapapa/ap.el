@@ -672,7 +672,13 @@ Like it used to."
       (pcase-dolist (`(,face . ,spec) faces)
         (map-do (lambda (attribute value)
                   (set-face-attribute face nil attribute value))
-                spec))))
+                spec)))
+
+    ;; The tab-bar tabs should be "NK57 Monospace" condensed, but
+    ;; the rest of the tab-bar line should be variable-pitch to
+    ;; save space.
+    (add-hook 'enable-theme-functions #'ap/modify-tab-bar-faces)
+    (ap/modify-tab-bar-faces))
 
   (defvar ap/random-fonts
     `(
