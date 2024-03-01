@@ -104,6 +104,7 @@
 
 ;;;; Requirements
 
+(require 'map)
 (require 'subr-x)
 (require 'org)
 (require 'org-agenda)
@@ -963,6 +964,7 @@ of the arguments to the function."
                     else collect item into non-matching
                     finally return (list ,keyword
                                          non-matching
+                                         ;; FIXME: Remove the #' from `key-sort-fn'.
                                          (cl-loop for key in (sort (ht-keys groups) #',key-sort-fn)
                                                   for name = ,header-form
                                                   collect (list :name name
@@ -1096,7 +1098,39 @@ key and as the header for its group."
 (org-super-agenda--def-auto-group parent "their parent heading"
   :key-form (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
               (when (org-up-heading-safe)
-                (org-get-heading 'notags 'notodo))))
+                (org-entry-get nil "ITEM"))))
+
+(org-super-agenda--def-auto-group ancestor-with-todo
+  "their earliest ancestor having the to-do keyword"
+  ;; TODO: Add tests.
+  :keyword :ancestor-with-todo
+  ;; FIXME: It's very awkward that for a single argument `args' is
+  ;; that argument, while multiple ones are provided as a list.
+  :key-form (let* ((keyword (cl-typecase (car args)
+                              (atom (car args))
+                              (cons (caar args))))
+                   (limit (cl-typecase (car args)
+                            (cons (plist-get (cdar args) :limit))))
+                   (nearestp (cl-typecase (car args)
+                               (cons (plist-get (cdar args) :nearestp)))))
+              (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
+                (cl-loop with ancestor
+                         while (and (or (not limit)
+                                        (natnump (cl-decf limit)))
+                                    (org-up-heading-safe))
+                         when (equal keyword (org-get-todo-state))
+                         do (setf ancestor (org-entry-get nil "ITEM"))
+                         when (and nearestp ancestor)
+                         return ancestor
+                         finally return ancestor)))
+  :header-form (let ((keyword (cl-typecase (car args)
+                                (atom (car args))
+                                (cons (caar args))))
+                     (prefix (if (cl-typecase (car args)
+                                   (cons (plist-get (cdar args) :nearestp)))
+                                 "Nearest"
+                               "Ancestor")))
+                 (format "%s %s: %s" prefix keyword key)))
 
 ;;;;; Dispatchers
 

@@ -1412,6 +1412,9 @@ Also, ignores effort, because it's not useful for this purpose."
 (use-package org-sticky-header
   :hook (org-mode . org-sticky-header-mode))
 
+(use-package org-super-agenda
+  :quelpa (org-super-agenda :fetcher github :repo "alphapapa/org-super-agenda"))
+
 ;; (use-package org-superstar
 ;;   ;; FIXME: This needs to be activated after org-indent-mode to
 ;;   ;; prevent `org-superstar-leading-bullet' from being shown.  Weird.
