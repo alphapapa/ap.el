@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/hammy.el
-;; Package-Version: 20240301.243
+;; Package-Version: 20240305.1803
 ;; Version: 0.3-pre
 ;; Package-Requires: ((emacs "28.1") (svg-lib "0.2.5") (ts "0.2.2"))
 ;; Keywords: convenience
@@ -346,6 +346,11 @@ each of them; if nil, do nothing."
 ;;;; Variables
 
 (defvar org-clock-hd-marker)
+
+(defvar hammy-mode-lighter-last nil
+  "Last `hammy-mode' lighter shown in the mode line.
+Used to avoid calling `force-mode-line-update' more than
+necessary.")
 
 (defvar hammy-hammys nil
   "List of defined hammys.
@@ -972,8 +977,11 @@ appropriate face to ensure proper appearance.")
                       hammy-active "\n")))
 
 (defun hammy--mode-line-update (&rest _ignore)
-  "Force updating of all mode lines when a hammy is active."
-  (setf hammy-mode-lighter (hammy-mode-lighter)))
+  "Update all mode lines as necessary for active hammys."
+  (setf hammy-mode-lighter (hammy-mode-lighter))
+  (unless (equal hammy-mode-lighter-last hammy-mode-lighter)
+    (force-mode-line-update 'all)
+    (setf hammy-mode-lighter-last hammy-mode-lighter)))
 
 (defun hammy--pie (hammy)
   "Return HAMMY's pie, updating it if necessary."
