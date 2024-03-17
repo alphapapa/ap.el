@@ -35,12 +35,6 @@
 (require 'help-mode)
 
 (require 'transient)
-(unless (fboundp 'transient-prefix-object)
-  (display-warning 'magit (substitute-command-keys
-                           (format magit--core-upgrade-instructions
-                                   'transient "0.5.0" 'transient
-                                   'transient 'transient 'transient))
-                   :emergency))
 
 (defvar bookmark-make-record-function)
 (defvar magit--wip-inhibit-autosave)
@@ -585,9 +579,6 @@ The buffer's major-mode should derive from `magit-section-mode'."
 
 (defvar-local magit-previous-section nil)
 (put 'magit-previous-section 'permanent-local t)
-
-(defvar-local magit--imenu-group-types nil)
-(defvar-local magit--imenu-item-types nil)
 
 ;;; Setup Buffer
 
@@ -1412,153 +1403,6 @@ mentioned caches completely."
            (with-current-buffer buffer
              (setq magit-section-visibility-cache nil)))))
   (setq magit--libgit-available-p 'unknown))
-
-;;; Imenu Support
-
-(defun magit--imenu-create-index ()
-  ;; If `which-function-mode' is active, then the create-index
-  ;; function is called at the time the major-mode is being enabled.
-  ;; Modes that derive from `magit-mode' have not populated the buffer
-  ;; at that time yet, so we have to abort.
-  (and magit-root-section
-       (or magit--imenu-group-types
-           magit--imenu-item-types)
-       (let ((index
-              (cl-mapcan
-               (lambda (section)
-                 (cond
-                  (magit--imenu-group-types
-                   (and (if (eq (car-safe magit--imenu-group-types) 'not)
-                            (not (magit-section-match
-                                  (cdr magit--imenu-group-types)
-                                  section))
-                          (magit-section-match magit--imenu-group-types section))
-                        (and-let* ((children (oref section children)))
-                          `((,(magit--imenu-index-name section)
-                             ,@(mapcar (lambda (s)
-                                         (cons (magit--imenu-index-name s)
-                                               (oref s start)))
-                                       children))))))
-                  (magit--imenu-item-types
-                   (and (magit-section-match magit--imenu-item-types section)
-                        `((,(magit--imenu-index-name section)
-                           . ,(oref section start)))))))
-               (oref magit-root-section children))))
-         (if (and magit--imenu-group-types (symbolp magit--imenu-group-types))
-             (cdar index)
-           index))))
-
-(defun magit--imenu-index-name (section)
-  (let ((heading (buffer-substring-no-properties
-                  (oref section start)
-                  (1- (or (oref section content)
-                          (oref section end))))))
-    (save-match-data
-      (cond
-       ((and (magit-section-match [commit logbuf] section)
-             (string-match "[^ ]+\\([ *|]*\\).+" heading))
-        (replace-match " " t t heading 1))
-       ((magit-section-match
-         '([branch local branchbuf] [tag tags branchbuf]) section)
-        (oref section value))
-       ((magit-section-match [branch remote branchbuf] section)
-        (concat (oref (oref section parent) value) "/"
-                (oref section value)))
-       ((string-match " ([0-9]+)\\'" heading)
-        (substring heading 0 (match-beginning 0)))
-       (t heading)))))
-
-(defun magit--imenu-goto-function (_name position &rest _rest)
-  "Go to the section at POSITION.
-Make sure it is visible, by showing its ancestors where
-necessary.  For use as `imenu-default-goto-function' in
-`magit-mode' buffers."
-  (goto-char position)
-  (let ((section (magit-current-section)))
-    (while (setq section (oref section parent))
-      (when (oref section hidden)
-        (magit-section-show section)))))
-
-;;; Bookmark support
-
-(declare-function bookmark-get-filename "bookmark" (bookmark-name-or-record))
-(declare-function bookmark-make-record-default "bookmark"
-                  (&optional no-file no-context posn))
-(declare-function bookmark-prop-get "bookmark" (bookmark-name-or-record prop))
-(declare-function bookmark-prop-set "bookmark" (bookmark-name-or-record prop val))
-
-(defun magit--make-bookmark ()
-  "Create a bookmark for the current Magit buffer.
-Input values are the major-mode's `magit-bookmark-name' method,
-and the buffer-local values of the variables referenced in its
-`magit-bookmark-variables' property."
-  (require 'bookmark)
-  (if (plist-member (symbol-plist major-mode) 'magit-bookmark-variables)
-      ;; `bookmark-make-record-default's return value does not match
-      ;; (NAME . ALIST), even though it is used as the default value
-      ;; of `bookmark-make-record-function', which states that such
-      ;; functions must do that.  See #4356.
-      (let ((bookmark (cons nil (bookmark-make-record-default 'no-file))))
-        (bookmark-prop-set bookmark 'handler  #'magit--handle-bookmark)
-        (bookmark-prop-set bookmark 'mode     major-mode)
-        (bookmark-prop-set bookmark 'filename (magit-toplevel))
-        (bookmark-prop-set bookmark 'defaults (list (magit-bookmark-name)))
-        (dolist (var (get major-mode 'magit-bookmark-variables))
-          (bookmark-prop-set bookmark var (symbol-value var)))
-        (bookmark-prop-set
-         bookmark 'magit-hidden-sections
-         (--keep (and (oref it hidden)
-                      (cons (oref it type)
-                            (if (derived-mode-p 'magit-stash-mode)
-                                (string-replace magit-buffer-revision
-                                                magit-buffer-revision-hash
-                                                (oref it value))
-                              (oref it value))))
-                 (oref magit-root-section children)))
-        bookmark)
-    (user-error "Bookmarking is not implemented for %s buffers" major-mode)))
-
-(defun magit--handle-bookmark (bookmark)
-  "Open a bookmark created by `magit--make-bookmark'.
-Call the `magit-*-setup-buffer' function of the the major-mode
-with the variables' values as arguments, which were recorded by
-`magit--make-bookmark'.  Ignore `magit-display-buffer-function'."
-  (let ((buffer (let ((default-directory (bookmark-get-filename bookmark))
-                      (mode (bookmark-prop-get bookmark 'mode))
-                      (magit-display-buffer-function #'identity)
-                      (magit-display-buffer-noselect t))
-                  (apply (intern (format "%s-setup-buffer"
-                                         (substring (symbol-name mode) 0 -5)))
-                         (--map (bookmark-prop-get bookmark it)
-                                (get mode 'magit-bookmark-variables))))))
-    (set-buffer buffer) ; That is the interface we have to adhere to.
-    (when-let ((hidden (bookmark-prop-get bookmark 'magit-hidden-sections)))
-      (with-current-buffer buffer
-        (dolist (child (oref magit-root-section children))
-          (if (member (cons (oref child type)
-                            (oref child value))
-                      hidden)
-              (magit-section-hide child)
-            (magit-section-show child)))))
-    ;; Compatibility with `bookmark+' package.  See #4356.
-    (when (bound-and-true-p bmkp-jump-display-function)
-      (funcall bmkp-jump-display-function (current-buffer)))
-    nil))
-
-(put 'magit--handle-bookmark 'bookmark-handler-type "Magit")
-
-(cl-defgeneric magit-bookmark-name ()
-  "Return name for bookmark to current buffer."
-  (format "%s%s"
-          (substring (symbol-name major-mode) 0 -5)
-          (if-let ((vars (get major-mode 'magit-bookmark-variables)))
-              (cl-mapcan (lambda (var)
-                           (let ((val (symbol-value var)))
-                             (if (and val (atom val))
-                                 (list val)
-                               val)))
-                         vars)
-            "")))
 
 ;;; Utilities
 

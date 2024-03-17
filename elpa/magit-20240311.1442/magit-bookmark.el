@@ -1,4 +1,4 @@
-;;; magit-bookmark.el --- Bookmark support for Magit  -*- lexical-binding:t -*-
+;;; magit-bookmark.el --- Bookmarks for Magit buffers  -*- lexical-binding:t -*-
 
 ;; Copyright (C) 2008-2024 The Magit Project Contributors
 
@@ -29,6 +29,23 @@
 ;;; Code:
 
 (require 'magit)
+
+(require 'bookmark)
+
+;;; Common
+
+(cl-defmethod magit-bookmark-get-filename (&context (major-mode magit-mode))
+  (magit-toplevel))
+
+(cl-defmethod magit-bookmark-get-buffer-create
+  (bookmark (mode (derived-mode magit-mode)))
+  (let ((default-directory (bookmark-get-filename bookmark))
+        (magit-display-buffer-function #'identity)
+        (magit-display-buffer-noselect t))
+    (apply (intern (format "%s-setup-buffer"
+                           (substring (symbol-name mode) 0 -5)))
+           (--map (bookmark-prop-get bookmark it)
+                  (get mode 'magit-bookmark-variables)))))
 
 ;;; Diff
 ;;;; Diff
@@ -78,6 +95,12 @@
           (if magit-buffer-diff-files
               (mapconcat #'identity magit-buffer-diff-files " ")
             (magit-rev-format "%s" magit-buffer-revision))))
+
+(cl-defmethod magit-bookmark--get-child-value
+  (section &context (major-mode magit-stash-mode))
+  (string-replace magit-buffer-revision
+                  magit-buffer-revision-hash
+                  (oref section value)))
 
 ;;; Log
 ;;;; Log

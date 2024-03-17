@@ -515,6 +515,7 @@ and delay of your graphical environment or operating system."
 (defvar helm-crm-default-separator)
 (defvar ivy-sort-functions-alist)
 (defvar ivy-sort-matches-functions-alist)
+(defvar vertico-sort-function)
 
 (defvar magit-completing-read--silent-default nil)
 
@@ -582,7 +583,9 @@ acts similarly to `completing-read', except for the following:
     (let ((command this-command)
           (reply (funcall magit-completing-read-function
                           (concat prompt ": ")
-                          (if (and def (not (member def collection)))
+                          (if (and (not (functionp collection))
+                                   def
+                                   (not (member def collection)))
                               (cons def collection)
                             collection)
                           predicate
@@ -616,7 +619,8 @@ acts similarly to `completing-read', except for the following:
     (when (< emacs-major-version 26)
       (fset 'completion-pcm--all-completions
             'magit-completion-pcm--all-completions))
-    (let ((ivy-sort-functions-alist nil))
+    (let ((ivy-sort-functions-alist nil)
+          (vertico-sort-function nil))
       (completing-read prompt choices
                        predicate require-match
                        initial-input hist def))))
@@ -925,11 +929,8 @@ Unless optional argument KEEP-EMPTY-LINES is t, trim all empty lines."
       (split-string (buffer-string) "\n" (not keep-empty-lines)))))
 
 (defun magit-set-header-line-format (string)
-  "Set the header-line using STRING.
-Propertize STRING with the `magit-header-line'.  If the `face'
-property of any part of STRING is already set, then that takes
-precedence.  Also pad the left side of STRING so that it aligns
-with the text area."
+  "Set `header-line-format' in the current buffer based on STRING.
+Pad the left side of STRING so that it aligns with the text area."
   (setq header-line-format
         (concat (propertize " " 'display '(space :align-to 0))
                 string)))
@@ -1226,6 +1227,8 @@ Magit."
                                            " "))))))
            ,@body)
        ,@body)))
+
+(put 'magit--with-connection-local-variables 'lisp-indent-function 'defun)
 
 ;;; Miscellaneous
 

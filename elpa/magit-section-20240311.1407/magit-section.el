@@ -423,6 +423,7 @@ if any."
     (keymap-set map "<left-fringe> <mouse-1>" #'magit-mouse-toggle-section)
     (keymap-set map "<left-fringe> <mouse-2>" #'magit-mouse-toggle-section)
     (keymap-set map "TAB"       #'magit-section-toggle)
+    (keymap-set map "C-c TAB"   #'magit-section-cycle)
     (keymap-set map "C-<tab>"   #'magit-section-cycle)
     (keymap-set map "M-<tab>"   #'magit-section-cycle)
     ;; <backtab> is the most portable binding for Shift+Tab.
@@ -1005,19 +1006,33 @@ hidden."
       (magit-section-show-headings-1 child))))
 
 (defun magit-section-cycle (section)
-  "Cycle visibility of current section and its children."
+  "Cycle visibility of current section and its children.
+
+If this command is invoked using \\`C-<tab>' and that is globally bound
+to `tab-next', then this command pivots to behave like that command, and
+you must instead use \\`C-c TAB' to cycle section visibility.
+
+If you would like to keep using \\`C-<tab>' to cycle section visibility
+but also want to use `tab-bar-mode', then you have to prevent that mode
+from using this key and instead bind another key to `tab-next'.  Because
+`tab-bar-mode' does not use a mode map but instead manipulates the
+global map, this involves advising `tab-bar--define-keys'."
   (interactive (list (magit-current-section)))
-  (if (oref section hidden)
-      (progn (magit-section-show section)
-             (magit-section-hide-children section))
-    (let ((children (oref section children)))
+  (cond
+   ((and (equal (this-command-keys) [C-tab])
+         (eq (global-key-binding [C-tab]) 'tab-next)
+         (fboundp 'tab-bar-switch-to-next-tab))
+    (tab-bar-switch-to-next-tab current-prefix-arg))
+   ((oref section hidden)
+    (magit-section-show section)
+    (magit-section-hide-children section))
+   ((let ((children (oref section children)))
       (cond ((and (--any-p (oref it hidden)   children)
                   (--any-p (oref it children) children))
              (magit-section-show-headings section))
             ((seq-some #'magit-section-hidden-body children)
              (magit-section-show-children section))
-            (t
-             (magit-section-hide section))))))
+            ((magit-section-hide section)))))))
 
 (defun magit-section-cycle-global ()
   "Cycle visibility of all sections in the current buffer."
@@ -1635,10 +1650,14 @@ evaluated its BODY.  Admittedly that's a bit of a hack."
   (setq magit-section-pre-command-section (magit-current-section)))
 
 (defun magit-section-post-command-hook ()
-  (cursor-sensor-move-to-tangible (selected-window))
-  (when (or magit--context-menu-buffer
-            magit--context-menu-section)
-    (magit-menu-highlight-point-section))
+  (let ((window (selected-window)))
+    ;; The command may have used `set-window-buffer' to change
+    ;; the window's buffer without changing the current buffer.
+    (when (eq (current-buffer) (window-buffer window))
+      (cursor-sensor-move-to-tangible window)
+      (when (or magit--context-menu-buffer
+                magit--context-menu-section)
+        (magit-menu-highlight-point-section))))
   (unless (memq this-command '(magit-refresh magit-refresh-all))
     (magit-section-update-highlight)))
 
@@ -2185,7 +2204,7 @@ Configuration'."
         (unless (memq entry magit-disabled-section-inserters)
           (if (bound-and-true-p magit-refresh-verbose)
               (let ((time (benchmark-elapse (apply entry args))))
-                (message "  %-50s %s %s" entry time
+                (message "  %-50s %f %s" entry time
                          (cond ((> time 0.03) "!!")
                                ((> time 0.01) "!")
                                (t ""))))
@@ -2232,6 +2251,159 @@ Configuration'."
 (defun magit--put-face (beg end face string)
   (put-text-property beg end 'face face string)
   (put-text-property beg end 'font-lock-face face string))
+
+;;; Imenu Support
+
+(defvar-local magit--imenu-group-types nil)
+(defvar-local magit--imenu-item-types nil)
+
+(defun magit--imenu-create-index ()
+  ;; If `which-function-mode' is active, then the create-index
+  ;; function is called at the time the major-mode is being enabled.
+  ;; Modes that derive from `magit-mode' have not populated the buffer
+  ;; at that time yet, so we have to abort.
+  (and magit-root-section
+       (or magit--imenu-group-types
+           magit--imenu-item-types)
+       (let ((index
+              (cl-mapcan
+               (lambda (section)
+                 (cond
+                  (magit--imenu-group-types
+                   (and (if (eq (car-safe magit--imenu-group-types) 'not)
+                            (not (magit-section-match
+                                  (cdr magit--imenu-group-types)
+                                  section))
+                          (magit-section-match magit--imenu-group-types section))
+                        (and-let* ((children (oref section children)))
+                          `((,(magit--imenu-index-name section)
+                             ,@(mapcar (lambda (s)
+                                         (cons (magit--imenu-index-name s)
+                                               (oref s start)))
+                                       children))))))
+                  (magit--imenu-item-types
+                   (and (magit-section-match magit--imenu-item-types section)
+                        `((,(magit--imenu-index-name section)
+                           . ,(oref section start)))))))
+               (oref magit-root-section children))))
+         (if (and magit--imenu-group-types (symbolp magit--imenu-group-types))
+             (cdar index)
+           index))))
+
+(defun magit--imenu-index-name (section)
+  (let ((heading (buffer-substring-no-properties
+                  (oref section start)
+                  (1- (or (oref section content)
+                          (oref section end))))))
+    (save-match-data
+      (cond
+       ((and (magit-section-match [commit logbuf] section)
+             (string-match "[^ ]+\\([ *|]*\\).+" heading))
+        (replace-match " " t t heading 1))
+       ((magit-section-match
+         '([branch local branchbuf] [tag tags branchbuf]) section)
+        (oref section value))
+       ((magit-section-match [branch remote branchbuf] section)
+        (concat (oref (oref section parent) value) "/"
+                (oref section value)))
+       ((string-match " ([0-9]+)\\'" heading)
+        (substring heading 0 (match-beginning 0)))
+       (t heading)))))
+
+(defun magit--imenu-goto-function (_name position &rest _rest)
+  "Go to the section at POSITION.
+Make sure it is visible, by showing its ancestors where
+necessary.  For use as `imenu-default-goto-function' in
+`magit-mode' buffers."
+  (goto-char position)
+  (let ((section (magit-current-section)))
+    (while (setq section (oref section parent))
+      (when (oref section hidden)
+        (magit-section-show section)))))
+
+;;; Bookmark support
+
+(declare-function bookmark-get-filename "bookmark" (bookmark-name-or-record))
+(declare-function bookmark-make-record-default "bookmark"
+                  (&optional no-file no-context posn))
+(declare-function bookmark-prop-get "bookmark" (bookmark-name-or-record prop))
+(declare-function bookmark-prop-set "bookmark" (bookmark-name-or-record prop val))
+
+(cl-defgeneric magit-bookmark-get-filename ()
+  (or (buffer-file-name) (buffer-name)))
+
+(cl-defgeneric magit-bookmark--get-child-value (section)
+  (oref section value))
+
+(cl-defgeneric magit-bookmark-get-buffer-create (bookmark mode))
+
+(defun magit--make-bookmark ()
+  "Create a bookmark for the current Magit buffer.
+Input values are the major-mode's `magit-bookmark-name' method,
+and the buffer-local values of the variables referenced in its
+`magit-bookmark-variables' property."
+  (require 'bookmark)
+  (if (plist-member (symbol-plist major-mode) 'magit-bookmark-variables)
+      ;; `bookmark-make-record-default's return value does not match
+      ;; (NAME . ALIST), even though it is used as the default value
+      ;; of `bookmark-make-record-function', which states that such
+      ;; functions must do that.  See #4356.
+      (let ((bookmark (cons nil (bookmark-make-record-default 'no-file))))
+        (bookmark-prop-set bookmark 'handler  #'magit--handle-bookmark)
+        (bookmark-prop-set bookmark 'mode     major-mode)
+        (bookmark-prop-set bookmark 'filename (magit-bookmark-get-filename))
+        (bookmark-prop-set bookmark 'defaults (list (magit-bookmark-name)))
+        (dolist (var (get major-mode 'magit-bookmark-variables))
+          (bookmark-prop-set bookmark var (symbol-value var)))
+        (bookmark-prop-set
+         bookmark 'magit-hidden-sections
+         (--keep (and (oref it hidden)
+                      (cons (oref it type)
+                            (magit-bookmark--get-child-value it)))
+                 (oref magit-root-section children)))
+        bookmark)
+    (user-error "Bookmarking is not implemented for %s buffers" major-mode)))
+
+(defun magit--handle-bookmark (bookmark)
+  "Open a bookmark created by `magit--make-bookmark'.
+
+Call the generic function `magit-bookmark-get-buffer-create' to get
+the appropriate buffer without displaying it.
+
+Then call the `magit-*-setup-buffer' function of the the major-mode
+with the variables' values as arguments, which were recorded by
+`magit--make-bookmark'."
+  (let ((buffer (magit-bookmark-get-buffer-create
+                 bookmark
+                 (bookmark-prop-get bookmark 'mode))))
+    (set-buffer buffer) ; That is the interface we have to adhere to.
+    (when-let ((hidden (bookmark-prop-get bookmark 'magit-hidden-sections)))
+      (with-current-buffer buffer
+        (dolist (child (oref magit-root-section children))
+          (if (member (cons (oref child type)
+                            (oref child value))
+                      hidden)
+              (magit-section-hide child)
+            (magit-section-show child)))))
+    ;; Compatibility with `bookmark+' package.  See #4356.
+    (when (bound-and-true-p bmkp-jump-display-function)
+      (funcall bmkp-jump-display-function (current-buffer)))
+    nil))
+
+(put 'magit--handle-bookmark 'bookmark-handler-type "Magit")
+
+(cl-defgeneric magit-bookmark-name ()
+  "Return name for bookmark to current buffer."
+  (format "%s%s"
+          (substring (symbol-name major-mode) 0 -5)
+          (if-let ((vars (get major-mode 'magit-bookmark-variables)))
+              (cl-mapcan (lambda (var)
+                           (let ((val (symbol-value var)))
+                             (if (and val (atom val))
+                                 (list val)
+                               val)))
+                         vars)
+            "")))
 
 ;;; Bitmaps
 

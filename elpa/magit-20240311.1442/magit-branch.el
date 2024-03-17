@@ -208,18 +208,28 @@ has to be used to view and change branch related variables."
 (transient-define-prefix magit-branch (branch)
   "Add, configure or remove a branch."
   :man-page "git-branch"
-  ["Arguments"
-   (7 "-r" "Recurse submodules when checking out an existing branch"
-      "--recurse-submodules"
-      :if (lambda () (magit-git-version>= "2.13")))]
-  ["Variables"
-   :if (lambda ()
+  [:if (lambda ()
          (and magit-branch-direct-configure
               (oref (transient-prefix-object) scope)))
+   :description
+   (lambda ()
+     (concat (propertize "Configure " 'face 'transient-heading)
+             (propertize (oref (transient-prefix-object) scope)
+                         'face 'magit-branch-local)))
    ("d" magit-branch.<branch>.description)
    ("u" magit-branch.<branch>.merge/remote)
    ("r" magit-branch.<branch>.rebase)
    ("p" magit-branch.<branch>.pushRemote)]
+  [:if-non-nil magit-branch-direct-configure
+   :description "Configure repository defaults"
+   ("R" magit-pull.rebase)
+   ("P" magit-remote.pushDefault)
+   ("B" "Update default branch" magit-update-default-branch
+    :inapt-if-not magit-get-some-remote)]
+  ["Arguments"
+   (7 "-r" "Recurse submodules when checking out an existing branch"
+      "--recurse-submodules"
+      :if (lambda () (magit-git-version>= "2.13")))]
   [["Checkout"
     ("b" "branch/revision"   magit-checkout)
     ("l" "local branch"      magit-branch-checkout)
@@ -418,22 +428,23 @@ when using `magit-branch-and-checkout'."
 (defun magit-branch-read-args (prompt &optional default-start)
   (if magit-branch-read-upstream-first
       (let ((choice (magit-read-starting-point prompt nil default-start)))
-        (if (magit-rev-verify choice)
-            (list (magit-read-string-ns
-                   (if magit-completing-read--silent-default
-                       (format "%s (starting at `%s')" prompt choice)
-                     "Name for new branch")
-                   (let ((def (mapconcat #'identity
-                                         (cdr (split-string choice "/"))
-                                         "/")))
-                     (and (member choice (magit-list-remote-branch-names))
-                          (not (member def (magit-list-local-branch-names)))
-                          def)))
-                  choice)
-          (if (eq magit-branch-read-upstream-first 'fallback)
-              (list choice
-                    (magit-read-starting-point prompt choice default-start))
-            (user-error "Not a valid starting-point: %s" choice))))
+        (cond
+         ((magit-rev-verify choice)
+          (list (magit-read-string-ns
+                 (if magit-completing-read--silent-default
+                     (format "%s (starting at `%s')" prompt choice)
+                   "Name for new branch")
+                 (let ((def (mapconcat #'identity
+                                       (cdr (split-string choice "/"))
+                                       "/")))
+                   (and (member choice (magit-list-remote-branch-names))
+                        (not (member def (magit-list-local-branch-names)))
+                        def)))
+                choice))
+         ((eq magit-branch-read-upstream-first 'fallback)
+          (list choice
+                (magit-read-starting-point prompt choice default-start)))
+         ((user-error "Not a valid starting-point: %s" choice))))
     (let ((branch (magit-read-string-ns (concat prompt " named"))))
       (if (magit-branch-p branch)
           (magit-branch-read-args
@@ -784,8 +795,10 @@ the remote."
                  (not (eq magit-branch-rename-push-target 'local-only))
                  (or (not (eq magit-branch-rename-push-target 'forge-only))
                      (and (require (quote forge) nil t)
-                          (fboundp 'forge--forge-remote-p)
-                          (forge--forge-remote-p remote))))
+                          (fboundp 'forge--split-forge-url)
+                          (and-let* ((url (magit-git-string
+                                           "remote" "get-url" remote)))
+                            (forge--split-forge-url url)))))
         (let ((old-target (magit-get-push-branch old t))
               (new-target (magit-get-push-branch new t))
               (remote (magit-get-push-remote new)))
@@ -861,7 +874,7 @@ and also rename the respective reflog file."
   ["Configure repository defaults"
    ("R" magit-pull.rebase)
    ("P" magit-remote.pushDefault)
-   ("b" "Update default branch" magit-update-default-branch
+   ("B" "Update default branch" magit-update-default-branch
     :inapt-if-not magit-get-some-remote)]
   ["Configure branch creation"
    ("a m" magit-branch.autoSetupMerge)

@@ -25,7 +25,7 @@
 ;;     (git-commit "3.3.0")
 ;;     (magit-section "3.3.0")
 ;;     (seq "2.24")
-;;     (transient "0.5.0")
+;;     (transient "0.5.3")
 ;;     (with-editor "3.3.2"))
 
 ;; SPDX-License-Identifier: GPL-3.0-or-later
@@ -483,8 +483,9 @@ is run in the top-level directory of the current working tree."
   (let ((default-directory (or directory default-directory)))
     (with-environment-variables (("GIT_PAGER" "cat"))
       (magit--with-connection-local-variables
-       (magit-start-process shell-file-name nil
-                            shell-command-switch command))))
+        (magit-with-editor
+          (magit-start-process shell-file-name nil
+                               shell-command-switch command)))))
   (magit-process-buffer))
 
 (defun magit-read-shell-command (&optional toplevel initial-input)
