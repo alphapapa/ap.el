@@ -1128,7 +1128,26 @@ Includes \"%s\" format spec for length of playlist in minutes."
                         (concat (funcall (ap/mu4e-accounts-folder-function "Archives") message)
                                 "/" (format-time-string "%Y" (mu4e-message-field message :date)))))
   (mu4e-change-filenames-when-moving t)
-  (mu4e-get-mail-command "mbsync -a"))
+  (mu4e-get-mail-command "mbsync -a")
+  :config
+  (progn
+    ;; Marking as read and archiving with a single flag.
+    (add-to-list 'mu4e-marks
+                 '(read-and-archive
+                   :char       ("A" . "🗹")
+                   :prompt     "read-and-archive"
+                   :dyn-target (lambda (target msg) (mu4e-get-refile-folder msg))
+                   :action      (lambda (docid msg target)
+                                  (mu4e--server-move docid nil "+S-u-N")
+                                  (mu4e--server-move docid (mu4e--mark-check-target target) "-N"))))
+
+    (defun ap/mu4e-mark-read-and-archive ()
+      "Mark the message as read and archive it."
+      (interactive)
+      (mu4e-headers-mark-and-next 'read-and-archive))
+
+    ;; NOTE: This only binds it for `emu-headers-mode', not for `mu4e-headers-mode'.
+    (define-key emu-headers-mode-map (kbd "A") (emu-define-mark-command ap/mu4e-mark-read-and-archive))))
 
 (use-package orderless
   :custom
