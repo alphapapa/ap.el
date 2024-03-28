@@ -1,6 +1,6 @@
 ;;; compat-28.el --- Functionality added in Emacs 28.1 -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -190,7 +190,7 @@ and BLUE, is normalized to have its value in [0,65535]."
        ;; The "RGBi" (RGB Intensity) specification is defined by
        ;; XCMS[0], see [1] for the implementation in Xlib.
        ;;
-       ;; [0] http://www.nic.funet.fi/pub/X11/X11R4/DOCS/color/Xcms.text
+       ;; [0] https://www.nic.funet.fi/pub/X11/X11R4/DOCS/color/Xcms.text
        ;; [1] https://gitlab.freedesktop.org/xorg/lib/libx11/-/blob/master/src/xcms/LRGB.c#L1392
        ((string-match
          ;; (rx bos "rgbi:" (* space)
@@ -782,7 +782,7 @@ Other uses risk returning non-nil value that point to the wrong file."
 ;;;; Defined in env.el
 
 (compat-defmacro with-environment-variables (variables &rest body) ;; <compat-tests:with-environment-variables>
-  "Set VARIABLES in the environent and execute BODY.
+  "Set VARIABLES in the environment and execute BODY.
 VARIABLES is a list of variable settings of the form (VAR VALUE),
 where VAR is the name of the variable (a string) and VALUE
 is its value (also a string).

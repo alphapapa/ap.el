@@ -1,6 +1,6 @@
 ;;; compat-macs.el --- Compatibility Macros -*- lexical-binding: t; no-byte-compile: t; -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -142,7 +142,7 @@ REST are attributes and the function BODY."
 (defmacro compat-guard (cond &rest rest)
   "Guard definition with a runtime COND and a version check.
 The runtime condition must make sure that no definition is
-overriden.  REST is an attribute plist followed by the definition
+overridden.  REST is an attribute plist followed by the definition
 body.  The attributes specify the conditions under which the
 definition is generated.
 
@@ -240,7 +240,8 @@ definition is generated.
       ;; The boundp check is performed at runtime to make sure that we never
       ;; redefine an existing definition if Compat is loaded on a newer Emacs
       ;; version.
-      `((unless (boundp ',name)
+      `((defvar ,name)
+        (unless (boundp ',name)
           (,(if constant 'defconst 'defvar)
            ,name ,initval
            ,(compat-macs--docstring 'variable name docstring))

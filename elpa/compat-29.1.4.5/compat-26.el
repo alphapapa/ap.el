@@ -1,6 +1,6 @@
 ;;; compat-26.el --- Functionality added in Emacs 26.1 -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ see `region-noncontiguous-p' and `extract-rectangle-bounds'."
 
 ;;;; Defined in subr.el
 
-(compat-defun provided-mode-derived-p (mode &rest modes) ;; <compat-tests:provided-derived-mode-p>
+(compat-defun provided-mode-derived-p (mode &rest modes) ;; <compat-tests:provided-mode-derived-p>
   "Non-nil if MODE is derived from one of MODES.
 Uses the `derived-mode-parent' property of the symbol to trace backwards.
 If you just want to check `major-mode', use `derived-mode-p'."

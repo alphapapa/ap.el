@@ -1,7 +1,7 @@
-This is docuyZlI2.info, produced by makeinfo version 6.8 from
+This is docq1ahZR.info, produced by makeinfo version 6.8 from
 compat.texi.
 
-Copyright © 2022-2023 Free Software Foundation, Inc.
+Copyright © 2022-2024 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -20,16 +20,16 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docuyZlI2.info,  Node: Top,  Next: Introduction,  Up: (dir)
+File: docq1ahZR.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
 "Compat" Manual
 ***************
 
 This manual documents the usage of the "Compat" Emacs lisp library, the
 forward-compatibility library for Emacs Lisp, corresponding to version
-29.1.4.4.
+29.1.4.5.
 
-   Copyright © 2022-2023 Free Software Foundation, Inc.
+   Copyright © 2022-2024 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -68,7 +68,7 @@ Support
 
 
 
-File: docuyZlI2.info,  Node: Introduction,  Next: Support,  Prev: Top,  Up: Top
+File: docq1ahZR.info,  Node: Introduction,  Next: Support,  Prev: Top,  Up: Top
 
 1 Introduction
 **************
@@ -80,7 +80,7 @@ File: docuyZlI2.info,  Node: Introduction,  Next: Support,  Prev: Top,  Up: Top
 * Limitations::
 
 
-File: docuyZlI2.info,  Node: Overview,  Next: Usage,  Up: Introduction
+File: docq1ahZR.info,  Node: Overview,  Next: Usage,  Up: Introduction
 
 1.1 Overview
 ============
@@ -95,7 +95,7 @@ audience are package developers that are interested in using newer
 developments, without having to break compatibility.
 
 
-File: docuyZlI2.info,  Node: Usage,  Next: Limitations,  Prev: Overview,  Up: Introduction
+File: docq1ahZR.info,  Node: Usage,  Next: Limitations,  Prev: Overview,  Up: Introduction
 
 1.2 Usage
 =========
@@ -103,9 +103,9 @@ File: docuyZlI2.info,  Node: Usage,  Next: Limitations,  Prev: Overview,  Up: In
 The intended use-case for this library is for package developers to add
 as a dependency in the header.  The version of the Compat library
 mirrors the version of Emacs releases.  The current version of Compat
-corresponds to the upcoming Emacs 29 release.
+corresponds to the current Emacs release.
 
-     ;; Package-Requires: ((emacs "24.4") (compat "29.1.4.4"))
+     ;; Package-Requires: ((emacs "24.4") (compat "29.1.4.5"))
 
    There is no need to depend on ‘emacs 24.4’ specifically.  One can
 choose any newer version, if features not provided by Compat necessitate
@@ -115,26 +115,31 @@ it, for example bug fixes or UI improvements.
 
      (require 'compat)
 
-   should be added early on.  In packages which are part of Emacs itself
-and which want to take advantage of Compat, the ‘noerror’ flag should be
-specified: ‘(require 'compat nil 'noerror)’.  In the future a minimal
-version of Compat may be added to the Emacs core, such that the
-‘noerror’ flag will not be necessary anymore.
+   should be added early on.  This will load all necessary Compat
+definitions.  Compat loads the ‘seq’ library which is preloaded by
+default on Emacs 29.  Note that if Compat is installed on a recent
+version of Emacs, all of the definitions are disabled at compile time,
+such that no negative performance impact is incurred.
 
-   This will load all necessary Compat definitions.  Compat loads the
-‘seq’ library which is preloaded by default on Emacs 29.  Note that if
-Compat is installed on a recent version of Emacs, all of the definitions
-are disabled at compile time, such that no negative performance impact
-is incurred.
+   A minimal version of Compat will be present in Emacs version 30 and
+newer.  Packages which are part of Emacs itself and want to take
+advantage of Compat, can also use ‘(require 'compat)’.  The advantage of
+the inclusion of a minimal Compat in Emacs is that Compat will not be
+installed if you require a version newer or equal than the current Emacs
+version.  For example, if a package depending on Emacs 25.1 and Compat
+29.1 is installed on Emacs 30.1, Compat will not be pulled in as
+dependency, since Emacs 30.1 already provides the required
+functionality.
 
-   Note that Compat provides replacement functions with extended
-functionality for functions that are already defined (‘sort’, ‘assoc’,
-...).  These functions may have changed their calling convention
-(additional optional arguments) or may have changed their behavior.
-These functions must be looked up explicitly with ‘compat-function’ or
-called explicitly with ‘compat-call’.  We call them “Extended
-Definitions”.  In contrast, newly “Added Definitions” can be called as
-usual.
+   Compat provides replacement functions with extended functionality for
+functions that are already defined, e.g., ‘sort’ or ‘assoc’.  These
+functions may have changed their calling convention (additional optional
+arguments) or may have changed their behavior.  These functions must be
+looked up explicitly with ‘compat-function’ or called explicitly with
+‘compat-call’.  We call them “Extended Definitions”.  In contrast, newly
+“Added Definitions” can be called as usual.  The Compat manual
+explicitly documents the calling convention of each compatibility
+function.
 
      (compat-call assoc key alist testfn) ;; Call extended `assoc'
      (mapcan fun seq)                     ;; Call newly added `mapcan'
@@ -152,22 +157,16 @@ usual.
      ‘compat-call’ for a more convenient macro to directly call
      compatibility functions.
 
-   If Compat is used in core packages, where Compat must be required
-currently with the ‘noerror’ flag, the macros ‘compat-call’ and
-‘compat-function’ ar not available.  In the future the macros could be
-added to subr.el.  Alternatively a minimal version of compat.el could be
-added to the core.  For now it is necessary to replicate the definition
-of the macros within core packages.  For example the package ERC defines
-its own macro ‘erc-compat-call’, which replicates the Compat definition
-precisely.
+   If Compat is used in Emacs core packages, the macros ‘compat-call’
+and ‘compat-function’ will be available in Emacs version 30 and newer.
 
-   This design has been chosen since Compat does not advise or override
-existing functions.  Generally Compat is written in defensive style
-which is supposed to reduce potential breakage, and to increase the
-chances of staying binary compatible across releases.  The extensive
-test coverage ensures that we can maintain high quality, which is
-crucial for Compat which is not restricted to a namespace like usual
-libraries.
+   The macros ‘compat-call’ and ‘compat-function’ are introduced by
+Compat, since Compat does not advise or override existing functions.
+Generally Compat is written in defensive style which is supposed to
+reduce potential breakage, and to increase the chances of staying binary
+compatible across releases.  The extensive test coverage ensures that we
+can maintain high quality, which is crucial for Compat which is not
+restricted to a namespace like usual libraries.
 
    If you intend to use a compatibility function in your code it is
 recommended that you take a look at the test suite ‘compat-tests.el’.
@@ -185,7 +184,7 @@ provide a development mailing list
 <~pkal/compat-devel@lists.sr.ht>).
 
 
-File: docuyZlI2.info,  Node: Limitations,  Prev: Usage,  Up: Introduction
+File: docq1ahZR.info,  Node: Limitations,  Prev: Usage,  Up: Introduction
 
 1.3 Limitations
 ===============
@@ -269,15 +268,15 @@ belong here, a *note report: Development. would be much appreciated.
      external libraries that cannot be reasonably duplicated in the
      scope of a compatibility library.  Sometimes new functions on the C
      level rely on internal data structures, which we cannot access,
-     rendering a backport impossible.  For example a missing libxml
-     cannot be emulated.
+     rendering a backport impossible.  For example a missing libxml or
+     libtreesitter cannot be emulated.
 
    • The semantics of Elisp changed on a deep level.  For example the
      addition of big integer support in Emacs 27.1 cannot be replicated
      on the level of Compat.
 
 
-File: docuyZlI2.info,  Node: Support,  Next: Development,  Prev: Introduction,  Up: Top
+File: docq1ahZR.info,  Node: Support,  Next: Development,  Prev: Introduction,  Up: Top
 
 2 Support
 *********
@@ -294,7 +293,7 @@ manage to provide for each Emacs version.
 * Emacs 29.1::                   Compatibility support for Emacs 29.1
 
 
-File: docuyZlI2.info,  Node: Emacs 25.1,  Next: Emacs 26.1,  Up: Support
+File: docq1ahZR.info,  Node: Emacs 25.1,  Next: Emacs 26.1,  Up: Support
 
 2.1 Emacs 25.1
 ==============
@@ -525,7 +524,7 @@ implemented in 25.1:
    • The ‘thunk’ library.
 
 
-File: docuyZlI2.info,  Node: Emacs 26.1,  Next: Emacs 27.1,  Prev: Emacs 25.1,  Up: Support
+File: docq1ahZR.info,  Node: Emacs 26.1,  Next: Emacs 27.1,  Prev: Emacs 25.1,  Up: Support
 
 2.2 Emacs 26.1
 ==============
@@ -936,7 +935,7 @@ implemented in 26.1:
    • The ‘svg’ library (published separately as a :core package).
 
 
-File: docuyZlI2.info,  Node: Emacs 27.1,  Next: Emacs 28.1,  Prev: Emacs 26.1,  Up: Support
+File: docq1ahZR.info,  Node: Emacs 27.1,  Next: Emacs 28.1,  Prev: Emacs 26.1,  Up: Support
 
 2.3 Emacs 27.1
 ==============
@@ -1405,7 +1404,7 @@ implemented in 27.1:
    • The ‘image-converter’ library.
 
 
-File: docuyZlI2.info,  Node: Emacs 28.1,  Next: Emacs 29.1,  Prev: Emacs 27.1,  Up: Support
+File: docq1ahZR.info,  Node: Emacs 28.1,  Next: Emacs 29.1,  Prev: Emacs 27.1,  Up: Support
 
 2.4 Emacs 28.1
 ==============
@@ -1866,7 +1865,7 @@ implemented in 28.1:
    • The ‘multisession’ library.
 
 
-File: docuyZlI2.info,  Node: Emacs 29.1,  Prev: Emacs 28.1,  Up: Support
+File: docq1ahZR.info,  Node: Emacs 29.1,  Prev: Emacs 28.1,  Up: Support
 
 2.5 Emacs 29.1
 ==============
@@ -2174,7 +2173,7 @@ by Compat.
      that happens, characters no longer map in a simple way to display
      columns, and display layout decisions with such strings, such as
      truncating too wide strings, can be a complex job.  This function
-     helps in performing suvh jobs: it splits up its argument STRING
+     helps in performing such jobs: it splits up its argument STRING
      into a list of substrings, where each substring produces a single
      grapheme cluster that should be displayed as a unit.  Lisp programs
      can then use this list to construct visually-valid substrings of
@@ -2700,7 +2699,7 @@ implemented in 29.1:
    • Support for symbols with position information.
 
 
-File: docuyZlI2.info,  Node: Development,  Next: Function Index,  Prev: Support,  Up: Top
+File: docq1ahZR.info,  Node: Development,  Next: Function Index,  Prev: Support,  Up: Top
 
 3 Development
 *************
@@ -2737,7 +2736,7 @@ version has been reasonably stabilized, e.g., around the time when the
 Emacs version branch is created in the Emacs repository on Savannah.
 
 
-File: docuyZlI2.info,  Node: Function Index,  Next: Variable Index,  Prev: Development,  Up: Top
+File: docq1ahZR.info,  Node: Function Index,  Next: Variable Index,  Prev: Development,  Up: Top
 
 Appendix A Function Index
 *************************
@@ -2766,7 +2765,7 @@ Appendix A Function Index
 * cl-with-gensyms:                       Emacs 29.1.          (line 639)
 * color-dark-p:                          Emacs 28.1.          (line 322)
 * color-values-from-color-spec:          Emacs 28.1.          (line 328)
-* compat-call:                           Usage.               (line  45)
+* compat-call:                           Usage.               (line  50)
 * compat-call alist-get:                 Emacs 26.1.          (line 344)
 * compat-call assoc:                     Emacs 26.1.          (line 316)
 * compat-call assoc-delete-all:          Emacs 27.1.          (line 417)
@@ -2790,7 +2789,7 @@ Appendix A Function Index
 * compat-call string-trim-left:          Emacs 26.1.          (line 359)
 * compat-call string-trim-right:         Emacs 26.1.          (line 367)
 * compat-call string-width:              Emacs 28.1.          (line 395)
-* compat-function:                       Usage.               (line  53)
+* compat-function:                       Usage.               (line  58)
 * compiled-function-p:                   Emacs 29.1.          (line 226)
 * count-sentences:                       Emacs 29.1.          (line  25)
 * cXXXr:                                 Emacs 26.1.          (line  66)
@@ -2956,7 +2955,7 @@ Appendix A Function Index
 * xor:                                   Emacs 27.1.          (line 142)
 
 
-File: docuyZlI2.info,  Node: Variable Index,  Prev: Function Index,  Up: Top
+File: docq1ahZR.info,  Node: Variable Index,  Prev: Function Index,  Up: Top
 
 Appendix B Variable Index
 *************************
@@ -2979,16 +2978,16 @@ Node: Top829
 Node: Introduction2258
 Node: Overview2421
 Node: Usage2947
-Node: Limitations7307
-Node: Support12156
-Node: Emacs 25.112741
-Node: Emacs 26.122143
-Node: Emacs 27.139437
-Node: Emacs 28.159834
-Node: Emacs 29.179915
-Node: Development117294
-Node: Function Index119028
-Node: Variable Index134460
+Node: Limitations7326
+Node: Support12192
+Node: Emacs 25.112777
+Node: Emacs 26.122179
+Node: Emacs 27.139473
+Node: Emacs 28.159870
+Node: Emacs 29.179951
+Node: Development117330
+Node: Function Index119064
+Node: Variable Index134496
 
 End Tag Table
 
