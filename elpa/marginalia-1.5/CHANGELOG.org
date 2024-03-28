@@ -1,0 +1,43 @@
+#+title: marginalia.el - Changelog
+#+author: Omar Antolín Camarena, Daniel Mendler
+#+language: en
+
+* Version 1.5 (2023-12-27)
+
+- ~marginalia-annotate-bookmark~: Show location and more context.
+- ~marginalia-annotate-tab~: Show tab index starting from one.
+
+* Version 1.4 (2023-12-01)
+
+- =marginalia-annotate-theme=: New annotator based on =marginalia-annotate-library=.
+- =marginalia-remote-file-regexps=: New customization variable set to a list of
+  regexps matching remote paths, which should be excluded from file annotations.
+
+* Version 1.3 (2023-07-02)
+
+- =marginalia-classify-by-prompt=: Use case-insensitive matching.
+- =marginalia-annotate-symbol=: Additional symbol classes. Use =M= for module
+  functions, =P= for primitives and =S= for special forms.
+- =marginalia-annotate-symbol=: Add =symbol-file= column.
+- =marginalia-cycle=: Add =completion-predicate= to display command only in
+  recursive minibuffers.
+
+* Version 1.2 (2023-04-17)
+
+- =marginalia-classify-by-command-name=: Resolve function aliases and use the name
+  of the original command to determine the completion category.
+
+* Version 1.1 (2023-02-17)
+
+- Require the =compat= library.
+- Fix =marginalia-classify-by-prompt= such that it handles multiple brackets in
+  the prompt gracefully.
+- Add =help-echo= properties to truncated annotations. The full string is shown on
+  mouse hover.
+- Add =help-echo= to the symbol classes of =marginalia-annotate-symbol=.
+- Add =help-echo= to file sizes showing the exact size in bytes.
+- Add =help-echo= to file dates showing the exact date.
+
+* Version 1.0 (2022-12-22)
+
+- Start of changelog.

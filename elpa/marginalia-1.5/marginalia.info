@@ -1,4 +1,4 @@
-This is docZyiKeL.info, produced by makeinfo version 6.7 from
+This is doc5nyIuM.info, produced by makeinfo version 6.8 from
 marginalia.texi.
 
 INFO-DIR-SECTION Emacs misc features
@@ -7,7 +7,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docZyiKeL.info,  Node: Top,  Next: Configuration,  Up: (dir)
+File: doc5nyIuM.info,  Node: Top,  Next: Configuration,  Up: (dir)
 
 marginalia.el - Marginalia in the minibuffer
 ********************************************
@@ -34,10 +34,11 @@ annotators or even disable the annotator with command
 * Information shown by the annotators::
 * Adding custom annotators or classifiers::
 * Disabling annotators, builtin or lightweight annotators: Disabling annotators builtin or lightweight annotators.
+* Icons in the minibuffer::
 * Contributions::
 
 
-File: docZyiKeL.info,  Node: Configuration,  Next: Information shown by the annotators,  Prev: Top,  Up: Top
+File: doc5nyIuM.info,  Node: Configuration,  Next: Information shown by the annotators,  Prev: Top,  Up: Top
 
 1 Configuration
 ***************
@@ -53,20 +54,22 @@ commands.
 
      ;; Enable rich annotations using the Marginalia package
      (use-package marginalia
-       ;; Either bind `marginalia-cycle' globally or only in the minibuffer
-       :bind (("M-A" . marginalia-cycle)
-              :map minibuffer-local-map
+       ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+       ;; available in the *Completions* buffer, add it to the
+       ;; `completion-list-mode-map'.
+       :bind (:map minibuffer-local-map
               ("M-A" . marginalia-cycle))
 
-       ;; The :init configuration is always executed (Not lazy!)
+       ;; The :init section is always executed.
        :init
 
-       ;; Must be in the :init section of use-package such that the mode gets
-       ;; enabled right away. Note that this forces loading the package.
+       ;; Marginalia must be activated in the :init section of use-package such that
+       ;; the mode gets enabled right away. Note that this forces loading the
+       ;; package.
        (marginalia-mode))
 
 
-File: docZyiKeL.info,  Node: Information shown by the annotators,  Next: Adding custom annotators or classifiers,  Prev: Configuration,  Up: Top
+File: doc5nyIuM.info,  Node: Information shown by the annotators,  Next: Adding custom annotators or classifiers,  Prev: Configuration,  Up: Top
 
 2 Information shown by the annotators
 *************************************
@@ -75,13 +78,13 @@ In general, to learn more about what different annotations mean, a good
 starting point is to look at ‘marginalia-annotator-registry’, and follow
 up to the annotation function of the category you are interested in.
 
-   For example the annotations for elisp symbols include their symbol
+   For example the annotations for Elisp symbols include their symbol
 class - ‘v’ for variable, ‘f’ for function, ‘c’ for command, etc.  For
 more information on what the different classifications mean, see the
 docstring of ‘marginalia--symbol-class’.
 
 
-File: docZyiKeL.info,  Node: Adding custom annotators or classifiers,  Next: Disabling annotators builtin or lightweight annotators,  Prev: Information shown by the annotators,  Up: Top
+File: doc5nyIuM.info,  Node: Adding custom annotators or classifiers,  Next: Disabling annotators builtin or lightweight annotators,  Prev: Information shown by the annotators,  Up: Top
 
 3 Adding custom annotators or classifiers
 *****************************************
@@ -115,7 +118,7 @@ for each candidate.
 
    Unfortunately, not all commands (including Emacs’ builtin ones)
 specify the category of their candidates.  To compensate for this
-shortcoming, Marginalia hooks into the emacs completion framework and
+shortcoming, Marginalia hooks into the Emacs completion framework and
 runs the *classifiers* listed in the variable ‘marginalia-classifiers’,
 which use the command’s prompt or other properties of the candidates to
 specify the completion category.
@@ -172,7 +175,7 @@ this setting, after invoking ‘M-x describe-face RET’ you can cycle
 between all of these annotators using ‘marginalia-cycle’.
 
 
-File: docZyiKeL.info,  Node: Disabling annotators builtin or lightweight annotators,  Next: Contributions,  Prev: Adding custom annotators or classifiers,  Up: Top
+File: doc5nyIuM.info,  Node: Disabling annotators builtin or lightweight annotators,  Next: Icons in the minibuffer,  Prev: Adding custom annotators or classifiers,  Up: Top
 
 4 Disabling annotators, builtin or lightweight annotators
 *********************************************************
@@ -224,9 +227,30 @@ from the registry.
            (assq-delete-all 'file marginalia-annotator-registry))
 
 
-File: docZyiKeL.info,  Node: Contributions,  Prev: Disabling annotators builtin or lightweight annotators,  Up: Top
+File: doc5nyIuM.info,  Node: Icons in the minibuffer,  Next: Contributions,  Prev: Disabling annotators builtin or lightweight annotators,  Up: Top
 
-5 Contributions
+5 Icons in the minibuffer
+*************************
+
+Icons in the minibuffer completion UI are a commonly requested feature.
+Marginalia focuses on text annotations only.  The following packages are
+compatible with Marginalia and use special fonts to add icons in front
+of completion candidates.  There also exist related packages to enhance
+Dired, Ibuffer and other modes with icons consistently.
+
+   • all-the-icons-completion
+     (https://github.com/iyefrat/all-the-icons-completion): Relies on
+     the ‘all-the-icons.el’ package which configures multiple icon
+     fonts.
+   • nerd-icons-completion
+     (https://github.com/rainstormstudio/nerd-icons-completion): Relies
+     on patched fonts including icons.  This package works even in the
+     terminal where only a single font can be used.
+
+
+File: doc5nyIuM.info,  Node: Contributions,  Prev: Icons in the minibuffer,  Up: Top
+
+6 Contributions
 ***************
 
 Since this package is part of GNU ELPA
@@ -237,11 +261,12 @@ copyright assignment to the FSF.
 
 Tag Table:
 Node: Top216
-Node: Configuration1450
-Node: Information shown by the annotators2598
-Node: Adding custom annotators or classifiers3310
-Node: Disabling annotators builtin or lightweight annotators8226
-Node: Contributions10267
+Node: Configuration1478
+Node: Information shown by the annotators2706
+Node: Adding custom annotators or classifiers3418
+Node: Disabling annotators builtin or lightweight annotators8334
+Node: Icons in the minibuffer10385
+Node: Contributions11344
 
 End Tag Table
 

@@ -40,16 +40,18 @@ with [[https://github.com/oantolin/embark][Embark]] for action support and [[htt
 #+begin_src emacs-lisp
 ;; Enable rich annotations using the Marginalia package
 (use-package marginalia
-  ;; Either bind `marginalia-cycle' globally or only in the minibuffer
-  :bind (("M-A" . marginalia-cycle)
-         :map minibuffer-local-map
+  ;; Bind `marginalia-cycle' locally in the minibuffer.  To make the binding
+  ;; available in the *Completions* buffer, add it to the
+  ;; `completion-list-mode-map'.
+  :bind (:map minibuffer-local-map
          ("M-A" . marginalia-cycle))
 
-  ;; The :init configuration is always executed (Not lazy!)
+  ;; The :init section is always executed.
   :init
 
-  ;; Must be in the :init section of use-package such that the mode gets
-  ;; enabled right away. Note that this forces loading the package.
+  ;; Marginalia must be activated in the :init section of use-package such that
+  ;; the mode gets enabled right away. Note that this forces loading the
+  ;; package.
   (marginalia-mode))
 #+end_src
 
@@ -59,7 +61,7 @@ In general, to learn more about what different annotations mean, a good starting
 point is to look at ~marginalia-annotator-registry~, and follow up to the
 annotation function of the category you are interested in.
 
-For example the annotations for elisp symbols include their symbol class - =v= for
+For example the annotations for Elisp symbols include their symbol class - =v= for
 variable, =f= for function, =c= for command, etc. For more information on what the
 different classifications mean, see the docstring of ~marginalia--symbol-class~.
 
@@ -89,7 +91,7 @@ annotations for display for each candidate.
 
 Unfortunately, not all commands (including Emacs' builtin ones) specify the
 category of their candidates. To compensate for this shortcoming, Marginalia
-hooks into the emacs completion framework and runs the *classifiers* listed in the
+hooks into the Emacs completion framework and runs the *classifiers* listed in the
 variable =marginalia-classifiers=, which use the command's prompt or other
 properties of the candidates to specify the completion category.
 
@@ -200,6 +202,19 @@ can delete all file annotators from the registry.
   (setq marginalia-annotator-registry
         (assq-delete-all 'file marginalia-annotator-registry))
 #+end_src
+
+* Icons in the minibuffer
+
+Icons in the minibuffer completion UI are a commonly requested feature.
+Marginalia focuses on text annotations only. The following packages are
+compatible with Marginalia and use special fonts to add icons in front of
+completion candidates. There also exist related packages to enhance Dired,
+Ibuffer and other modes with icons consistently.
+
+- [[https://github.com/iyefrat/all-the-icons-completion][all-the-icons-completion]]: Relies on the =all-the-icons.el= package which
+  configures multiple icon fonts.
+- [[https://github.com/rainstormstudio/nerd-icons-completion][nerd-icons-completion]]: Relies on patched fonts including icons. This package
+  works even in the terminal where only a single font can be used.
 
 * Contributions
 
