@@ -1,0 +1,2 @@
+;; Generated package description from ef-themes.el  -*- no-byte-compile: t -*-
+(define-package "ef-themes" "1.6.1" "Colorful and legible themes" '((emacs "27.1")) :commit "96aaab126510bfd303558e2a9b85a745dab32f41" :authors '(("Protesilaos Stavrou" . "info@protesilaos.com")) :maintainer '("Protesilaos Stavrou" . "info@protesilaos.com") :keywords '("faces" "theme" "accessibility") :url "https://git.sr.ht/~protesilaos/ef-themes")
