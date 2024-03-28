@@ -1,14 +1,14 @@
 ;;; org-modern.el --- Modern looks for Org -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2022-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
-;; Version: 0.10
-;; Package-Requires: ((emacs "27.1") (compat "29.1.4.0"))
+;; Version: 1.2
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4"))
 ;; Homepage: https://github.com/minad/org-modern
-;; Keywords: outlines, hypermedia, wp
+;; Keywords: outlines, hypermedia, text
 
 ;; This file is part of GNU Emacs.
 
@@ -53,17 +53,18 @@ If set to `auto' the border width is computed based on the `line-spacing'.
 A value between 0.1 and 0.4 of `line-spacing' is recommended."
   :type '(choice (const nil) (const auto) integer))
 
-(defcustom org-modern-star '("◉" "○" "◈" "◇" "✳")
+(defcustom org-modern-star "◉○◈◇✳"
   "Replacement strings for headline stars for each level.
 Set to nil to disable styling the headlines."
-  :type '(repeat string))
+  :type '(choice string (repeat string)))
 
 (defcustom org-modern-hide-stars 'leading
   "Changes the displays of the stars.
-Can be leading, t, or a string replacement for each leading star.
-Set to nil to disable."
+Can be leading, t, or a string/character replacement for each
+leading star.  Set to nil to disable."
   :type '(choice
           (string :tag "Replacement string for leading stars")
+          (character :tag "Replacement character for leading stars")
           (const :tag "Do not hide stars" nil)
           (const :tag "Hide all stars" t)
           (const :tag "Hide leading stars" leading)))
@@ -190,7 +191,7 @@ all other blocks."
                         (string :tag "#+end_NAME replacement"))
                   (const :tag "Hide #+begin_ and #+end_ prefixes" t)))))
 
-(defcustom org-modern-block-fringe 0
+(defcustom org-modern-block-fringe 2
   "Add a border to the blocks in the fringe.
 This variable can also be set to an integer between 0 and 16,
 which specifies the offset of the block border from the edge of
@@ -234,10 +235,10 @@ references."
   "Prettify todo statistics."
   :type 'boolean)
 
-(defcustom org-modern-progress '("○" "◔" "◑" "◕" "●")
+(defcustom org-modern-progress "○◔◑◕●"
   "Add a progress indicator to the todo statistics.
 Set to nil to disable the indicator."
-  :type '(repeat string))
+  :type '(choice string (repeat string)))
 
 (defgroup org-modern-faces nil
   "Faces used by `org-modern'."
@@ -617,7 +618,7 @@ the font.")
              :line-width
              ;; Emacs 28 supports different line horizontal and vertical line widths
              (if (eval-when-compile (>= emacs-major-version 28))
-                 (cons 0 (- border))
+                 (cons -1 (- border))
                (- border)))))))
 
 (defun org-modern--update-fringe-bitmaps ()
@@ -639,7 +640,7 @@ the font.")
 
 (defun org-modern--symbol (str)
   "Add `org-modern-symbol' face to STR."
-  (setq str (copy-sequence str))
+  (setq str (if (stringp str) (copy-sequence str) (char-to-string str)))
   (add-face-text-property 0 (length str) 'org-modern-symbol 'append str)
   str)
 
@@ -760,6 +761,8 @@ the font.")
   "Modern looks for Org."
   :global nil
   :group 'org-modern
+  (unless (derived-mode-p 'org-mode)
+    (error "`org-modern-mode' should be enabled only in `org-mode'"))
   (cond
    (org-modern-mode
     (add-to-invisibility-spec 'org-modern)
@@ -767,7 +770,7 @@ the font.")
      org-modern--star-cache
      (vconcat (mapcar #'org-modern--symbol org-modern-star))
      org-modern--hide-stars-cache
-     (and (stringp org-modern-hide-stars)
+     (and (char-or-string-p org-modern-hide-stars)
           (list (org-modern--symbol org-modern-hide-stars)
                 (org-modern--symbol org-modern-hide-stars)))
      org-modern--progress-cache
@@ -796,8 +799,7 @@ the font.")
     (remove-hook 'pre-redisplay-functions #'org-modern--pre-redisplay 'local)
     (remove-hook 'org-after-promote-entry-hook #'org-modern--unfontify-line 'local)
     (remove-hook 'org-after-demote-entry-hook #'org-modern--unfontify-line 'local)))
-  (save-restriction
-    (widen)
+  (without-restriction
     (with-silent-modifications
       (org-modern--unfontify (point-min) (point-max)))
     (font-lock-flush)))
@@ -810,10 +812,10 @@ the font.")
   "Unfontify prettified elements between BEG and END."
   (let ((font-lock-extra-managed-props
          (append
-          ;; Only remove line-prefix and wrap-prefix if org-indent-mode is disabled.
-          (if (bound-and-true-p org-indent-mode)
-              '(display invisible)
-            '(wrap-prefix line-prefix display invisible))
+          ;; Only remove line/wrap-prefix if block fringes are used
+          (if (and org-modern-block-fringe (not (bound-and-true-p org-indent-mode)))
+              '(wrap-prefix line-prefix display invisible)
+            '(display invisible))
           font-lock-extra-managed-props)))
     (org-unfontify-region beg end)))
 

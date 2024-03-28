@@ -1,4 +1,4 @@
-This is docD0AU7N.info, produced by makeinfo version 6.7 from
+This is docLSPifY.info, produced by makeinfo version 6.8 from
 org-modern.texi.
 
 INFO-DIR-SECTION Emacs misc features
@@ -7,7 +7,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docD0AU7N.info,  Node: Top,  Next: Introduction,  Up: (dir)
+File: docLSPifY.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
 Modern Org Style
 ****************
@@ -20,7 +20,7 @@ Modern Org Style
 * Contributions::
 
 
-File: docD0AU7N.info,  Node: Introduction,  Next: Configuration,  Prev: Top,  Up: Top
+File: docLSPifY.info,  Node: Introduction,  Next: Configuration,  Prev: Top,  Up: Top
 
 1 Introduction
 **************
@@ -48,7 +48,7 @@ value of ‘line-spacing’.  This looks best if ‘line-spacing’ has a value
 between 0.1 and 0.4 in the Org buffer.
 
 
-File: docD0AU7N.info,  Node: Configuration,  Next: Alternatives,  Prev: Introduction,  Up: Top
+File: docLSPifY.info,  Node: Configuration,  Next: Alternatives,  Prev: Introduction,  Up: Top
 
 2 Configuration
 ***************
@@ -113,12 +113,12 @@ looks of the screenshot above.
         (800 1000 1200 1400 1600 1800 2000)
         " ┄┄┄┄┄ " "┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄")
       org-agenda-current-time-string
-      "⭠ now ─────────────────────────────────────────────────")
+      "◀── now ─────────────────────────────────────────────────")
 
      (global-org-modern-mode)
 
 
-File: docD0AU7N.info,  Node: Alternatives,  Next: Contributions,  Prev: Configuration,  Up: Top
+File: docLSPifY.info,  Node: Alternatives,  Next: Contributions,  Prev: Configuration,  Up: Top
 
 3 Alternatives
 **************
@@ -148,7 +148,7 @@ certain elements, e.g., ‘org-modern-timestamp’, if you only want to use
 a subset of ‘org-modern’.
 
 
-File: docD0AU7N.info,  Node: Contributions,  Prev: Alternatives,  Up: Top
+File: docLSPifY.info,  Node: Contributions,  Prev: Alternatives,  Up: Top
 
 4 Contributions
 ***************
@@ -163,8 +163,8 @@ Tag Table:
 Node: Top204
 Node: Introduction388
 Node: Configuration1654
-Node: Alternatives4142
-Node: Contributions5660
+Node: Alternatives4148
+Node: Contributions5666
 
 End Tag Table
 
