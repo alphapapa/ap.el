@@ -1,6 +1,6 @@
-;; debbugs-browse.el --- browse bug URLs with debbugs-gnu or debbugs-org
+;; debbugs-browse.el --- browse bug URLs with debbugs-gnu or debbugs-org  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2015-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
 ;; Author: Michael Albinus <michael.albinus@gmx.de>
 ;; Keywords: comm, hypermedia, maint
@@ -27,6 +27,9 @@
 ;; `debbugs-gnu-bugs' or `debbugs-org-bugs'.
 
 ;;; Code:
+
+(autoload 'debbugs-gnu-bugs "debbugs-gnu")
+(autoload 'debbugs-org-bugs "debbugs-org")
 
 (defcustom debbugs-browse-function #'debbugs-gnu-bugs
   "The debbugs function used for showing bugs.

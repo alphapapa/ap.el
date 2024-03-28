@@ -1,11 +1,11 @@
 ;;; debbugs.el --- SOAP library to access debbugs servers  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
 ;; Author: Michael Albinus <michael.albinus@gmx.de>
 ;; Keywords: comm, hypermedia
 ;; Package: debbugs
-;; Version: 0.33
+;; Version: 0.40
 ;; Package-Requires: ((emacs "26.1") (soap-client "3.1.5"))
 
 ;; This file is not part of GNU Emacs.
@@ -141,15 +141,25 @@ Don't set this globally, it shall be let-bound.")
   "An alist keeping the progress percentage per buffer.
 Don't set this globally, it shall be let-bound.")
 
-(defun debbugs-url-display-percentage (&rest args)
+;; Since Emacs 29.1, `url-display-percentage' is obsolete and replaced
+;; by `url-display-message'.  However, `url-display-message' isn't
+;; such good in providing percentage numbers.
+(defvar debbugs-url-display-message-or-percentage-function
+  (if (fboundp 'url-display-percentage)
+      'url-display-percentage 'url-display-message)
+  "The used function from url-util.el.")
+
+(defun debbugs-url-display-message-or-percentage (&rest args)
   "Update progress reporter."
   (ignore-errors
     (when (and debbugs-show-progress debbugs-progress-reporter)
       ;; The fingerprint of `url-display-percentage' is FMT PERC &REST
-      ;; ARGS.  However, there are calls which have a nil argument
-      ;; before the other arguments, whyever. In order to be backward
-      ;; compatible, we scan the arguments for the first number, and
-      ;; regard it as the percentage.
+      ;; ARGS.  Since Emacs 29.1, this is obsolete and replaced by
+      ;; `url-display-message', which should also carry the percentage
+      ;; in its ARGS.  However, there are calls which have a nil
+      ;; argument before the other arguments, whyever. In order to be
+      ;; backward compatible, we scan the arguments for the first
+      ;; number, and regard it as the percentage.
       (while (and args (not (natnump (car args))))
 	(setq args (cdr args)))
       (progress-reporter-update
@@ -249,9 +259,9 @@ patch:
 	debbugs-progress-reporter-buffers url-show-status vec kw key val)
     (when debbugs-show-progress
       (add-function
-       :override (symbol-function #'url-display-percentage)
-       #'debbugs-url-display-percentage
-       '((name . "debbugs-url-display-percentage"))))
+       :override (symbol-function debbugs-url-display-message-or-percentage-function)
+       #'debbugs-url-display-message-or-percentage
+       '((name . "debbugs-url-display-message-or-percentage"))))
 
     ;; Check query.
     (while (and (consp query) (<= 2 (length query)))
@@ -294,8 +304,8 @@ patch:
 	(sort (car (soap-invoke debbugs-wsdl debbugs-port "get_bugs" vec)) #'<)
       (when debbugs-show-progress
 	(remove-function
-	 (symbol-function #'url-display-percentage)
-	 "debbugs-url-display-percentage")
+	 (symbol-function debbugs-url-display-message-or-percentage-function)
+	 "debbugs-url-display-message-or-percentage")
 	(progress-reporter-done debbugs-progress-reporter)))))
 
 (defun debbugs-newest-bugs (amount)
@@ -478,9 +488,9 @@ Example:
 	    debbugs-progress-reporter-buffers url-show-status results res)
 	(when debbugs-show-progress
 	  (add-function
-	   :override (symbol-function #'url-display-percentage)
-	   #'debbugs-url-display-percentage
-	   '((name . "debbugs-url-display-percentage"))))
+	   :override (symbol-function debbugs-url-display-message-or-percentage-function)
+	   #'debbugs-url-display-message-or-percentage
+	   '((name . "debbugs-url-display-message-or-percentage"))))
 
 	(while bug-ids
 	  (setq results
@@ -513,8 +523,8 @@ Example:
 
 	(when debbugs-show-progress
 	  (remove-function
-	   (symbol-function #'url-display-percentage)
-	   "debbugs-url-display-percentage")
+	   (symbol-function debbugs-url-display-message-or-percentage-function)
+	   "debbugs-url-display-message-or-percentage")
 	  (progress-reporter-done debbugs-progress-reporter))))
 
     (append
@@ -795,9 +805,9 @@ Examples:
     (when debbugs-create-progress-reporter
       (setq debbugs-progress-reporter (make-progress-reporter "Query bugs..."))
       (add-function
-       :override (symbol-function #'url-display-percentage)
-       #'debbugs-url-display-percentage
-       '((name . "debbugs-url-display-percentage"))))
+       :override (symbol-function debbugs-url-display-message-or-percentage-function)
+       #'debbugs-url-display-message-or-percentage
+       '((name . "debbugs-url-display-message-or-percentage"))))
 
     (if (and phrase (not (member :skip phrase)) (not (member :max phrase)))
 	;; We loop, until we have all results.
@@ -951,8 +961,8 @@ Examples:
 
     (when debbugs-create-progress-reporter
       (remove-function
-       (symbol-function #'url-display-percentage)
-       "debbugs-url-display-percentage")
+       (symbol-function debbugs-url-display-message-or-percentage-function)
+       "debbugs-url-display-message-or-percentage")
       (progress-reporter-done debbugs-progress-reporter))
 
     result))

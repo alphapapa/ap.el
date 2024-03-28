@@ -8,7 +8,7 @@
 @end direntry
 
 @copying
-Copyright @copyright{} 2015-2022 Free Software Foundation, Inc.
+Copyright @copyright{} 2015-2024 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -207,6 +207,18 @@ of bugs you are currently working on.
 @end deffn
 
 
+@deffn  {Command} debbugs-gnu-my-open-bugs
+@deffnx {Command} debbugs-org-my-open-bugs
+
+It is a good idea to maintain and eventually close your open bug
+reports.  The functions @code{debbugs-gnu-my-open-bugs} and
+@code{debbugs-org-my-open-bugs} help you do this, by retrieving open
+bug reports, in which you are the submitter.  These functions assume
+that you have defined the variable @code{user-mail-address}
+(@pxref{Mail Headers, , , emacs}).
+@end deffn
+
+
 @deffn  {Command} debbugs-gnu-emacs-release-blocking-reports &optional release
 @deffnx {Command} debbugs-org-emacs-release-blocking-reports &optional release
 
@@ -367,6 +379,16 @@ These commands show also a progress report when
 @end deffn
 
 
+@deffn  {Command} debbugs-gnu-guix-search
+@deffnx {Command} debbugs-org-guix-search
+
+By default, @code{debbugs-gnu-search} and @code{debbugs-org-search}
+search for all open bugs in the debbugs database.  While this
+extensive search is laudable, it is perhaps not efficient.  These two
+functions will let you search for only open guix bugs and patches.
+@end deffn
+
+
 @node Presenting Bugs
 @chapter Presenting Bugs
 
@@ -409,7 +431,9 @@ is closed).  Archived bugs are shown with inverse face
 (@code{debbugs-gnu-archived}).
 
 A DarkGrey background color (@code{debbugs-gnu-marked}) in the title
-column shows bugs which have been marked locally.
+column shows bugs which have been marked locally.  The title text is
+italic (@code{debbugs-gnu-marked-stale}) if the marked bug hasn't been
+touched for more than a week.
 
 The minor mode @code{debbugs-gnu-mode} is active in bug report
 buffers.  This enables the following key strokes:
@@ -722,8 +746,9 @@ The new bug title is read interactively.
 @itemx wishlist
 "severity 12345 serious|important|normal|minor|wishlist"
 
-@item unarchive
-"unarchive 12345"
+@item archive
+@itemx unarchive
+"archive|unarchive 12345"
 
 @item unmerge
 "unmerge 12345"
@@ -764,6 +789,11 @@ included in the message, applies them, runs @command{make -k} in the
 @file{lisp} subdirectory, and shows a @samp{*vc-dir*} buffer of the
 Emacs repository with the changed file(s).
 
+@vindex debbugs-gnu-compile-command
+The exact make command used is controlled by the user option
+@code{debbugs-gnu-compile-command}.  This option can also be set to
+@code{nil} to skip the compilation step.
+
 @vindex debbugs-gnu-trunk-directory
 @vindex debbugs-gnu-branch-directory
 The Emacs repository is determined via the user options
@@ -779,6 +809,11 @@ creates a ChangeLog entry with all needed information.  A final
 @kbd{M-m} in the @samp{ChangeLog} buffer commits the patch via
 @samp{*vc-log*}.
 
+@vindex debbugs-gnu-apply-patch-prefers-magit
+  If the user option @code{debbugs-gnu-apply-patch-prefers-magit} is
+non-@code{nil}, the third-party package Magit will be used instead of
+VC when you hit @kbd{M-m} in the GNUS ephemeral group.  Note that the
+rest of the workflow described above is not yet supported.
 
 @node Posting Patches
 @section Posting Patches to Debbugs from the Emacs Repository
@@ -826,7 +861,6 @@ the commit and where it was pushed to, and answering @kbd{y} will
 arrange for the bug to be closed when the message is sent.
 
 
-@node Customizing debbugs-gnu-pick-commits
 @subsection Customizing @code{debbugs-gnu-pick-commits}
 
 @vindex debbugs-gnu-commit-description-format

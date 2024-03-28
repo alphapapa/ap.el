@@ -1,6 +1,6 @@
 ;;; debbugs-gnu.el --- interface for the GNU bug tracker  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
 ;; Author: Lars Magne Ingebrigtsen <larsi@gnus.org>
 ;;         Michael Albinus <michael.albinus@gmx.de>
@@ -164,6 +164,14 @@
 ;; presented, and in the latter case the last 10 bugs are shown,
 ;; counting from the highest bug number in the repository.
 
+;;   M-x debbugs-gnu-my-open-bugs
+;;
+;; It is a good idea to maintain and eventually close your open bug
+;; reports.  The function `debbugs-gnu-my-open-bugs' helps you do
+;; this, by retrieving open bug reports, in which you are the
+;; submitter.  This function assumes that you have defined the
+;; variable `user-mail-address'.
+
 ;; For posting commit to bugs, or constructing a bug closing message
 ;; based on a pushed commit, use the command
 ;;
@@ -202,10 +210,13 @@
 (autoload 'rmail-summary "rmailsum")
 (autoload 'vc-dir-hide-up-to-date "vc-dir")
 (autoload 'vc-dir-mark "vc-dir")
+(autoload 'vc-git-log-view-mode "vc-git")
 (autoload 'vc-git--call "vc-git")
 
 (declare-function log-view-current-entry "log-view" (&optional pos move))
 (declare-function log-view-current-tag "log-view" (&optional pos))
+(declare-function magit-status-setup-buffer "magit" (&optional directory))
+(declare-function magit-refresh "magit" ())
 
 (defvar compilation-in-progress)
 (defvar diff-file-header-re)
@@ -265,8 +276,10 @@ If nil, the value of `send-mail-function' is used instead."
 
 (defcustom debbugs-gnu-compile-command "make -k"
   "Command to run to compile Emacs."
-  :type 'string
-  :version "28.1")
+  :type '(choice
+          (const :tag "Do not compile automatically" nil)
+          (string :tag "Compile command"))
+  :version "30.1")
 
 (defcustom debbugs-gnu-suppress-closed t
   "If non-nil, don't show closed bugs."
@@ -289,7 +302,7 @@ If nil, the value of `send-mail-function' is used instead."
 	      (const "adns")
 	      (const "anubis")
 	      (const "auctex")
-	      ;(const "autoconf")
+	      (const "autoconf")
 	      (const "automake")
 	      (const "automake-patches")
 	      (const "cc-mode")
@@ -298,6 +311,7 @@ If nil, the value of `send-mail-function' is used instead."
 	      (const "debbugs.gnu.org")
 	      (const "dejagnu")
 	      (const "diffutils")
+	      (const "elpa")
 	      (const "emacs")
 	      (const "emacs-xwidgets")
 	      (const "fm")
@@ -312,6 +326,7 @@ If nil, the value of `send-mail-function' is used instead."
 	      (const "idutils")
 	      (const "libtool")
 	      (const "mh-e")
+	      (const "mumi")
 	      (const "oo-browser")
 	      (const "org-mode")
 	      (const "parted")
@@ -327,7 +342,7 @@ If nil, the value of `send-mail-function' is used instead."
 		      'help-echo "This is a pseudo package for test."))
 	      (const "vc-dwim")
 	      (const "woodchuck"))
-  :version "28.1")
+  :version "29.2")
 
 (defconst debbugs-gnu-all-packages
   (mapcar #'cadr (cdr (get 'debbugs-gnu-default-packages 'custom-type)))
@@ -394,6 +409,11 @@ If this is `rmail', use Rmail instead."
 (defface debbugs-gnu-marked '((t (:background "DarkGrey")))
   "Face for reports that have been marked locally.")
 
+(defface debbugs-gnu-marked-stale
+  '((t (:inherit debbugs-gnu-marked :slant italic)))
+  "Face for reports that have been marked locally.
+They haven't been touched more than a week.")
+
 (defface debbugs-gnu-title '((t (:height 1.2 :bold t)))
   "Face for titles.")
 
@@ -441,7 +461,7 @@ The specification which bugs shall be suppressed is taken from
 See `debbugs-gnu-package' for an alternative.")
 
 (defcustom debbugs-gnu-emacs-current-release "28.1"
-  "The current Emacs relase developped for."
+  "The current Emacs release developed for."
   :type '(choice (const "24.5")
 		 (const "25.1") (const "25.2")
 		 (const "26.1") (const "26.3")
@@ -623,7 +643,7 @@ depend on PHRASE being a string, or nil.  See Info node
 	  ((not (zerop (length key)))
 	   (setq val1
 		 (funcall
-		  (if phrase 'read-string 'read-regexp)
+		  (if phrase #'read-string #'read-regexp)
 		  (format "Enter %s%s: "
 			  key (if phrase "" " (client-side filter)"))))
 	   (when (not (zerop (length val1)))
@@ -691,7 +711,7 @@ depend on PHRASE being a string, or nil.  See Info node
     (debbugs-gnu debbugs-gnu-applicable-severities packages)))
 
 (defun debbugs-gnu-package-tabulated-list-print ()
-  "Print the tabulated list for `tramp-gnu-package'."
+  "Print the tabulated list for `debbugs-gnu-package'."
   (let ((inhibit-read-only t)
 	(entries tabulated-list-entries)
 	(packages
@@ -713,7 +733,7 @@ depend on PHRASE being a string, or nil.  See Info node
 			    x))
 		     entries)))
 	(when tabulated-list-entries
-	  (narrow-to-region (point-min) (point-max))
+	  (narrow-to-region (point-min) (point-min))
 	  (tabulated-list-print nil 'update)
 	  (goto-char (point-min))
 	  (insert
@@ -826,6 +846,13 @@ Shall be bound in `debbugs-org-*' functions.")
 	  debbugs-gnu-current-suppress nil)
     (when (called-interactively-p 'interactive)
       (message "Query finished"))))
+
+;;;###autoload
+(defun debbugs-gnu-my-open-bugs ()
+  "Retrieve the open bugs, that you submitted.
+This function assumes the variable `user-mail-address' is defined."
+  (interactive)
+  (apply #'debbugs-gnu-bugs (debbugs-get-bugs :submitter "me" :status "open")))
 
 (defun debbugs-gnu-get-bugs (query)
   "Retrieve bug numbers from debbugs.gnu.org according search criteria."
@@ -1001,8 +1028,7 @@ are taken from the cache instead."
 	       ((< age (* week 12)) 'debbugs-gnu-stale-2)
 	       ((< age (* week 26)) 'debbugs-gnu-stale-3)
 	       ((< age (* week 52)) 'debbugs-gnu-stale-4)
-	       (t
-		'debbugs-gnu-stale-5)))
+	       (t 'debbugs-gnu-stale-5)))
 	     (propertize
 	      ;; Prefer the name over the address.
 	      (or (cdr address)
@@ -1020,7 +1046,8 @@ are taken from the cache instead."
 	      (cond
 	       ;; Marked bugs.
 	       ((memq id debbugs-gnu-local-marks)
-		'debbugs-gnu-marked)
+                (if (< age week)
+		    'debbugs-gnu-marked 'debbugs-gnu-marked-stale))
 	       ;; Mark owned bugs.
 	       ((and (stringp owner)
 		     (string-equal owner user-mail-address))
@@ -1037,18 +1064,7 @@ are taken from the cache instead."
 (defun debbugs-gnu-print-entry (list-id cols)
   "Insert a debbugs entry at point.
 Used instead of `tabulated-list-print-entry'."
-  (let ((beg (point))
-	(pos 0)
-	(case-fold-search t)
-	(id               (aref cols 0))
-	(id-length        (nth 1 (aref tabulated-list-format 0)))
-	(state            (aref cols 1))
-	(state-length     (nth 1 (aref tabulated-list-format 1)))
-	(submitter        (aref cols 2))
-	(submitter-length (nth 1 (aref tabulated-list-format 2)))
-	(title            (aref cols 3))
-	;; (title-length     (nth 1 (aref tabulated-list-format 3)))
-        )
+  (let ((case-fold-search t))
     (when (and
 	   ;; We may have a narrowing in effect.
 	   (or (not debbugs-gnu-limit)
@@ -1075,32 +1091,12 @@ Used instead of `tabulated-list-print-entry'."
 				       (> (cddr check) val)))
 			  (throw :suppress t))))))))
 
-      ;; Insert id.
-      (indent-to (- id-length (length id)))
-      (insert id)
-      ;; Insert state.
-      (indent-to (setq pos (+ pos id-length 1)) 1)
-      (insert (if (> (length state) state-length)
-		  (propertize (substring state 0 state-length)
-			      'help-echo state)
-		state))
-      ;; Insert submitter.
-      (indent-to (setq pos (+ pos state-length 1)) 1)
-      (insert (if (> (length submitter) submitter-length)
-		  (propertize (substring submitter 0 submitter-length)
-			      'help-echo submitter)
-		submitter))
-      (indent-to (+ pos (1- submitter-length)))
-      ;; Insert title.
-      (indent-to (setq pos (+ pos submitter-length 1)) 1)
-      (insert (propertize title 'help-echo title))
+      (tabulated-list-print-entry list-id cols)
+
       ;; Add properties.
       (add-text-properties
-       beg (point)
-       `(tabulated-list-id ,list-id
-	 tabulated-list-entry ,cols
-	 mouse-face highlight))
-      (insert ?\n))))
+       (line-beginning-position 0) (line-end-position 0)
+       '(mouse-face highlight)))))
 
 (defun debbugs-gnu-menu-map-emacs-enabled ()
   "Whether \"Show Release Blocking Bugs\" is enabled in the menu."
@@ -1159,7 +1155,7 @@ Used instead of `tabulated-list-print-entry'."
     (define-key-after menu-map [debbugs-gnu-select-current]
       '(menu-item "Show Reports For All" debbugs-gnu-select-current-bugs
 		  :help "Show reports for all currently shown bugs")
-      'debbugs-gnu-select-report)
+      #'debbugs-gnu-select-report)
     (define-key-after menu-map [debbugs-gnu-rescan]
       '(menu-item "Refresh Bugs" debbugs-gnu-rescan
 		  :help "Refresh bug list")
@@ -1169,21 +1165,21 @@ Used instead of `tabulated-list-print-entry'."
 		  debbugs-gnu-show-all-blocking-reports
 		  :enable (debbugs-gnu-menu-map-emacs-enabled)
 		  :help "Show all bugs blocking next Emacs release")
-      'debbugs-gnu-rescan)
+      #'debbugs-gnu-rescan)
     (define-key-after menu-map [debbugs-gnu-send-control-message]
       '(menu-item "Send Control Message"
 		  debbugs-gnu-send-control-message
 		  :help "Send control message to debbugs.gnu.org")
-      'debbugs-gnu-show-all-blocking-reports)
+      #'debbugs-gnu-show-all-blocking-reports)
     (define-key-after menu-map [debbugs-gnu-make-control-message]
-      '(menu-item "Make Control Message"
+      `(menu-item "Make Control Message"
 		  debbugs-gnu-make-control-message
-		  :help (concat "Make (but don't yet send) "
-				"a control message to debbugs.gnu.org"))
-      'debbugs-gnu-send-control-message)
+		  :help ,(concat "Make (but don't yet send) "
+				 "a control message to debbugs.gnu.org"))
+      #'debbugs-gnu-send-control-message)
 
     (define-key-after menu-map [debbugs-gnu-separator1]
-      '(menu-item "--") 'debbugs-gnu-make-control-message)
+      '(menu-item "--") #'debbugs-gnu-make-control-message)
     (define-key-after menu-map [debbugs-gnu-search]
       '(menu-item "Search Bugs" debbugs-gnu-search
 		  :help "Search bugs on debbugs.gnu.org")
@@ -1191,14 +1187,14 @@ Used instead of `tabulated-list-print-entry'."
     (define-key-after menu-map [debbugs-gnu]
       '(menu-item "Retrieve Bugs" debbugs-gnu
 		  :help "Retrieve bugs from debbugs.gnu.org")
-      'debbugs-gnu-search)
+      #'debbugs-gnu-search)
     (define-key-after menu-map [debbugs-gnu-bugs]
       '(menu-item "Retrieve Bugs by Number" debbugs-gnu-bugs
 		  :help "Retrieve selected bugs from debbugs.gnu.org")
-      'debbugs-gnu)
+      #'debbugs-gnu)
 
     (define-key-after menu-map [debbugs-gnu-separator2]
-      '(menu-item "--") 'debbugs-gnu-bugs)
+      '(menu-item "--") #'debbugs-gnu-bugs)
     (define-key-after menu-map [debbugs-gnu-manual]
       '(menu-item "Debbugs Manual" debbugs-gnu-manual
 		  :help "Show Debbugs Manual")
@@ -1208,7 +1204,7 @@ Used instead of `tabulated-list-print-entry'."
 		  debbugs-gnu-view-bug-triage
 		  :enable (debbugs-gnu-menu-map-bug-triage-enabled)
 		  :help "Show procedure of triaging bugs")
-      'debbugs-gnu-manual)
+      #'debbugs-gnu-manual)
     map))
 
 (defun debbugs-gnu-rescan (&optional nocache)
@@ -1229,6 +1225,9 @@ Interactively, it is non-nil with the prefix argument."
 
 (define-derived-mode debbugs-gnu-mode tabulated-list-mode "Debbugs"
   "Major mode for listing bug reports.
+The bugs are taken from the cache when the list is refreshed.
+In order to retrieve the actual bug status after it has been
+modified on the debbugs server, consider typing \\`C-u g'.
 
 \\{debbugs-gnu-mode-map}"
   (set (make-local-variable 'debbugs-gnu-sort-state) 'number)
@@ -1247,6 +1246,7 @@ Interactively, it is non-nil with the prefix argument."
 			       ("Title"     10 debbugs-gnu-sort-title)])
   (setq tabulated-list-sort-key (cons "Id" nil))
   (setq tabulated-list-printer #'debbugs-gnu-print-entry)
+  (add-hook 'tabulated-list-revert-hook #'debbugs-gnu-rescan nil t)
   (buffer-disable-undo)
   (setq truncate-lines t)
   (setq buffer-read-only t))
@@ -1309,10 +1309,12 @@ Interactively, it is non-nil with the prefix argument."
 (defun debbugs-gnu-sort-submitter (s1 s2)
   (let ((address1
 	 (debbugs-gnu--split-address
-	  (decode-coding-string (alist-get 'originator (car s1) "") 'utf-8)))
+	  (decode-coding-string
+           (or (alist-get 'originator (car s1)) "") 'utf-8)))
 	(address2
 	 (debbugs-gnu--split-address
-	  (decode-coding-string (alist-get 'originator (car s2) "") 'utf-8))))
+	  (decode-coding-string
+           (or (alist-get 'originator (car s2)) "") 'utf-8))))
     (cond
      ;; Bugs I'm the originator of go to the beginning.
      ((and (string-equal user-mail-address (car address1))
@@ -1330,14 +1332,16 @@ Interactively, it is non-nil with the prefix argument."
 (defun debbugs-gnu-sort-title (s1 s2)
   (let ((owner1
 	 (car (debbugs-gnu--split-address
-	       (decode-coding-string (alist-get 'owner (car s1) "") 'utf-8))))
+	       (decode-coding-string
+                (or (alist-get 'owner (car s1)) "") 'utf-8))))
 	(subject1
-	 (decode-coding-string (alist-get 'subject (car s1) "") 'utf-8))
+	 (decode-coding-string (or (alist-get 'subject (car s1)) "") 'utf-8))
 	(owner2
 	 (car (debbugs-gnu--split-address
-	       (decode-coding-string (alist-get 'owner (car s2) "") 'utf-8))))
+	       (decode-coding-string
+                (or (alist-get 'owner (car s2)) "") 'utf-8))))
 	(subject2
-	 (decode-coding-string (alist-get 'subject (car s2) "") 'utf-8)))
+	 (decode-coding-string (or (alist-get 'subject (car s2)) "") 'utf-8)))
     (cond
      ;; Bugs I'm the owner of go to the beginning.
      ((and (string-equal user-mail-address owner1)
@@ -1498,7 +1502,9 @@ interest to you."
 	(let ((owner (if (alist-get 'owner (car entry))
 			 (car (debbugs-gnu--split-address
 			       (decode-coding-string
-				(alist-get 'owner (car entry)) 'utf-8))))))
+				(alist-get 'owner (car entry)) 'utf-8)))))
+              (age (- (float-time) (or (alist-get 'log_modified (car entry)) 0)))
+	      (week (* 60 60 24 7)))
 	  (aset (cadr entry) 0
 		(propertize
 		 (format "%5d" id)
@@ -1514,7 +1520,8 @@ interest to you."
 		 (cond
 		  ;; Marked bugs.
 		  ((memq id debbugs-gnu-local-marks)
-		   'debbugs-gnu-marked)
+                   (if (< age week)
+		       'debbugs-gnu-marked 'debbugs-gnu-marked-stale))
 		  ;; Mark owned bugs.
 		  ((and (stringp owner) (string-equal owner user-mail-address))
 		   'debbugs-gnu-tagged)
@@ -1555,8 +1562,8 @@ interesting to you."
 
 (defun debbugs-gnu-current-status ()
   ;; FIXME: `debbugs-org-mode' shouldn't be mentioned here.
-  (when (or (derived-mode-p 'debbugs-gnu-mode)
-	    (derived-mode-p 'debbugs-gnu-usertags-mode)
+  (when (or (derived-mode-p #'debbugs-gnu-mode)
+	    (derived-mode-p #'debbugs-gnu-usertags-mode)
 	    (bound-and-true-p debbugs-org-mode))
     (get-text-property (line-beginning-position) 'tabulated-list-id)))
 
@@ -1566,7 +1573,8 @@ interesting to you."
 		     debbugs-gnu-local-filter
 		     (debbugs-gnu-current-status)))
   (switch-to-buffer "*Bug Status*")
-  (let ((inhibit-read-only t))
+  (let ((inhibit-read-only t)
+        (pp-default-function #'pp-29))
     (erase-buffer)
     (when query
       (insert ";; Query\n")
@@ -1579,6 +1587,16 @@ interesting to you."
     (when status
       (insert ";; Status\n")
       (pp status (current-buffer)))
+    (goto-char (point-min))
+    (while (re-search-forward
+            (rx "("
+                (| "cache_time" "date" "fixed_date" "found_date"
+                   "last_modified" "log_modified" "unarchived")
+                " . " (group (1+ digit) (? "." (1+ digit))) ")")
+            nil t)
+      (put-text-property
+       (match-beginning 1) (match-end 1)
+       'help-echo (current-time-string (read (match-string 1)))))
     (goto-char (point-min)))
   (set-buffer-modified-p nil)
   (special-mode))
@@ -1747,6 +1765,12 @@ MERGED is the list of bugs merged with this one."
 	 (format "Re: bug#%d: %s" id (alist-get 'subject status)))
     (debbugs-gnu-summary-mode 1)))
 
+(defcustom debbugs-gnu-summary-keep-subject
+  (rx "[PATCH" (? (0+ (not (any digit "/]"))) (1+ digit) "/" (1+ digit)) "]")
+  "Regular expression which keeps the original message subject in replies."
+  :version "29.1"
+  :type 'regexp)
+
 (defvar debbugs-gnu-summary-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "C" #'debbugs-gnu-send-control-message)
@@ -1778,6 +1802,8 @@ MERGED is the list of bugs merged with this one."
 			    (cons new new))
 			address))))))
 	  ,@(and debbugs-gnu-subject
+                 (not (string-match-p debbugs-gnu-summary-keep-subject
+                                      debbugs-gnu-subject))
 		 `((subject ,debbugs-gnu-subject)))))))
 
 (defun debbugs-gnu-guess-current-id ()
@@ -1851,7 +1877,7 @@ returned by `debbugs-gnu-bugs'."
   '("serious" "important" "normal" "minor" "wishlist"
     "done" "donenotabug" "donewontfix" "doneunreproducible"
     "invalid" ; done+notabug+wontfix
-    "unarchive" "unmerge" "reopen" "close"
+    "archive" "unarchive" "unmerge" "reopen" "close"
     "merge" "forcemerge"
     "block" "unblock"
     "owner" "noowner"
@@ -1906,7 +1932,7 @@ removed instead."
                    (debbugs-gnu-guess-current-id)
                    (let ((bugnum-re
 			  "\\([0-9]+\\)\\(?:-done\\)?@debbugs.gnu.org"))
-                     (when (derived-mode-p 'message-mode)
+                     (when (derived-mode-p #'message-mode)
                        (save-excursion
                          (save-restriction
                            (message-narrow-to-headers)
@@ -1951,7 +1977,7 @@ removed instead."
                                (lambda (s) (string-match-p "\\`[0-9]+\\'" s))
                                nil nil nil (car implicit-ids))))
            current-prefix-arg
-           (when (derived-mode-p 'message-mode)
+           (when (derived-mode-p #'message-mode)
              (current-buffer)))))
   (let* ((status (or (debbugs-gnu-current-status)
                      (car (debbugs-get-status bugid))))
@@ -1992,7 +2018,7 @@ removed instead."
               (format "Subject: control message for bug #%d\n" bugid)
               mail-header-separator
               "\n"))
-    (unless (or (derived-mode-p 'message-mode)
+    (unless (or (derived-mode-p #'message-mode)
                 ;; `message-mode' associates buffer with file, we
                 ;; don't want to do that for temp buffers.
                 (eq (aref (buffer-name) 0) ?\s))
@@ -2013,7 +2039,8 @@ removed instead."
     (insert
      (save-excursion             ; Point can change while prompting!
        (cond
-        ((member message '("unarchive" "unmerge" "noowner" "notforwarded"))
+        ((member
+          message '("archive" "unarchive" "unmerge" "noowner" "notforwarded"))
          (format "%s %d\n" message bugid))
         ((equal message "reopen")
          (format "reopen %d\ntags %d - fixed patch\n" bugid bugid))
@@ -2103,7 +2130,7 @@ Use `gnus-read-ephemeral-emacs-bug-group' instead if there is no such buffer."
                          for mode in preferred-modes
                          thereis (and (derived-mode-p mode)
                                       ;; Don't choose sent message buffers.
-                                      (or (not (eq mode 'message-mode))
+                                      (or (not (eq mode #'message-mode))
                                           (not message-sent-message-via))
                                       mode))))
          (setq preferred-modes (cdr (memq mode preferred-modes)))
@@ -2157,7 +2184,7 @@ Throws error if git returns non-zero."
   "Return (REMOTE . INFO-ALIST).
 Where REMOTE is a string naming a git remote which matches the
 REMOTE-REGEXP key of a `debbugs-gnu-git-remote-info-alist' entry.
-INFO-ALIST is the correponding value of the entry.  If no entry
+INFO-ALIST is the corresponding value of the entry.  If no entry
 matches, return nil."
   (with-temp-buffer
     (debbugs-gnu--git-insert "remote" "-v")
@@ -2222,7 +2249,7 @@ Optionally call `debbugs-gnu-make-control-message' to close BUGNUM."
 
 (defun debbugs-gnu-post-patch (commit-range bugnum &optional format-patch-args)
   "Attach COMMIT-RANGE as patches into current message.
-Optionally call `debbugs-gnu-make-control-message'' to tag BUGNUM
+Optionally call `debbugs-gnu-make-control-message' to tag BUGNUM
 with `patch'."
   (letrec ((disposition
 	    (completing-read "disposition: " '("inline" "attachment")))
@@ -2262,7 +2289,7 @@ nil to let the next function try.")
 Return commit at point, or commit range in region if it is
 active.  This function is suitable for use in
 `debbugs-gnu-read-commit-range-hook'."
-  (when (derived-mode-p 'vc-git-log-view-mode)
+  (when (derived-mode-p #'vc-git-log-view-mode)
     (list (if (use-region-p)
               (let ((beg (log-view-current-entry (region-beginning)))
                     (end (log-view-current-entry (region-end))))
@@ -2311,7 +2338,7 @@ for user to call `debbugs-gnu-maybe-use-picked-commits'."
         (push read-bugnum bugnum)))
     (push (list bugnum repo-dir commit-range)
           debbugs-gnu-picked-commits)
-    (if (derived-mode-p 'message-mode)
+    (if (derived-mode-p #'message-mode)
         (debbugs-gnu-maybe-use-picked-commits)
       (message "Reply to a message to continue"))))
 
@@ -2322,7 +2349,7 @@ on an entry with a matching bug number from
 `debbugs-gnu-picked-commits'.  Remove entry after message is
 successfully sent."
   (interactive)
-  (when (derived-mode-p 'message-mode)
+  (when (derived-mode-p #'message-mode)
     (cl-loop with id = (car (debbugs-gnu-implicit-ids))
              for pcomm-entry in debbugs-gnu-picked-commits
              for (bugnum repo-dir commit-range) = pcomm-entry
@@ -2390,55 +2417,54 @@ successfully sent."
 	(string-join debbugs-gnu-default-packages ","))
      debbugs-gnu-default-packages))
 
-  (unwind-protect
-      (let ((inhibit-read-only t)
-	    (debbugs-port "gnu.org")
-	    (buffer-name "*Emacs User Tags*")
-	    (user-tab-length
-	     (1+ (apply #'max (length "User") (mapcar #'length users)))))
+  (let ((inhibit-read-only t)
+	(debbugs-port "gnu.org")
+	(buffer-name "*Emacs User Tags*")
+	(user-tab-length
+	 (1+ (apply #'max (length "User") (mapcar #'length users)))))
 
-	;; Initialize variables.
-	(when (and (file-exists-p debbugs-gnu-persistency-file)
-		   (not debbugs-gnu-local-tags))
-	  (with-temp-buffer
-	    (insert-file-contents debbugs-gnu-persistency-file)
-	    (eval (read (current-buffer)) t)))
+    ;; Initialize variables.
+    (when (and (file-exists-p debbugs-gnu-persistency-file)
+	       (not debbugs-gnu-local-tags))
+      (with-temp-buffer
+	(insert-file-contents debbugs-gnu-persistency-file)
+	(eval (read (current-buffer)) t)))
 
-	;; Create buffer.
-	(when (get-buffer buffer-name)
-	  (kill-buffer buffer-name))
-	(switch-to-buffer (get-buffer-create buffer-name))
-	(debbugs-gnu-usertags-mode)
-	(setq tabulated-list-format `[("User" ,user-tab-length t)
-				      ("Tag"  10 t)])
-	(setq tabulated-list-sort-key (cons "User" nil))
-	;(setq tabulated-list-printer #'debbugs-gnu-print-entry)
+    ;; Create buffer.
+    (when (get-buffer buffer-name)
+      (kill-buffer buffer-name))
+    (switch-to-buffer (get-buffer-create buffer-name))
+    (debbugs-gnu-usertags-mode)
+    (setq tabulated-list-format `[("User" ,user-tab-length t)
+				  ("Tag"  10 t)])
+    (setq tabulated-list-sort-key (cons "User" nil))
+    ;(setq tabulated-list-printer #'debbugs-gnu-print-entry)
 
-	;; Retrieve user tags.
-	(dolist (user users)
-	  (dolist (tag (sort (debbugs-get-usertag :user user) #'string<))
-	    (add-to-list
-	     'tabulated-list-entries
-	     ;; `tabulated-list-id' is the parameter list for `debbugs-gnu'.
-	     `((("tagged") (,user) nil nil (,tag))
-	       ,(vector (propertize user 'mouse-face 'highlight)
-			(propertize tag  'mouse-face 'highlight)))
-	     'append)))
+    ;; Retrieve user tags.
+    (dolist (user users)
+      (dolist (tag (sort (debbugs-get-usertag :user user) #'string<))
+	(add-to-list
+	 'tabulated-list-entries
+	 ;; `tabulated-list-id' is the parameter list for `debbugs-gnu'.
+	 `((("tagged") (,user) nil nil (,tag))
+	   ,(vector (propertize user 'mouse-face 'highlight)
+		    (propertize tag  'mouse-face 'highlight)))
+	 'append)))
 
-	;; Add local tags.
-	(when debbugs-gnu-local-tags
-	  (add-to-list
-	     'tabulated-list-entries
-	     `((("tagged"))
-	       ,(vector
-		 "" (propertize "(local tags)" 'mouse-face 'highlight)))))
+    ;; Add local tags.
+    (when debbugs-gnu-local-tags
+      (add-to-list
+       'tabulated-list-entries
+       `((("tagged"))
+	 ,(vector
+	   "" (propertize "(local tags)" 'mouse-face 'highlight)))))
 
-	;; Show them.
-	(tabulated-list-init-header)
-	(tabulated-list-print)
+    ;; Show them.
+    (tabulated-list-init-header)
+    (tabulated-list-print)
 
-	(set-buffer-modified-p nil)
-	(goto-char (point-min)))))
+    (set-buffer-modified-p nil)
+    (goto-char (point-min))))
 
 (defun debbugs-gnu-select-usertag ()
   "Select the user tag on the current line."
@@ -2471,29 +2497,37 @@ or bug ranges, with default to `debbugs-gnu-default-bug-number-list'."
        debbugs-gnu-completion-table)
       (split-string debbugs-gnu-default-bug-number-list "," t)))))
   (dolist (elt bugs)
-    (unless (natnump elt) (signal 'wrong-type-argument (list 'natnump elt))))
+    (unless (natnump elt) (signal 'wrong-type-argument (list #'natnump elt))))
   (add-to-list 'debbugs-gnu-current-query (cons 'bugs bugs))
-  ;; We do not suppress bugs requested explicitely.
+  ;; We do not suppress bugs requested explicitly.
   (setq debbugs-gnu-current-suppress nil)
   (debbugs-gnu nil)
   (when (called-interactively-p 'interactive)
     (message "Retrieving bugs finished")))
+
+(defalias 'debbugs-gnu-get-bug-by-id #'debbugs-gnu-bugs)
 
 (defcustom debbugs-gnu-trunk-directory "~/src/emacs/trunk/"
   "The directory where the main source tree lives."
   :type 'directory
   :version "25.2")
 
-(defcustom debbugs-gnu-branch-directory "~/src/emacs/emacs-28/"
+(defcustom debbugs-gnu-branch-directory "~/src/emacs/emacs-29/"
   "The directory where the previous source tree lives."
   :type 'directory
-  :version "29.1")
+  :version "30.1")
+
+(defcustom debbugs-gnu-apply-patch-prefers-magit nil
+  "Non-nil means prefer using Magit instead of VC.
+If Magit is not available, fall back to VC."
+  :type 'boolean
+  :version "30.1")
 
 (defvar debbugs-gnu-current-directory nil
   "The current source tree directory.")
 
 (defun debbugs-gnu-init-current-directory (&optional branch)
-"Initialize `debbugs-gnu-current-directory'."
+  "Initialize `debbugs-gnu-current-directory'."
   (setq debbugs-gnu-current-directory
 	(if branch
 	    debbugs-gnu-branch-directory
@@ -2503,6 +2537,10 @@ or bug ranges, with default to `debbugs-gnu-default-bug-number-list'."
 	  (read-file-name
 	   "Emacs repository location: "
 	   debbugs-gnu-current-directory nil t nil #'file-directory-p))))
+
+(defun debbugs-gnu-apply-patch-prefers-magit ()
+  (and debbugs-gnu-apply-patch-prefers-magit
+       (require 'magit nil t)))
 
 (defun debbugs-gnu-apply-patch (&optional branch selectively)
   "Apply the patch from the current message.
@@ -2522,7 +2560,7 @@ If SELECTIVELY, query the user before applying the patch."
     (with-current-buffer output-buffer
       (erase-buffer))
     (gnus-summary-select-article nil t)
-    ;; The patches are either in MIME attachements or the main article
+    ;; The patches are either in MIME attachments or the main article
     ;; buffer.  Determine which.
     (with-current-buffer gnus-article-buffer
       (dolist (handle (mapcar #'cdr (gnus-article-mime-handles)))
@@ -2576,31 +2614,40 @@ If SELECTIVELY, query the user before applying the patch."
       (insert-file-contents-literally rej))
     (goto-char (point-max))
     (save-some-buffers t)
-    (require 'compile)
-    (mapc #'kill-process compilation-in-progress)
-    (compile
-     (format "cd %s; %s"
-	     debbugs-gnu-current-directory
-	     debbugs-gnu-compile-command))
-    (vc-dir debbugs-gnu-current-directory)
-    (vc-dir-hide-up-to-date)
-    (goto-char (point-min))
-    (sit-for 1)
-    (vc-diff)
-    ;; All these commands are asynchronous, so just wait a bit.  This
-    ;; should be done properly a different way.
-    (sit-for 2)
-    ;; We've now done everything, so arrange the windows we need to see.
-    (delete-other-windows)
-    (switch-to-buffer output-buffer)
-    (split-window)
-    (split-window)
-    (other-window 1)
-    (switch-to-buffer "*compilation*")
-    (goto-char (point-max))
-    (other-window 1)
-    (switch-to-buffer "*vc-diff*")
-    (goto-char (point-min))))
+    (when debbugs-gnu-compile-command
+      (require 'compile)
+      (mapc #'kill-process compilation-in-progress)
+      (compile
+       (format "cd %s; %s"
+	       debbugs-gnu-current-directory
+	       debbugs-gnu-compile-command)))
+    (let (buf)
+      (if (debbugs-gnu-apply-patch-prefers-magit)
+          (progn
+            (magit-status-setup-buffer debbugs-gnu-current-directory)
+            (sit-for 1)
+            (magit-refresh))
+        (vc-dir debbugs-gnu-current-directory)
+        (vc-dir-hide-up-to-date)
+        (goto-char (point-min))
+        (sit-for 1)
+        (vc-diff))
+      ;; All these commands are asynchronous, so just wait a bit.  This
+      ;; should be done properly a different way.
+      (sit-for 2)
+      (setq buf (current-buffer))
+      ;; We've now done everything, so arrange the windows we need to see.
+      (delete-other-windows)
+      (switch-to-buffer output-buffer)
+      (split-window)
+      (when debbugs-gnu-compile-command
+       (split-window)
+       (other-window 1)
+       (switch-to-buffer "*compilation*")
+       (goto-char (point-max))
+       (other-window 1))
+      (switch-to-buffer buf)
+      (goto-char (point-min)))))
 
 (defun debbugs-gnu-diff-hunk-target-name (dir)
   (let ((names nil))

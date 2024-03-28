@@ -1,7 +1,7 @@
-This is debbugs.info, produced by makeinfo version 6.7 from
+This is docRUcpyr.info, produced by makeinfo version 6.8 from
 debbugs.texi.
 
-Copyright (C) 2011-2022 Free Software Foundation, Inc.
+Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -24,7 +24,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: debbugs.info,  Node: Top,  Next: Installation,  Up: (dir)
+File: docRUcpyr.info,  Node: Top,  Next: Installation,  Up: (dir)
 
 Debbugs Programmer's Manual
 ***************************
@@ -68,7 +68,7 @@ is described in *note Debbugs User Guide: (debbugs-ug)Top.
 * Requesting user tags::        How to request tags set by users.
 
 
-File: debbugs.info,  Node: Installation,  Next: Configuration,  Prev: Top,  Up: Top
+File: docRUcpyr.info,  Node: Installation,  Next: Configuration,  Prev: Top,  Up: Top
 
 1 Installation
 **************
@@ -103,7 +103,7 @@ definitely say that the installation will require even more additional
 libraries than needed for installation on Emacs 22/23.
 
 
-File: debbugs.info,  Node: Configuration,  Next: Requesting bug numbers,  Prev: Installation,  Up: Top
+File: docRUcpyr.info,  Node: Configuration,  Next: Requesting bug numbers,  Prev: Installation,  Up: Top
 
 2 Configuration
 ***************
@@ -163,7 +163,7 @@ have to configure 'debbugs' by adding a new server specifier to the
      retrieving bugs.
 
 
-File: debbugs.info,  Node: Requesting bug numbers,  Next: Requesting bugs statuses,  Prev: Configuration,  Up: Top
+File: docRUcpyr.info,  Node: Requesting bug numbers,  Next: Requesting bugs statuses,  Prev: Configuration,  Up: Top
 
 3 Requesting bug numbers
 ************************
@@ -292,7 +292,7 @@ the list of bug numbers that match a user's query.
           => (633152 633153 633154 633155 633156 633157)
 
 
-File: debbugs.info,  Node: Requesting bugs statuses,  Next: Searching bugs,  Prev: Requesting bug numbers,  Up: Top
+File: docRUcpyr.info,  Node: Requesting bugs statuses,  Next: Searching bugs,  Prev: Requesting bug numbers,  Up: Top
 
 4 Requesting bugs statuses
 **************************
@@ -428,7 +428,7 @@ various aspects of relationship with other bug reports.
           => "Jack Daniels <jack@daniels.com>"
 
 
-File: debbugs.info,  Node: Searching bugs,  Next: Requesting messages,  Prev: Requesting bugs statuses,  Up: Top
+File: docRUcpyr.info,  Node: Searching bugs,  Next: Requesting messages,  Prev: Requesting bugs statuses,  Up: Top
 
 5 Searching bugs
 ****************
@@ -588,7 +588,7 @@ the same day.
                :operator "NUMBT")))
 
 
-File: debbugs.info,  Node: Requesting messages,  Next: Requesting user tags,  Prev: Searching bugs,  Up: Top
+File: docRUcpyr.info,  Node: Requesting messages,  Next: Requesting user tags,  Prev: Searching bugs,  Up: Top
 
 6 Requesting messages
 *********************
@@ -668,7 +668,7 @@ File: debbugs.info,  Node: Requesting messages,  Next: Requesting user tags,  Pr
      Configuration::).
 
 
-File: debbugs.info,  Node: Requesting user tags,  Prev: Requesting messages,  Up: Top
+File: docRUcpyr.info,  Node: Requesting user tags,  Prev: Requesting messages,  Up: Top
 
 7 Requesting user tags
 **********************
@@ -719,14 +719,14 @@ package names as user identification.
 
 
 Tag Table:
-Node: Top1089
-Node: Installation3231
-Node: Configuration4332
-Node: Requesting bug numbers6842
-Node: Requesting bugs statuses12198
-Node: Searching bugs16480
-Node: Requesting messages23263
-Node: Requesting user tags26274
+Node: Top1091
+Node: Installation3235
+Node: Configuration4338
+Node: Requesting bug numbers6850
+Node: Requesting bugs statuses12208
+Node: Searching bugs16492
+Node: Requesting messages23277
+Node: Requesting user tags26290
 
 End Tag Table
 

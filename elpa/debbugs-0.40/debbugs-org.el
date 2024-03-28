@@ -1,6 +1,6 @@
 ;;; debbugs-org.el --- Org-mode interface for the GNU bug tracker  -*- lexical-binding:t -*-
 
-;; Copyright (C) 2013-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 ;; Author: Michael Albinus <michael.albinus@gmx.de>
 ;; Keywords: comm, hypermedia, maint, outlines
@@ -114,6 +114,14 @@
 ;; presented, and in the latter case the last 10 bugs are shown,
 ;; counting from the highest bug number in the repository.
 
+;;   M-x debbugs-org-my-open-bugs
+
+;; It is a good idea to maintain and eventually close your open bug
+;; reports.  The function `debbugs-org-my-open-bugs' helps you do
+;; this, by retrieving open bug reports, in which you are the
+;; submitter.  This function assumes that you have defined the
+;; variable `user-mail-address'.
+
 ;;; Code:
 
 (require 'debbugs-gnu)
@@ -201,9 +209,8 @@ marked as \"client-side filter\"."
 	     (archived (alist-get 'archived status))
 	     (tags (append (alist-get 'found_versions status)
 			   (alist-get 'tags status)))
-	     (subject (when (alist-get 'subject status)
-			(decode-coding-string
-			 (alist-get 'subject status) 'utf-8)))
+	     (subject (decode-coding-string
+                       (or (alist-get 'subject status) "") 'utf-8))
 	     (date (alist-get 'date status))
 	     (last-modified (alist-get 'last_modified status))
 	     (originator (when (alist-get 'originator status)
@@ -351,6 +358,15 @@ or bug ranges, with default to `debbugs-gnu-default-bug-number-list'."
   (interactive)
   (let ((debbugs-gnu-show-reports-function #'debbugs-org-show-reports))
     (call-interactively #'debbugs-gnu-bugs)))
+
+;;;###autoload
+(defun debbugs-org-my-open-bugs ()
+  "Retrieve the open bugs, that you submitted.
+This function assumes the variable `user-mail-address' is
+defined."
+  (interactive)
+  (let ((debbugs-gnu-show-reports-function #'debbugs-org-show-reports))
+    (apply #'debbugs-gnu-bugs (debbugs-get-bugs :submitter "me" :status "open"))))
 
 ;; TODO
 

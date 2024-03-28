@@ -350,7 +350,7 @@ the requirements for archival, ignoring time.
 @anchor{Mail Command Index: unarchive}
 @item unarchive bugnumber
 Unarchives a bug that was previously archived. Unarchival should
-generally be coupled with reopen and found/fixed as approprite.
+generally be coupled with reopen and found/fixed as appropriate.
 Bugs that have been unarchived can be archived using archive
 assuming the non-time based archival requirements are met.
 
