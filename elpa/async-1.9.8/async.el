@@ -6,7 +6,7 @@
 ;; Maintainer: Thierry Volpiatto <thievol@posteo.net>
 
 ;; Created: 18 Jun 2012
-;; Version: 1.9.7
+;; Version: 1.9.8
 ;; Package-Requires: ((emacs "24.4"))
 
 ;; Keywords: async
@@ -34,6 +34,8 @@
 
 (eval-when-compile (require 'cl-lib))
 
+(defvar tramp-password-prompt-regexp)
+
 (defgroup async nil
   "Simple asynchronous processing in Emacs"
   :group 'lisp)
@@ -46,11 +48,24 @@
 (defvar async-send-over-pipe t)
 (defvar async-in-child-emacs nil)
 (defvar async-callback nil)
-(defvar async-callback-for-process nil)
+(defvar async-callback-for-process nil
+  "Non-nil if the subprocess is not Emacs executing a lisp form.")
 (defvar async-callback-value nil)
 (defvar async-callback-value-set nil)
 (defvar async-current-process nil)
 (defvar async--procvar nil)
+(defvar async-read-marker nil
+  "Position from which we read the last message packet.
+
+Message packets are delivered from client line-by-line as base64
+encoded strings.")
+(defvar async-child-init nil
+  "Initialisation file for async child Emacs.
+
+If defined this allows for an init file to setup the child Emacs. It
+should not be your normal init.el as that would likely load more
+things that you require. It should limit itself to ensuring paths have
+been setup so any async code can load libraries you expect.")
 
 ;; For emacs<29 (only exists in emacs-29+).
 (defvar print-symbols-bare)
@@ -164,12 +179,16 @@ It is intended to be used as follows:
                     (prog1
                         (funcall async-callback proc)
                       (unless async-debug
-                        (kill-buffer (current-buffer))))
+                        ;; we need to check this because theoretically
+                        ;; `async-callback' could've killed it already
+                        (when (buffer-live-p (process-buffer proc))
+                          (kill-buffer (process-buffer proc)))))
                   (set (make-local-variable 'async-callback-value) proc)
                   (set (make-local-variable 'async-callback-value-set) t))
               ;; Maybe strip out unreadable "#"; They are replaced by
               ;; empty string unless they are prefixing a special
               ;; object like a marker. See issue #145.
+              (widen)
               (goto-char (point-min))
               (save-excursion
                 ;; Transform markers in list like
@@ -182,22 +201,74 @@ It is intended to be used as follows:
                 (replace-match "(" t t))
               (goto-char (point-max))
               (backward-sexp)
-              (async-handle-result async-callback (read (current-buffer))
-                                   (current-buffer)))
+              (let ((value (read (current-buffer))))
+                (async-handle-result async-callback value (current-buffer))))
           (set (make-local-variable 'async-callback-value)
                (list 'error
                      (format "Async process '%s' failed with exit code %d"
                              (process-name proc) (process-exit-status proc))))
           (set (make-local-variable 'async-callback-value-set) t))))))
 
+(defun async-read-from-client (proc string)
+  "Process text from client process.
+
+The string chunks usually arrive in maximum of 4096 bytes, so a
+long client message might be split into multiple calls of this
+function.
+
+We use a marker `async-read-marker' to track the position of the
+lasts complete line.  Every time we get new input, we try to look
+for newline, and if found, process the entire line and bump the
+marker position to the end of this next line."
+  (with-current-buffer (process-buffer proc)
+    (when (and (boundp 'tramp-password-prompt-regexp)
+               (string-match tramp-password-prompt-regexp string))
+      (process-send-string
+       proc (concat (read-passwd (match-string 0 string)) "\n")))
+    (goto-char (point-max))
+    (save-excursion
+      (insert string))
+
+    (while (search-forward "\n" nil t)
+      (save-excursion
+        (save-restriction
+          (widen)
+          (narrow-to-region async-read-marker (point))
+          (goto-char (point-min))
+          (let (msg)
+            (condition-case nil
+                ;; It is safe to throw errors in the read because we
+                ;; send messages always on their own line, and they
+                ;; are always a base64 encoded string, so a message
+                ;; will always read.  We will also ignore the rest
+                ;; of this line since there won't be anything
+                ;; interesting.
+                (while (setq msg (read (current-buffer)))
+                  (let ((msg-decoded (ignore-errors (base64-decode-string msg))))
+                    (when msg-decoded
+                      (setq msg-decoded (car (read-from-string msg-decoded)))
+                      (when (and (listp msg-decoded)
+                                 (async-message-p msg-decoded)
+                                 async-callback)
+                        (funcall async-callback msg-decoded)))))
+              ;; This is OK, we reached the end of the chunk subprocess sent
+              ;; at this time.
+              (invalid-read-syntax t)
+              (end-of-file t)))
+          (goto-char (point-max))
+          (move-marker async-read-marker (point)))))))
+
 (defun async--receive-sexp (&optional stream)
   ;; FIXME: Why use `utf-8-auto' instead of `utf-8-unix'?  This is
   ;; a communication channel over which we have complete control,
-  ;; so we get to choose exactly which encoding and EOL we use, isn't it?
+  ;; so we get to choose exactly which encoding and EOL we use, isn't
+  ;; it?
+  ;; UPDATE: We use now `utf-8-emacs-unix' instead of `utf-8-auto' as
+  ;; recommended in bug#165.
   (let ((sexp (decode-coding-string (base64-decode-string (read stream))
-                                    'utf-8-auto))
+                                    'utf-8-emacs-unix))
         ;; Parent expects UTF-8 encoded text.
-        (coding-system-for-write 'utf-8-auto))
+        (coding-system-for-write 'utf-8-emacs-unix))
     (if async-debug
         (message "Received sexp {{{%s}}}" (pp-to-string sexp)))
     (setq sexp (read sexp))
@@ -214,7 +285,7 @@ It is intended to be used as follows:
         (print-symbols-bare t))
     (prin1 sexp (current-buffer))
     ;; Just in case the string we're sending might contain EOF
-    (encode-coding-region (point-min) (point-max) 'utf-8-auto)
+    (encode-coding-region (point-min) (point-max) 'utf-8-emacs-unix)
     (base64-encode-region (point-min) (point-max) t)
     (goto-char (point-min)) (insert ?\")
     (goto-char (point-max)) (insert ?\" ?\n)))
@@ -230,17 +301,27 @@ It is intended to be used as follows:
   "Called from the child Emacs process' command line."
   ;; Make sure 'message' and 'prin1' encode stuff in UTF-8, as parent
   ;; process expects.
-  (let ((coding-system-for-write 'utf-8-auto)
+  (let ((coding-system-for-write 'utf-8-emacs-unix)
         (args-left command-line-args-left))
     (setq async-in-child-emacs t
           debug-on-error async-debug
           command-line-args-left nil)
     (condition-case-unless-debug err
-        (prin1 (funcall
-                (async--receive-sexp (unless async-send-over-pipe
-                                       args-left))))
+        (let ((ret (funcall
+                    (async--receive-sexp (unless async-send-over-pipe
+                                           args-left)))))
+          ;; The newlines makes client messages more robust and also
+          ;; handle some weird line-buffering issues on windows.
+          ;; Sometimes, the last "chunk" was not read by the filter,
+          ;; so a newline here should force a buffer flush.
+          (princ "\n")
+          (prin1 ret)
+          (princ "\n"))
       (error
-       (prin1 (list 'async-signal err))))))
+       (progn
+         (princ "\n")
+         (prin1 (list 'async-signal err))
+         (princ "\n"))))))
 
 (defun async-ready (future)
   "Query a FUTURE to see if it is ready.
@@ -270,20 +351,51 @@ its FINISH-FUNC is nil."
          #'identity async-callback-value (current-buffer))))))
 
 (defun async-message-p (value)
-  "Return non-nil of VALUE is an async.el message packet."
+  "Return non-nil if VALUE is an async.el message packet."
   (and (listp value)
        (plist-get value :async-message)))
 
-(defun async-send (&rest args)
-  "Send the given messages to the asychronous Emacs PROCESS."
+(defun async-send (process-or-key &rest args)
+  "Send the given message to the asychronous child or parent Emacs.
+
+To send messages from the parent to a child, PROCESS-OR-KEY is
+the child process object.  ARGS is a plist.  Example:
+
+  (async-send proc :operation :load-file :file \"this file\")
+
+To send messages from the child to the parent, PROCESS-OR-KEY is
+the first key of the plist, ARGS is a value followed by
+optionally more key-value pairs.  Example:
+
+  (async-send :status \"finished\" :file-size 123)"
   (let ((args (append args '(:async-message t))))
     (if async-in-child-emacs
-        (if async-callback
-            (funcall async-callback args))
-      (async--transmit-sexp (car args) (list 'quote (cdr args))))))
+        ;; `princ' because async--insert-sexp already quotes everything.
+        (princ
+         (with-temp-buffer
+           (async--insert-sexp (cons process-or-key args))
+           ;; always make sure that one message package has its own
+           ;; line as there can be any random debug garbage printed
+           ;; above it.
+           (concat "\n" (buffer-string))))
+      (async--transmit-sexp process-or-key (list 'quote args)))))
 
 (defun async-receive ()
-  "Send the given messages to the asychronous Emacs PROCESS."
+  "Receive message from parent Emacs.
+
+The child process blocks until a message is received.
+
+Message is a plist with one key :async-message set to t always
+automatically added to signify this plist is an async message.
+
+You can use `async-message-p' to test if the payload was a
+message.
+
+Use
+
+   (let ((msg (async-receive))) ...)
+
+to read and process a message."
   (async--receive-sexp))
 
 ;;;###autoload
@@ -295,11 +407,26 @@ object will return the process object when the program is
 finished.  Set DEFAULT-DIRECTORY to change PROGRAM's current
 working directory."
   (let* ((buf (generate-new-buffer (concat "*" name "*")))
+         (buf-err (generate-new-buffer (concat "*" name ":err*")))
          (proc (let ((process-connection-type nil))
-                 (apply #'start-process name buf program program-args))))
+                 (make-process
+                  :name name
+                  :buffer buf
+                  :stderr buf-err
+                  :command (cons program program-args)))))
+    (set-process-sentinel
+     (get-buffer-process buf-err)
+     (lambda (proc _change)
+       (unless (or async-debug (process-live-p proc))
+         (kill-buffer (process-buffer proc)))))
     (with-current-buffer buf
       (set (make-local-variable 'async-callback) finish-func)
+      (set (make-local-variable 'async-read-marker)
+           (set-marker (make-marker) (point-min) buf))
+      (set-marker-insertion-type async-read-marker nil)
+
       (set-process-sentinel proc #'async-when-done)
+      (set-process-filter proc #'async-read-from-client)
       (unless (string= name "emacs")
         (set (make-local-variable 'async-callback-for-process) t))
       proc)))
@@ -309,6 +436,20 @@ working directory."
 Can be one of \"-Q\" or \"-q\".
 Default is \"-Q\" but it is sometimes useful to use \"-q\" to have a
 enhanced config or some more variables loaded.")
+
+(defun async--emacs-program-args (&optional sexp)
+  "Return a list of arguments for invoking the child Emacs."
+  ;; Using `locate-library' ensure we use the right file
+  ;; when the .elc have been deleted.
+  (let ((args (list async-quiet-switch "-l" (locate-library "async"))))
+    (when async-child-init
+      (setq args (append args (list "-l" async-child-init))))
+    (append args (list "-batch" "-f" "async-batch-invoke"
+                       (if sexp
+                           (with-temp-buffer
+                             (async--insert-sexp (list 'quote sexp))
+                             (buffer-string))
+                           "<none>")))))
 
 ;;;###autoload
 (defun async-start (start-func &optional finish-func)
@@ -326,6 +467,16 @@ When done, the return value is passed to FINISH-FUNC.  Example:
        (lambda (result)
          (message \"Async process done, result should be 222: %s\"
                   result)))
+
+If you call `async-send' from a child process, the message will
+be also passed to the FINISH-FUNC.  You can test RESULT to see if
+it is a message by using `async-message-p'.  If nil, it means
+this is the final result.  Example of the FINISH-FUNC:
+
+    (lambda (result)
+      (if (async-message-p result)
+          (message \"Received a message from child process: %s\" result)
+        (message \"Async process done, result: %s\" result)))
 
 If FINISH-FUNC is nil or missing, a future is returned that can
 be inspected using `async-get', blocking until the value is
@@ -371,23 +522,15 @@ returns nil.  It can still be useful, however, as an argument to
 `async-ready' or `async-wait'."
   (let ((sexp start-func)
         ;; Subordinate Emacs will send text encoded in UTF-8.
-        (coding-system-for-read 'utf-8-auto))
+        (coding-system-for-read 'utf-8-emacs-unix))
     (setq async--procvar
-          (async-start-process
-           "emacs" (file-truename
-                    (expand-file-name invocation-name
-                                      invocation-directory))
-           finish-func
-           async-quiet-switch "-l"
-           ;; Using `locate-library' ensure we use the right file
-           ;; when the .elc have been deleted.
-           (locate-library "async")
-           "-batch" "-f" "async-batch-invoke"
-           (if async-send-over-pipe
-               "<none>"
-             (with-temp-buffer
-               (async--insert-sexp (list 'quote sexp))
-               (buffer-string)))))
+          (apply 'async-start-process
+                 "emacs" (file-truename
+                          (expand-file-name invocation-name
+                                            invocation-directory))
+                 finish-func
+                 (async--emacs-program-args (if (not async-send-over-pipe) sexp))))
+
     (if async-send-over-pipe
         (async--transmit-sexp async--procvar (list 'quote sexp)))
     async--procvar))
