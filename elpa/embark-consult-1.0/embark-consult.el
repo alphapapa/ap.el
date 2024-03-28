@@ -1,13 +1,13 @@
 ;;; embark-consult.el --- Consult integration for Embark -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021, 2022  Free Software Foundation, Inc.
+;; Copyright (C) 2021-2023  Free Software Foundation, Inc.
 
 ;; Author: Omar Antolín Camarena <omar@matem.unam.mx>
 ;; Maintainer: Omar Antolín Camarena <omar@matem.unam.mx>
 ;; Keywords: convenience
-;; Version: 0.8
+;; Version: 1.0
 ;; Homepage: https://github.com/oantolin/embark
-;; Package-Requires: ((emacs "27.1") (embark "0.20") (consult "0.17"))
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.0") (embark "1.0") (consult "1.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -157,7 +157,6 @@ This function is meant to be added to `embark-collect-mode-hook'."
 
 (defvar grep-mode-line-matches)
 (defvar grep-num-matches-found)
-(defvar wgrep-header&footer-parser)
 (declare-function wgrep-setup "ext:wgrep")
 
 (defvar-keymap embark-consult-revert-map
@@ -200,7 +199,12 @@ This function is meant to be added to `embark-collect-mode-hook'."
       (use-local-map (make-composed-keymap
                       embark-consult-revert-map
                       (current-local-map)))
-      (setq-local wgrep-header&footer-parser #'embark-consult--wgrep-prepare)
+      ;; TODO Wgrep 3.0 and development versions use different names for the
+      ;; parser variable.
+      (defvar wgrep-header/footer-parser)
+      (defvar wgrep-header&footer-parser)
+      (setq-local wgrep-header/footer-parser #'embark-consult--wgrep-prepare
+                  wgrep-header&footer-parser #'embark-consult--wgrep-prepare)
       (when (fboundp 'wgrep-setup) (wgrep-setup)))
     (pop-to-buffer buf)))
 
@@ -358,47 +362,26 @@ This is intended to be used in `embark-target-injection-hooks'."
   (cl-pushnew #'embark-consult--unique-match
               (alist-get cmd embark-target-injection-hooks)))
 
-(cl-defun embark-consult--prep-async (&key type target &allow-other-keys)
-  "Either add Consult's async separator or ignore the TARGET depending on TYPE.
-If the TARGET of the given TYPE has an associated notion of
-directory, we don't want to search for the text of target, but
-rather just start a search in the associated directory.
-
-This is intended to be used in `embark-target-injection-hooks'
-for any action that is a Consult async command."
-  (let* ((style (alist-get consult-async-split-style
-                           consult-async-split-styles-alist))
-         (initial (plist-get style :initial))
-         (separator (plist-get style :separator))
-         (directory (embark--associated-directory target type)))
-    (when directory
-      (delete-minibuffer-contents))
-    (when initial
-      (goto-char (minibuffer-prompt-end))
-      (insert initial)
-      (goto-char (point-max)))
-    (when (and separator (null directory))
-      (goto-char (point-max))
-      (insert separator))))
-
-(cl-defun embark-consult--projectless
-    (&rest rest &key run target type &allow-other-keys)
-  "Run action with nil `consult-project-function', if TARGET has an directory.
-The values of TYPE which are considered to have an associated
-directory are: file, buffer, bookmark and library.  The REST of
-the arguments are also passed to RUN."
-  (if (embark--associated-directory target type)
+(cl-defun embark-consult--async-search-dwim
+    (&key action type target candidates &allow-other-keys)
+  "DWIM when using a Consult async search command as an ACTION.
+If the TYPE of the target(s) has a notion of associated
+file (files, buffers, libraries and some bookmarks do), then run
+the ACTION with `consult-project-function' set to nil, and search
+only the files associated to the TARGET or CANDIDATES.  For other
+types, run the ACTION with TARGET or CANDIDATES as initial input."
+  (if-let ((file-fn (cdr (assq type embark--associated-file-fn-alist))))
       (let (consult-project-function)
-        (apply run :target target :type type rest))
-    (apply run :target target :type type rest)))
+        (funcall action
+                 (delq nil (mapcar file-fn (or candidates (list target))))))
+    (funcall action nil (or target (string-join candidates " ")))))
 
 (map-keymap
  (lambda (_key cmd)
-   (cl-pushnew #'embark--cd (alist-get cmd embark-around-action-hooks))
-   (cl-pushnew #'embark-consult--projectless
-               (alist-get cmd embark-around-action-hooks))
-   (cl-pushnew #'embark-consult--prep-async
-               (alist-get cmd embark-target-injection-hooks)))
+   (unless (eq cmd #'consult-locate)
+     (cl-pushnew cmd embark-multitarget-actions)
+     (cl-pushnew #'embark-consult--async-search-dwim
+                 (alist-get cmd embark-around-action-hooks))))
  embark-consult-async-search-map)
 
 ;;; Tables of contents for buffers: imenu and outline candidate collectors

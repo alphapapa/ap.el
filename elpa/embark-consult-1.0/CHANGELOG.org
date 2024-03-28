@@ -1,5 +1,27 @@
 #+title: Embark changelog
 
+* Version 1.0 (2023-12-08)
+- You can now use around action hooks with multitarget actions (that
+  you couldn't previously was an oversight).
+- Users of the =embark-consult= package can now use consult async search
+  commands such as =consult-grep= as multitarget actions (through
+  =embark-act-all=) to search a list of files. For example, you can use
+  =consult-find= to search among file /names/ and once you have the
+  relevant files in the minibuffer, you can use =embark-act-all= to
+  search for some text in those files. When acting on buffers consult
+  async search commands will search the associated file if there is
+  one, or else the =default-directory= of the buffer.
+- =embark-bindings= and similar commands now show definition of keyboard
+  macros.
+- =embark-org= now recognizes Org links in non-org buffers.
+- Now pressing RET in an =embark-collect= on a selection made by
+  using =embark-select= in a normal buffer will take you to the location
+  each target was collected from.
+- Some functions renamed for greater consistency (these functions are
+  unlikely to be referred to in user's configuration):
+  - =embark-target-completion-at-point= → =embark-target-completion-list-candidate=
+  - =embark-target-top-minibuffer-completion= → =embark-target-top-minibuffer-candidate=
+  - =embark-completions-buffer-candidates= → =embark-completion-list-candidates=
 * Version 0.23 (2023-09-19)
 - Added a mode line indicator showing the number of selected targets in
   the current buffer (contributed by @minad, thanks!)

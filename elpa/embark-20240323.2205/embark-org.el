@@ -1,6 +1,6 @@
 ;;; embark-org.el --- Embark targets and actions for Org Mode  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2022  Free Software Foundation, Inc.
+;; Copyright (C) 2022-2023  Free Software Foundation, Inc.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@
 
 (defun embark-org-target-element-context ()
   "Target all Org elements or objects around point."
-  (when (derived-mode-p 'org-mode 'org-agenda-mode)
+  (when (derived-mode-p 'org-mode)
     (cl-loop
      for elt = (org-element-lineage (org-element-context) embark-org--types t)
      then (org-element-lineage elt embark-org--types)
@@ -110,7 +110,7 @@
      for end = (min (org-element-property :end elt) (point-max))
      for target = (buffer-substring begin end)
       ;; Adjust table-cell to exclude final |. (Why is that there?)
-      ;; Note: We are not doing this is an embark transformer because we
+      ;; Note: We are not doing this as an embark transformer because we
       ;; want to adjust the bounds too.
       ;; TODO? If more adjustments like this become necessary, add a
       ;; nice mechanism for doing them.
@@ -119,10 +119,10 @@
                end (1- end))
       collect `(,(intern (format "org-%s" (car elt))) ,target ,begin . ,end))))
 
-(if-let (((not (memq 'embark-org-target-element-context embark-target-finders)))
-         (tail (memq 'embark-target-active-region embark-target-finders)))
-    (push 'embark-org-target-element-context (cdr tail))
-  (push 'embark-org-target-element-context embark-target-finders))
+(unless (memq 'embark-org-target-element-context embark-target-finders)
+  (if-let ((tail (memq 'embark-target-active-region embark-target-finders)))
+      (push 'embark-org-target-element-context (cdr tail))
+    (push 'embark-org-target-element-context embark-target-finders)))
 
 ;;; Custom Org actions
 
@@ -220,7 +220,7 @@
 ;;   also without the "file:" prefix nor the "::line-number or search"
 ;;   suffix.  That way, file actions will correctly apply to it.
 
-;; - The type will not be 'file, but 'org-file-link that way we can
+;; - The type will not be 'file, but 'org-file-link; that way we can
 ;;   register a keymap for 'org-file-link that inherits from both
 ;;   embark-org-link-map (with RET bound to org-open-at-point and a
 ;;   few other generic link actions) and embark-file-map.
@@ -241,6 +241,24 @@
 ;; you to cycle first.  This sounds very inconvenient, the above
 ;; slightly more complex design allows both whole-link and inner
 ;; target actions to work without cycling.
+
+(defun embark-org-target-link ()
+  "Target Org link at point.
+This targets Org links in any buffer, not just buffers in
+`org-mode' or `org-agenda-mode'.  Org links in any buffer can be
+opened with `org-open-at-point-global', which is the default
+Embark action for Org links."
+  (pcase (org-in-regexp org-link-any-re)
+    (`(,start . ,end)
+     ;; We won't recognize unadorned http(s) or mailto links, as those
+     ;; already have target finders (but if these links have either a
+     ;; description, double brackets or angle brackets, then we do
+     ;; recognize them as org links)
+     (unless (save-excursion (goto-char start) (looking-at "http\\|mailto"))
+       `(org-link ,(buffer-substring start end) ,start . ,end)))))
+
+(let ((tail (memq 'embark-target-active-region embark-target-finders)))
+  (cl-pushnew 'embark-org-target-link (cdr tail)))
 
 (autoload 'org-attach-dir "org-attach")
 
@@ -331,9 +349,14 @@ bound to i."
 (defvar-keymap embark-org-link-map
   :doc "Keymap for actions on Org links."
   :parent embark-general-map
-  "RET" #'org-open-at-point
+  "RET" #'org-open-at-point-global
   "'" #'org-insert-link
+  "n" #'org-next-link
+  "p" #'org-previous-link
   "w" #'embark-org-link-copy-map)
+
+(dolist (motion '(org-next-link org-previous-link))
+  (cl-pushnew motion embark-repeat-actions))
 
 ;; The reason for this is left as an exercise to the reader.
 ;; Solution: Na ryvfc gnetrg znl cebzcg gur hfre sbe fbzrguvat!
@@ -380,7 +403,7 @@ bound to i."
   "T" #'org-tree-to-indirect-buffer
   "<left>" #'org-do-promote
   "<right>" #'org-do-demote
-  "^" #'org-sort
+  "o" #'org-sort
   "r" #'org-refile
   "R" #'embark-org-refile-here
   "I" #'org-clock-in
@@ -589,7 +612,7 @@ target.  Applies RUN to the REST of the arguments."
     (pop-to-buffer (marker-buffer marker))
     (widen)
     (goto-char marker)
-    (org-fold-reveal)
+    (org-reveal)
     (pulse-momentary-highlight-one-line)))
 
 (defun embark-org-heading-default-action (target)
@@ -614,12 +637,17 @@ at point, the default action is whatever is bound to RET in
     org-store-link)
   "Org heading actions which won't display the heading's buffer.")
 
+(defconst embark-org--no-jump-to-heading
+  '(embark-org-insert-link-to embark-org-refile-here)
+  "Org heading actions which shouldn't be executed with point at the heading.")
+
 (setf (alist-get 'org-heading embark-default-action-overrides)
       #'embark-org-heading-default-action)
 
 (map-keymap
  (lambda (_key cmd)
    (unless (or (where-is-internal cmd (list embark-general-map))
+               (memq cmd embark-org--no-jump-to-heading)
                (memq cmd embark-org--invisible-jump-to-heading))
      (cl-pushnew 'embark-org-goto-heading
                  (alist-get cmd embark-pre-action-hooks))))
