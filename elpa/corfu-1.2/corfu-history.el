@@ -1,12 +1,12 @@
 ;;; corfu-history.el --- Sorting by history for Corfu -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022  Free Software Foundation, Inc.
+;; Copyright (C) 2022-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
-;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (corfu "0.28"))
+;; Version: 1.2
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4") (corfu "1.2"))
 ;; Homepage: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.
@@ -27,7 +27,7 @@
 ;;; Commentary:
 
 ;; Enable `corfu-history-mode' to sort candidates by their history
-;; position. Maintain a list of recently selected candidates. In order
+;; position.  Maintain a list of recently selected candidates.  In order
 ;; to save the history across Emacs sessions, enable `savehist-mode' and
 ;; add `corfu-history' to `savehist-additional-variables'.
 ;;
@@ -41,29 +41,22 @@
 (eval-when-compile
   (require 'cl-lib))
 
-(defcustom corfu-history-length nil
-  "Corfu history length."
-  :type '(choice (const nil) integer)
-  :group 'corfu)
+(defvar corfu-history nil
+  "History of Corfu candidates.
+The maximum length is determined by the variable `history-length'
+or the property `history-length' of `corfu-history'.")
 
 (defvar corfu-history--hash nil
   "Hash table of Corfu candidates.")
 
-(defvar corfu-history nil
-  "History of Corfu candidates.")
-
 (defun corfu-history--sort-predicate (x y)
   "Sorting predicate which compares X and Y."
-  (pcase-let ((`(,sx . ,hx) x)
-              (`(,sy . ,hy) y))
-    (or (< hx hy)
-      (and (= hx hy)
-           (or (< (length sx) (length sy))
-               (and (= (length sx) (length sy))
-                    (string< sx sy)))))))
+  (or (< (cdr x) (cdr y))
+      (and (= (cdr x) (cdr y))
+           (corfu--length-string< (car x) (car y)))))
 
-(defun corfu-history--sort (candidates)
-  "Sort CANDIDATES by history."
+(defun corfu-history--sort (cands)
+  "Sort CANDS by history."
   (unless corfu-history--hash
     (setq corfu-history--hash (make-hash-table :test #'equal :size (length corfu-history)))
     (cl-loop for elem in corfu-history for index from 0 do
@@ -72,35 +65,28 @@
   ;; Decorate each candidate with (index<<13) + length. This way we sort first by index and then by
   ;; length. We assume that the candidates are shorter than 2**13 characters and that the history is
   ;; shorter than 2**16 entries.
-  (cl-loop for cand on candidates do
+  (cl-loop for cand on cands do
            (setcar cand (cons (car cand)
                               (+ (ash (gethash (car cand) corfu-history--hash #xFFFF) 13)
                                  (length (car cand))))))
-  (setq candidates (sort candidates #'corfu-history--sort-predicate))
-  (cl-loop for cand on candidates do (setcar cand (caar cand)))
-  candidates)
-
-(defun corfu-history--insert (&rest _)
-  "Advice for `corfu--insert'."
-  (when (>= corfu--index 0)
-    (add-to-history 'corfu-history
-                    (substring-no-properties
-                     (nth corfu--index corfu--candidates))
-                    corfu-history-length)
-    (setq corfu-history--hash nil)))
+  (setq cands (sort cands #'corfu-history--sort-predicate))
+  (cl-loop for cand on cands do (setcar cand (caar cand)))
+  cands)
 
 ;;;###autoload
 (define-minor-mode corfu-history-mode
   "Update Corfu history and sort completions by history."
-  :global t
-  :group 'corfu
-  (cond
-   (corfu-history-mode
-    (setq corfu-sort-function #'corfu-history--sort)
-    (advice-add #'corfu--insert :before #'corfu-history--insert))
-   (t
-    (setq corfu-sort-function #'corfu-sort-length-alpha)
-    (advice-remove #'corfu--insert #'corfu-history--insert))))
+  :global t :group 'corfu
+  (if corfu-history-mode
+      (add-function :override corfu-sort-function #'corfu-history--sort)
+    (remove-function corfu-sort-function #'corfu-history--sort)))
+
+(cl-defmethod corfu--insert :before (_status &context (corfu-history-mode (eql t)))
+  (when (>= corfu--index 0)
+    (add-to-history 'corfu-history
+                    (substring-no-properties
+                     (nth corfu--index corfu--candidates)))
+    (setq corfu-history--hash nil)))
 
 (provide 'corfu-history)
 ;;; corfu-history.el ends here

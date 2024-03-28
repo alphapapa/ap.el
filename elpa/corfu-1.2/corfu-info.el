@@ -1,12 +1,12 @@
 ;;; corfu-info.el --- Show candidate information in separate buffer -*- lexical-binding: t -*-
 
-;; Copyright (C) 2022  Free Software Foundation, Inc.
+;; Copyright (C) 2022-2024 Free Software Foundation, Inc.
 
 ;; Author: Daniel Mendler <mail@daniel-mendler.de>
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
-;; Version: 0.1
-;; Package-Requires: ((emacs "27.1") (corfu "0.28"))
+;; Version: 1.2
+;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4") (corfu "1.2"))
 ;; Homepage: https://github.com/minad/corfu
 
 ;; This file is part of GNU Emacs.
@@ -27,7 +27,7 @@
 ;;; Commentary:
 
 ;; This Corfu extension provides commands to show additional information to the
-;; candidates in a separate buffer. The commands `corfu-info-location' and
+;; candidates in a separate buffer.  The commands `corfu-info-location' and
 ;; `corfu-info-documentation' are bound by default in the `corfu-map' to M-g and
 ;; M-h respectively.
 
@@ -52,42 +52,63 @@
               (set-window-configuration config))))
     (add-hook 'pre-command-hook restore)))
 
+(defun corfu-info--display-buffer (buffer name)
+  "Display BUFFER and return window displaying the buffer.
+Make the buffer persistent with NAME if non-nil."
+  (if name
+      (unless (buffer-local-value 'buffer-file-name buffer)
+        (if-let ((old (get-buffer name)))
+            (setq buffer (prog1 old (kill-buffer buffer)))
+          (with-current-buffer buffer
+            (rename-buffer name))))
+    (corfu-info--restore-on-next-command))
+  (setq other-window-scroll-buffer buffer)
+  (display-buffer buffer t))
+
 ;;;###autoload
-(defun corfu-info-documentation ()
-  "Show documentation of current candidate."
-  (interactive)
+(defun corfu-info-documentation (&optional arg)
+  "Show documentation of current candidate.
+If called with a prefix ARG, the buffer is persistent."
+  (interactive "P")
   ;; Company support, taken from `company.el', see `company-show-doc-buffer'.
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
-  (if-let* ((fun (plist-get corfu--extra :company-doc-buffer))
-            (res (funcall fun (nth corfu--index corfu--candidates))))
-      (let ((buf (or (car-safe res) res)))
-        (corfu-info--restore-on-next-command)
-        (setq other-window-scroll-buffer (get-buffer buf))
-        (set-window-start (display-buffer buf t) (or (cdr-safe res) (point-min))))
-    (user-error "No documentation available")))
+  (let ((cand (nth corfu--index corfu--candidates)))
+    (if-let ((extra (nth 4 completion-in-region--data))
+             (fun (plist-get extra :company-doc-buffer))
+             (res (funcall fun cand)))
+        (set-window-start (corfu-info--display-buffer
+                           (get-buffer (or (car-safe res) res))
+                           (and arg (format "*corfu doc: %s*" cand)))
+                          (or (cdr-safe res) (point-min)))
+      (user-error "No documentation available for `%s'" cand))))
 
 ;;;###autoload
-(defun corfu-info-location ()
-  "Show location of current candidate."
-  (interactive)
+(defun corfu-info-location (&optional arg)
+  "Show location of current candidate.
+If called with a prefix ARG, the buffer is persistent."
+  (interactive "P")
   ;; Company support, taken from `company.el', see `company-show-location'.
   (when (< corfu--index 0)
     (user-error "No candidate selected"))
-  (if-let* ((fun (plist-get corfu--extra :company-location))
-            (loc (funcall fun (nth corfu--index corfu--candidates))))
-      (let ((buf (or (and (bufferp (car loc)) (car loc)) (find-file-noselect (car loc) t))))
-        (corfu-info--restore-on-next-command)
-        (setq other-window-scroll-buffer buf)
-        (with-selected-window (display-buffer buf t)
-          (save-restriction
-            (widen)
-            (if (bufferp (car loc))
-                (goto-char (cdr loc))
-              (goto-char (point-min))
-              (forward-line (1- (cdr loc))))
-            (set-window-start nil (point)))))
-    (user-error "No candidate location available")))
+  (let ((cand (nth corfu--index corfu--candidates)))
+    (if-let ((extra (nth 4 completion-in-region--data))
+             (fun (plist-get extra :company-location))
+             ;; BUG: company-location may throw errors if location is not found
+             (loc (ignore-errors (funcall fun cand))))
+        (with-selected-window
+            (corfu-info--display-buffer
+             (or (and (bufferp (car loc)) (car loc))
+                 (find-file-noselect (car loc) t))
+             (and arg (format "*corfu loc: %s*" cand)))
+          (without-restriction
+            (goto-char (point-min))
+            (when-let ((pos (cdr loc)))
+              (if (bufferp (car loc))
+                  (goto-char pos)
+                (forward-line (1- pos))))
+            (set-window-start nil (point))))
+      (user-error "No location available for `%s'" cand))))
 
 ;; Emacs 28: Do not show Corfu commands with M-X
 (put #'corfu-info-location 'completion-predicate #'ignore)
