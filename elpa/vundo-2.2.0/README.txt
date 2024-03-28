@@ -14,6 +14,10 @@ should pop up. To move around, type:
   a   to go back to the last branching point
   e   to go forward to the end/tip of the branch
 
+  m   to mark the current node for diff
+  u   to unmark the marked node
+  d   to show a diff between the marked (or parent) and current nodes
+
   q   to quit, you can also type C-g
 
   C-c C-s (or whatever binding you used for save-buffer)
@@ -21,12 +25,13 @@ should pop up. To move around, type:
 
 n/p may need some more explanation. In the following tree, n/p can
 move between A and B because they share a parent (thus at a branching
-point), but not C and D.
+point), but not C and D. To make it clear, branches you can switch
+between are highlighted with bold face.
 
          A  C
-    ──○──○──○──○──○
-      │  ↕︎
-      └──○──○──○
+    ──○━━○──○──○──○
+      ┃  ↕︎
+      ┗━━○──○──○
          B  D
 
 By default, you need to press RET to “commit” your change and if you
@@ -67,13 +72,23 @@ to use that font:
 
     (set-face-attribute 'vundo-default nil :family "Symbola")
 
+Diff:
+
+Vundo uses Emacs' facilities to provide diffs among arbitrary undo
+states: just (m)ark and (d)iff.
+
+Terminal users may encounter unwanted control characters in the diff
+output.  Emacs colors diff buffers itself, so this can be remedied by
+instructing diff not to print color codes:
+
+    (setq diff-switches "-u --color=never")
+
 Comparing to undo-tree:
 
 Vundo doesn’t need to be turned on all the time nor replace the undo
 commands like undo-tree does. Vundo displays the tree horizontally,
-whereas undo-tree displays a tree vertically. Vundo doesn’t have many
-advanced features that undo-tree does (like showing diff), and most
-probably will not add those features in the future.
+whereas undo-tree displays a tree vertically.  Diff is provided
+on-demand between any nodes.
 
 Tests:
 
@@ -87,6 +102,10 @@ to run those tests interactively, or use the following batch command:
 
 
 Changelog (full changelog in NEWS.txt):
+
+<2023-12-17 Sun>: Version 2.2.0: vundo-diff introduced, supporting
+on-demand diff to parent or any marked node.  Improved tree draw
+speed.
 
 <2022-04-04 Mon>: Version 1.0.0
 

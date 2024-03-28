@@ -14,6 +14,22 @@
 (autoload 'vundo "vundo" "\
 Display visual undo for the current buffer." t)
 (register-definition-prefixes "vundo" '("vundo-"))
+
+
+;;; Generated autoloads from vundo-diff.el
+
+(autoload 'vundo-diff-mark "vundo-diff" "\
+Mark NODE for vundo diff.
+NODE defaults to the current node.
+
+(fn &optional NODE)" t)
+(autoload 'vundo-diff-unmark "vundo-diff" "\
+Unmark the node marked for vundo diff." t)
+(autoload 'vundo-diff "vundo-diff" "\
+Perform diff between marked and current buffer state.
+Displays in a separate diff buffer with name based on
+the original buffer name." t)
+(register-definition-prefixes "vundo-diff" '("vundo-diff-"))
 
 ;;; End of scraped data
 
