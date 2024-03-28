@@ -5,7 +5,7 @@
 ;; Author: Daniel Mendler and Consult contributors
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2020
-;; Version: 1.3
+;; Version: 1.4
 ;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4"))
 ;; Homepage: https://github.com/minad/consult
 ;; Keywords: matching, files, completion
@@ -102,7 +102,7 @@ The completion UI is only updated every
 asynchronous commands like for example `consult-grep'."
   :type '(float :tag "Delay in seconds"))
 
-(defcustom consult-async-input-throttle 0.4
+(defcustom consult-async-input-throttle 0.5
   "Input throttle for asynchronous commands.
 
 The asynchronous process is started only every
@@ -1283,29 +1283,39 @@ ORIG is the original function, HOOKS the arguments."
              ;; file-attributes may throw permission denied error
              (attrs (ignore-errors (file-attributes name)))
              (size (file-attribute-size attrs)))
-    (with-current-buffer (if (>= size consult-preview-partial-size)
-                             (generate-new-buffer (format "consult-partial-preview-%s" name))
-                           (find-file-noselect name 'nowarn))
-      (when (>= size consult-preview-partial-size)
-        (setq buffer-read-only t)
-        (with-silent-modifications
-          (insert-file-contents name nil 0 consult-preview-partial-chunk)
-          (goto-char (point-max))
-          (insert "\nFile truncated. End of partial preview.\n"))
-        (goto-char (point-min))
-        ;; Auto detect major mode and hope for the best, given the file which
-        ;; is only previewed partially.
-        (set-auto-mode)
-        (font-lock-mode 1))
-      (when (bound-and-true-p so-long-detected-p)
-        (kill-buffer)
-        (error "File `%s' with long lines not previewed" name))
-      (when (or (eq major-mode 'hexl-mode)
-                (and (eq major-mode 'fundamental-mode)
-                     (save-excursion (search-forward "\0" nil 'noerror))))
-        (kill-buffer)
-        (error "Binary file `%s' not previewed" name))
-      (current-buffer))))
+    (let* ((partial (>= size consult-preview-partial-size))
+           (buffer (if partial
+                       (generate-new-buffer (format "consult-partial-preview-%s" name))
+                     (find-file-noselect name 'nowarn)))
+           (success nil))
+      (unwind-protect
+          (with-current-buffer buffer
+            (if (not partial)
+                (when (or (eq major-mode 'hexl-mode)
+                        (and (eq major-mode 'fundamental-mode)
+                             (save-excursion (search-forward "\0" nil 'noerror))))
+                  (error "No preview of binary file `%s'"
+                         (file-name-nondirectory name)))
+              (with-silent-modifications
+                (setq buffer-read-only t)
+                (insert-file-contents name nil 0 consult-preview-partial-chunk)
+                (goto-char (point-max))
+                (insert "\nFile truncated. End of partial preview.\n")
+                (goto-char (point-min)))
+              (when (save-excursion (search-forward "\0" nil 'noerror))
+                (error "No partial preview of binary file `%s'"
+                       (file-name-nondirectory name)))
+              ;; Auto detect major mode and hope for the best, given that the
+              ;; file is only previewed partially.  If an error is thrown the
+              ;; buffer will be killed and preview is aborted.
+              (set-auto-mode)
+              (font-lock-mode 1))
+            (when (bound-and-true-p so-long-detected-p)
+              (error "No preview of file `%s' with long lines"
+                     (file-name-nondirectory name)))
+            (setq success (current-buffer)))
+        (unless success
+          (kill-buffer buffer))))))
 
 (defun consult--find-file-temporarily (name)
   "Open file NAME temporarily for preview."
@@ -2292,30 +2302,26 @@ The THROTTLE delay defaults to `consult-async-input-throttle'.
 The DEBOUNCE delay defaults to `consult-async-input-debounce'."
   (setq throttle (or throttle consult-async-input-throttle)
         debounce (or debounce consult-async-input-debounce))
-  (let ((input "") last timer)
+  (let* ((input "") (timer (timer-create)) (last 0))
     (lambda (action)
       (pcase action
         ((pred stringp)
          (unless (equal action input)
-           (when timer
-             (cancel-timer timer)
-             (setq timer nil))
+           (cancel-timer timer)
            (funcall async "") ;; cancel running process
            (setq input action)
            (unless (equal action "")
-             (setq timer
-                   (run-at-time
-                    (+ debounce
-                       (if last
-                           (min (- (float-time) last) throttle)
-                         0))
-                    nil
-                    (lambda ()
-                      (setq last (float-time))
-                      (funcall async action))))))
+             (timer-set-function timer (lambda ()
+                                         (setq last (float-time))
+                                         (funcall async action)))
+             (timer-set-time
+              timer
+              (timer-relative-time
+               nil (max debounce (- (+ last throttle) (float-time)))))
+             (timer-activate timer)))
          nil)
         ('destroy
-         (when timer (cancel-timer timer))
+         (cancel-timer timer)
          (funcall async 'destroy))
         (_ (funcall async action))))))
 
@@ -2334,20 +2340,18 @@ The refresh happens immediately when candidates are pushed."
   "Create async function from ASYNC, which refreshes the display.
 
 The refresh happens after a DELAY, defaulting to `consult-async-refresh-delay'."
-  (let ((timer) (refresh) (delay (or delay consult-async-refresh-delay)))
+  (let ((delay (or delay consult-async-refresh-delay))
+        (timer (timer-create)))
+    (timer-set-function timer async '(refresh))
     (lambda (action)
       (prog1 (funcall async action)
         (pcase action
           ((or (pred consp) 'flush)
-           (setq refresh t)
-           (unless timer
-             (setq timer (run-at-time
-                          nil delay
-                          (lambda ()
-                            (when refresh
-                              (setq refresh nil)
-                              (funcall async 'refresh)))))))
-          ('destroy (when timer (cancel-timer timer))))))))
+           (unless (memq timer timer-list)
+             (timer-set-time timer (timer-relative-time nil delay))
+             (timer-activate timer)))
+          ('destroy
+           (cancel-timer timer)))))))
 
 (defmacro consult--async-command (builder &rest args)
   "Asynchronous command pipeline.
@@ -3003,58 +3007,35 @@ of functions and in `consult-completion-in-region'."
 (defun consult-completion-in-region (start end collection &optional predicate)
   "Use minibuffer completion as the UI for `completion-at-point'.
 
-The function is called with 4 arguments: START END COLLECTION PREDICATE.
-The arguments and expected return value are as specified for
-`completion-in-region'.  Use as a value for `completion-in-region-function'.
-
-The function can be configured via `consult-customize'.
-
-    (consult-customize consult-completion-in-region
-                       :completion-styles (basic)
-                       :cycle-threshold 3)
-
-These configuration options are supported:
-
-    * :cycle-threshold - Cycling threshold (def: `completion-cycle-threshold')
-    * :completion-styles - Use completion styles (def: `completion-styles')
-    * :require-match - Require matches when completing (def: nil)
-    * :prompt - The prompt string shown in the minibuffer"
+The function is called with 4 arguments: START END COLLECTION
+PREDICATE.  The arguments and expected return value are as
+specified for `completion-in-region'.  Use this function as a
+value for `completion-in-region-function'."
   (barf-if-buffer-read-only)
-  (cl-letf* ((config (consult--customize-get #'consult-completion-in-region))
-             ;; Overwrite both the local and global value of
-             ;; `completion-styles', such that the `completing-read' minibuffer
-             ;; sees the overwritten value in any case.  This is necessary if
-             ;; `completion-styles' is buffer-local.  Be aware that the override
-             ;; also affects recursive editing sessions.
-             (cs (or (plist-get config :completion-styles) completion-styles))
-             (completion-styles cs)
-             ((default-value 'completion-styles) cs)
-             (initial (buffer-substring-no-properties start end))
-             (metadata (completion-metadata initial collection predicate))
-             ;; TODO: `minibuffer-completing-file-name' is mostly deprecated,
-             ;; but still in use. Packages should instead use the completion
-             ;; metadata.
-             (minibuffer-completing-file-name
-              (eq 'file (completion-metadata-get metadata 'category)))
-             (threshold (or (plist-get config :cycle-threshold)
-                            (completion--cycle-threshold metadata)))
-             (all (completion-all-completions initial collection predicate (length initial)))
-             ;; Wrap all annotation functions to ensure that they are executed
-             ;; in the original buffer.
-             (exit-fun (plist-get completion-extra-properties :exit-function))
-             (ann-fun (plist-get completion-extra-properties :annotation-function))
-             (aff-fun (plist-get completion-extra-properties :affixation-function))
-             (docsig-fun (plist-get completion-extra-properties :company-docsig))
-             (completion-extra-properties
-              `(,@(and ann-fun (list :annotation-function (consult--in-buffer ann-fun)))
-                ,@(and aff-fun (list :affixation-function (consult--in-buffer aff-fun)))
-                ;; Provide `:annotation-function' if `:company-docsig' is specified.
-                ,@(and docsig-fun (not ann-fun) (not aff-fun)
-                       (list :annotation-function
-                             (consult--in-buffer
-                              (lambda (cand)
-                                (concat (propertize " " 'display '(space :align-to center))
-                                        (funcall docsig-fun cand)))))))))
+  (let* ((initial (buffer-substring-no-properties start end))
+         (metadata (completion-metadata initial collection predicate))
+         ;; TODO: `minibuffer-completing-file-name' is mostly deprecated, but
+         ;; still in use. Packages should instead use the completion metadata.
+         (minibuffer-completing-file-name
+          (eq 'file (completion-metadata-get metadata 'category)))
+         (threshold (completion--cycle-threshold metadata))
+         (all (completion-all-completions initial collection predicate (length initial)))
+         ;; Wrap all annotation functions to ensure that they are executed
+         ;; in the original buffer.
+         (exit-fun (plist-get completion-extra-properties :exit-function))
+         (ann-fun (plist-get completion-extra-properties :annotation-function))
+         (aff-fun (plist-get completion-extra-properties :affixation-function))
+         (docsig-fun (plist-get completion-extra-properties :company-docsig))
+         (completion-extra-properties
+          `(,@(and ann-fun (list :annotation-function (consult--in-buffer ann-fun)))
+            ,@(and aff-fun (list :affixation-function (consult--in-buffer aff-fun)))
+            ;; Provide `:annotation-function' if `:company-docsig' is specified.
+            ,@(and docsig-fun (not ann-fun) (not aff-fun)
+                   (list :annotation-function
+                         (consult--in-buffer
+                          (lambda (cand)
+                            (concat (propertize " " 'display '(space :align-to center))
+                                    (funcall docsig-fun cand)))))))))
     ;; error if `threshold' is t or the improper list `all' is too short
     (if (and threshold
              (or (not (consp (ignore-errors (nthcdr threshold all))))
@@ -5123,7 +5104,7 @@ the asynchronous search."
   "Preview minor mode for *Completions* buffers.
 When moving around in the *Completions* buffer, the candidate at point is
 automatically previewed."
-  :init-value nil :group 'consult
+  :group 'consult
   (if consult-preview-at-point-mode
       (add-hook 'post-command-hook #'consult-preview-at-point nil 'local)
     (remove-hook 'post-command-hook #'consult-preview-at-point 'local)))
@@ -5178,6 +5159,7 @@ automatically previewed."
 (defvar vertico--input)
 (declare-function vertico--exhibit "ext:vertico")
 (declare-function vertico--candidate "ext:vertico")
+(declare-function vertico--filter-completions "ext:vertico")
 
 (defun consult--vertico-candidate ()
   "Return current candidate for Consult preview."
@@ -5193,9 +5175,7 @@ automatically previewed."
   "Advice for ORIG `consult--completion-filter' function.
 See `consult--completion-filter' for arguments PATTERN, CANDS, CATEGORY
 and HIGHLIGHT."
-  (if (and (not highlight)
-           (bound-and-true-p vertico-mode)
-           (fboundp 'vertico--filter-completions))
+  (if (and (not highlight) (bound-and-true-p vertico-mode))
       ;; Optimize `consult--completion-filter' using the deferred highlighting
       ;; from Vertico.  The advice is not necessary - it is a pure optimization.
       (nconc (car (vertico--filter-completions pattern cands nil (length pattern)
