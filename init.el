@@ -649,15 +649,29 @@ Like it used to."
 
 (use-package emacs
   :init
-  (setq completion-ignore-case t)
+  (setq completion-ignore-case t))
 
+(use-package emacs
+  ;; Buffer-related things.
   :config
   (defun ap/kill-this-buffer ()
     "Kill current buffer."
     (interactive)
     (kill-buffer (current-buffer)))
 
-  :bind (("C-x C-k" . #'ap/kill-this-buffer)))
+  (defun ap/switch-to-buffer ()
+    "Switch to buffer offered from various sources.
+If an activity is current, use `activities-switch-buffer';
+otherwise use `bufler-switch-buffer'."
+    (interactive)
+    (cond ((or (equal '(16) current-prefix-arg)
+               (not (activities-current)))
+           (call-interactively #'bufler-switch-buffer))
+          (t (call-interactively #'activities-switch-buffer))))
+
+  :bind
+  (("C-x b" . #'ap/switch-to-buffer)
+   ("C-x C-k" . #'ap/kill-this-buffer)))
 
 (use-package eww
   :general
