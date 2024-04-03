@@ -118,7 +118,7 @@
                (buffer-file-name
                 (buffer-base-buffer))))))
         (file-in-directory-p buffer-file-name org-directory))))
- '(org-clock-mode-line-total 'current)
+ '(org-clock-mode-line-total 'today)
  '(org-clock-report-include-clocking-task t)
  '(org-crypt-disable-auto-save 'encrypt)
  '(org-ctags-open-link-functions nil)
