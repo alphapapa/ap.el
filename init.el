@@ -1433,7 +1433,37 @@ Also, ignores effort, because it's not useful for this purpose."
   :hook (org-mode . org-sticky-header-mode))
 
 (use-package org-super-agenda
-  :quelpa (org-super-agenda :fetcher github :repo "alphapapa/org-super-agenda"))
+  :quelpa (org-super-agenda :fetcher github :repo "alphapapa/org-super-agenda")
+
+  :config
+  (setq org-super-agenda-groups
+        '((:log t :order 0)
+          (:name "Schedule"
+                 :time-grid t
+                 :todo "TODAY")
+          (:name "Bills"
+                 :tag "bills")
+          (:priority "A" :order 1)
+          (:priority "B" :order 2)
+          (:name "Prayers"
+                 :tag "prayers"
+                 :order 3)
+          (:todo ("SOMEDAY" "TO-READ" "CHECK" "TO-WATCH" "WATCHING")
+                 :order 7)
+          (:name "Personal"
+                 :habit t
+                 :tag "personal"
+                 :order 3)
+          (:name "People"
+                 :tag ("friends" "family")
+                 :order 4)
+          (:name "Computer"
+                 :tag ("Emacs" "Org" "computer" "computers" "Onyx" "sparky" "software" "bugs" "programming")
+                 :order 5)
+          (:todo "WAITING"
+                 :order 6)
+          ;; (:auto-groups t)
+          (:priority "C" :order 2))))
 
 ;; (use-package org-superstar
 ;;   ;; FIXME: This needs to be activated after org-indent-mode to
