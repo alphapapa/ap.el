@@ -118,6 +118,15 @@
                (buffer-file-name
                 (buffer-base-buffer))))))
         (file-in-directory-p buffer-file-name org-directory))))
+ '(org-capture-templates
+   '(("c" "Commonplace Book")
+     ("cl" "Link to Web page" entry
+      (file+olp+datetree "~/org/cpb.org")
+      "* %(org-web-tools--org-link-for-url) :website:\12\12+ %U %?" :empty-lines 1)
+     ("w" "Work")
+     ("wl" "Work log entry" plain
+      (file+olp+datetree "~/work/work.org" "Log")
+      "+ %U%(when (org-clocking-p) \" [%K]\") %?" :empty-lines 1)))
  '(org-clock-mode-line-total 'today)
  '(org-clock-report-include-clocking-task t)
  '(org-crypt-disable-auto-save 'encrypt)
