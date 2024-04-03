@@ -104,7 +104,7 @@
  '(modus-themes-tabs-accented t)
  '(native-comp-async-jobs-number 2)
  '(objed-cursor-color "#ff665c")
- '(org-agenda-files '("~/org/inbox.org"))
+ '(org-agenda-files "~/org/.agenda-files")
  '(org-attach-use-inheritance nil)
  '(org-blank-before-new-entry '((heading . t) (plain-list-item . auto)))
  '(org-bookmark-heading-make-ids
