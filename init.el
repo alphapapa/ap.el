@@ -137,6 +137,7 @@
  '(org-ellipsis "↵")
  '(org-export-backends '(ascii html icalendar latex md odt org))
  '(org-export-with-broken-links 'mark)
+ '(org-extend-today-until 4)
  '(org-fold-catch-invisible-edits 'error)
  '(org-fontify-quote-and-verse-blocks t)
  '(org-hide-emphasis-markers t)
