@@ -121,7 +121,21 @@
                 (buffer-base-buffer))))))
         (file-in-directory-p buffer-file-name org-directory))))
  '(org-capture-templates
-   '(("c" "Commonplace Book")
+   '(("F" "Find (with Org QL)")
+     ("Fa" "Find in agenda files" entry
+      #'(lambda nil
+          (call-interactively #'org-ql-find-in-agenda))
+      "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
+     ("Fo" "Find in org-directory" entry
+      #'(lambda nil
+          (call-interactively #'org-ql-find-in-org-directory))
+      "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
+     ("FF" "Find in current buffer" entry
+      #'(lambda nil
+          (call-interactively #'org-ql-find))
+      "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
+     ("H" "Here (current heading)" entry #'ap/org-capture-here "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
+     ("c" "Commonplace Book")
      ("cl" "Link to Web page" entry
       (file+olp+datetree "~/org/cpb.org")
       "* %(org-web-tools--org-link-for-url) :website:\12\12+ %U %?" :empty-lines 1)
@@ -1344,6 +1358,15 @@ org-agenda to deny bulk actions."
         (define-advice org-agenda-check-type (:filter-args (error &rest types) allow-search-type)
           (cons error (cons 'search types)))
       (advice-remove 'org-agenda-check-type 'org-agenda-check-type@allow-search-type))))
+
+(use-package org-capture
+  :config
+  (defun ap/org-capture-here ()
+    "Move point to current heading.
+Suitable for use as \"function-finding-location\" in
+`org-capture-templates'."
+    (cl-assert (derived-mode-p 'org-mode))
+    (org-back-to-heading)))
 
 (use-package org-clock
   :general (ap/general-def
