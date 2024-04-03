@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Keywords: convenience
-;; Package-Version: 20240325.1657
+;; Package-Version: 20240331.1149
 ;; URL: https://github.com/alphapapa/unpackaged.el
 ;; Package-Requires: ((emacs "25.1") (dash "2.13") (s "1.10.0") (org "9.0") (use-package "2.4"))
 
@@ -1678,8 +1678,8 @@ Index includes links and headings."
                                  for text = (buffer-substring next-beg next-end)
                                  collect (cons text next-beg)
                                  and do (goto-char next-end)))))
-        (list (cons "Links" links)
-              (cons "Headings" headings))))))
+        (list (cons "Headings" headings)
+              (cons "Links" links))))))
 
 (defun unpackaged/eww-imenu-goto (_label position)
   "Go to POSITION and call `eww-follow-link' if one is there."
