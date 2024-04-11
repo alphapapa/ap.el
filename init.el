@@ -1383,10 +1383,11 @@ Suitable for use as \"function-finding-location\" in
        (org-entry-get nil "ITEM")))
      25 nil nil t))
   (setopt org-clock-heading-function #'ap/org-clock-heading-function)
+
   (defun ap/org-clock-get-clock-string ()
     "Like `org-clock-get-clock-string', but nicer.
 Also, ignores effort, because it's not useful for this purpose."
-    (format (propertize "🦄:⏲(%s:%s)" 'face 'org-mode-line-clock)
+    (format (propertize "🦄:⏲️(%s:%s)" 'face 'org-mode-line-clock)
 	    org-clock-heading
             (pcase (* 60 (org-clock-get-clocked-time))
               ((pred (> 60)) "0m")
