@@ -695,87 +695,109 @@ otherwise use `bufler-switch-buffer'."
 
 (use-package faces
   :init
-
   (progn
-    (defun ap/modify-tab-bar-faces (&rest _)
-      (ap/modify-faces
-       '(tab-bar :family nil :inherit (variable-pitch header-line))
-       '(tab-bar-tab :family "NK57 Monospace" :width condensed :weight bold
-                     :inherit (tab-bar))
-       '(tab-bar-tab-inactive :inherit (tab-bar-tab))))
-
+    ;; NOTE: If Fontaine gains support for the :width attribute, this
+    ;; code would likely be unnecessary. See
+    ;; <https://github.com/protesilaos/fontaine/issues/6> and
+    ;; <https://github.com/protesilaos/fontaine/issues/7>.
     (defun ap/modify-faces (&rest faces)
       (pcase-dolist (`(,face . ,spec) faces)
         (map-do (lambda (attribute value)
                   (set-face-attribute face nil attribute value))
                 spec)))
 
+    (defun ap/modify-tab-bar-faces (&rest _)
+      (ap/modify-faces
+       '(tab-bar :family nil :inherit (variable-pitch))
+       '(tab-bar-tab :family "NK57 Monospace" :width condensed :weight bold
+                     :inherit (tab-bar))
+       '(tab-bar-tab-inactive :inherit (tab-bar-tab))))
+
+    (defun ap/modify-tab-line-faces (&rest _)
+      (ap/modify-faces
+       '(tab-line-tab-special :slant italic)))
+
     ;; The tab-bar tabs should be "NK57 Monospace" condensed, but
     ;; the rest of the tab-bar line should be variable-pitch to
     ;; save space.
     (add-hook 'enable-theme-functions #'ap/modify-tab-bar-faces)
-    (ap/modify-tab-bar-faces))
+    (add-hook 'enable-theme-functions #'ap/modify-tab-line-faces)
+    (ap/modify-tab-bar-faces)
+    (ap/modify-tab-line-faces))
 
-  (defvar ap/random-fonts
-    `(
-      ;; A list of lists or alists. Alists should be in (STRING
-      ;; . STRING) format, with the first string being the frame-font, and
-      ;; the second the variable-pitch font.  If an element is a list
-      ;; rather than an alist, it will be set as the frame-font, and the
-      ;; variable-pitch font will be set to a default.
-      ("Fantasque Sans Mono-10")
-      ("DejaVu Sans Mono-9" . "DejaVu Sans")
-      ("Ubuntu Mono-10" . "Ubuntu")
-      ("Droid Sans Mono-9" . "Droid Sans")
-      ("Input Mono Narrow-9" . "Input Sans Condensed")
-      ("Input Sans Condensed-9" . "Input Sans Condensed")
-      ("Consolas-10")
-      ("Inconsolata-10")
-      ("Anonymous Pro-10")
-      ("Liberation Mono-9")
-      ("Fira Mono-9" . "Fira Sans")
-      ("Fira Code-9" . "Fira Sans")
-      ("Hack-9")
-      ("NK57 Monospace-9:width=semi-condensed")
-      ("NK57 Monospace-9")
-      ))
+  (progn
+    (defvar ap/random-fonts
+      `(
+        ;; A list of lists or alists. Alists should be in (STRING
+        ;; . STRING) format, with the first string being the frame-font, and
+        ;; the second the variable-pitch font.  If an element is a list
+        ;; rather than an alist, it will be set as the frame-font, and the
+        ;; variable-pitch font will be set to a default.
+        ("Fantasque Sans Mono-10")
+        ("DejaVu Sans Mono-9" . "DejaVu Sans")
+        ("Ubuntu Mono-10" . "Ubuntu")
+        ("Droid Sans Mono-9" . "Droid Sans")
+        ("Input Mono Narrow-9" . "Input Sans Condensed")
+        ("Input Sans Condensed-9" . "Input Sans Condensed")
+        ("Consolas-10")
+        ("Inconsolata-10")
+        ("Anonymous Pro-10")
+        ("Liberation Mono-9")
+        ("Fira Mono-9" . "Fira Sans")
+        ("Fira Code-9" . "Fira Sans")
+        ("Hack-9")
+        ("NK57 Monospace-9:width=semi-condensed")
+        ("NK57 Monospace-9")
+        ((:family "Monaspace Neon Var" :weight bold :size 10))
+        ))
 
-  (defun ap/set-random-frame-font ()
-    "Set random fonts from ap/random-fonts list."
-    (interactive)
-    (ap/set-custom-fonts (seq-random-elt ap/random-fonts)))
+    (defun ap/set-random-frame-font ()
+      "Set random fonts from ap/random-fonts list."
+      (interactive)
+      (ap/set-custom-fonts (seq-random-elt ap/random-fonts)))
 
-  (defun ap/set-custom-fonts (font)
-    "Set frame-font and variable-pitch font using FONT.
+    (cl-defun ap/select-element (sequence &key (prompt "Select: "))
+      "Return element of SEQUENCE selected with completion."
+      (let ((choices (mapcar (lambda (elt)
+                               (cons (format "%s" elt) elt))
+                             sequence)))
+        (map-elt choices (completing-read prompt choices nil t))))
+
+    (defun ap/set-custom-fonts (font)
+      "Set frame-font and variable-pitch font using FONT.
 
 FONT should be either a single-element list containing the
 frame-font, or a cons cell in (FRAME-FONT . VARIABLE-PITCH-FONT)
 format."
-    (interactive
-     (list (let ((choice (completing-read "Font: " ap/random-fonts)))
-             (assoc choice ap/random-fonts))))
-    (let ((frame-font (car font))
-          (variable-font (or (cdr font) "DejaVu Sans")))
-      (set-frame-font frame-font t)
-      (set-face-font 'default frame-font)
-      (set-face-font 'variable-pitch variable-font)
-      ;; Set org faces
-      (dolist (face '(org-block org-block-begin-line org-meta-line))
-        (when (facep face)
-          (set-face-attribute face nil :font frame-font)))
-      ;; Set buffer-face for org buffers
-      (when (symbol-function 'org-buffer-list)
-        (dolist (buffer (org-buffer-list))
-          (with-current-buffer buffer
-            (buffer-face-set :family (face-attribute 'variable-pitch :family)
-                             :height (face-attribute 'variable-pitch :height)))))
-      (message "%s" frame-font))))
+      (interactive
+       (list (ap/select-element ap/random-fonts :prompt "Font: ")))
+      (let ((frame-font (car font))
+            (variable-font (or (cdr font) "DejaVu Sans")))
+        (set-frame-font frame-font t)
+        (set-face-font 'default frame-font)
+        (set-face-font 'variable-pitch variable-font)
+        ;; Set org faces
+        (dolist (face '(org-block org-block-begin-line org-meta-line))
+          (when (facep face)
+            (set-face-attribute face nil :font frame-font)))
+        ;; Set buffer-face for org buffers
+        (when (symbol-function 'org-buffer-list)
+          (dolist (buffer (org-buffer-list))
+            (with-current-buffer buffer
+              (buffer-face-set :family (face-attribute 'variable-pitch :family)
+                               :height (face-attribute 'variable-pitch :height)))))
+        (message "%s" frame-font)))))
 
 (use-package fontaine
   :demand t
   :config
   (fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular))
   (add-hook 'kill-emacs-hook #'fontaine-store-latest-preset)
+
+  ;; NOTE: Since Fontaine doesn't support the :width attribute, I
+  ;; don't use it for tab-bar faces. See
+  ;; <https://github.com/protesilaos/fontaine/issues/6>.
+  (cl-callf2 remq 'tab-bar fontaine-faces)
 
   :custom
   (fontaine-presets
