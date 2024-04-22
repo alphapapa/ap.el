@@ -1398,19 +1398,25 @@ Suitable for use as \"function-finding-location\" in
              "ocl" #'org-clock-in-last
              "ocz" #'ap/org-clock-add-note)
   :config
+  (add-hook 'org-clock-in-hook #'org-clock-update-mode-line)
+  (add-hook 'org-clock-out-hook #'org-clock-update-mode-line)
+
   (defun ap/org-clock-heading-function ()
-    (truncate-string-to-width
-     (substring-no-properties
-      (org-link-display-format
-       (org-entry-get nil "ITEM")))
-     25 nil nil t))
+    (concat (propertize (org-get-category)
+                        'face 'org-agenda-filter-category)
+            ":" (propertize (truncate-string-to-width
+                             (substring-no-properties
+                              (org-link-display-format
+                               (org-entry-get nil "ITEM")))
+                             25 nil nil t)
+                            'face 'bold)))
   (setopt org-clock-heading-function #'ap/org-clock-heading-function)
 
   (defun ap/org-clock-get-clock-string ()
     "Like `org-clock-get-clock-string', but nicer.
 Also, ignores effort, because it's not useful for this purpose."
     (format (propertize "🦄:⏲️(%s:%s)" 'face 'org-mode-line-clock)
-	    org-clock-heading
+            org-clock-heading
             (pcase (* 60 (org-clock-get-clocked-time))
               ((pred (> 60)) "0m")
               (it (format-seconds "%x%hh%z%mm" it)))))
