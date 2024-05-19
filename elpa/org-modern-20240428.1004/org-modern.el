@@ -6,6 +6,7 @@
 ;; Maintainer: Daniel Mendler <mail@daniel-mendler.de>
 ;; Created: 2022
 ;; Version: 1.2
+;; Package-Version: 20240428.1004
 ;; Package-Requires: ((emacs "27.1") (compat "29.1.4.4"))
 ;; Homepage: https://github.com/minad/org-modern
 ;; Keywords: outlines, hypermedia, text
@@ -53,10 +54,25 @@ If set to `auto' the border width is computed based on the `line-spacing'.
 A value between 0.1 and 0.4 of `line-spacing' is recommended."
   :type '(choice (const nil) (const auto) integer))
 
-(defcustom org-modern-star "◉○◈◇✳"
-  "Replacement strings for headline stars for each level.
-Set to nil to disable styling the headlines."
+(defcustom org-modern-star 'fold
+  "Style heading stars.
+Can be nil, fold or replace.  See `org-modern-fold-stars' and
+`org-moder-replace-stars' for the respective configurations."
+  :type '(choice (const :tag "No styling" nil)
+                 (const :tag "Folding indicators" fold)
+                 (const :tag "Replace" replace)))
+
+(defcustom org-modern-replace-stars "◉○◈◇✳"
+  "Replacement strings for headline stars for each level."
   :type '(choice string (repeat string)))
+
+(defcustom org-modern-fold-stars
+  '(("▶" . "▼") ("▷" . "▽") ("⏵" . "⏷") ("▹" . "▿"))
+  "Folding indicators for headings.
+Replace headings' stars with an indicator showing whether its
+tree is folded or expanded."
+  :type '(repeat (cons (string :tag "Folded")
+                       (string :tag "Expanded"))))
 
 (defcustom org-modern-hide-stars 'leading
   "Changes the displays of the stars.
@@ -333,7 +349,8 @@ the font.")
   "Face used for horizontal ruler.")
 
 (defvar-local org-modern--font-lock-keywords nil)
-(defvar-local org-modern--star-cache nil)
+(defvar-local org-modern--folded-star-cache nil)
+(defvar-local org-modern--expanded-star-cache nil)
 (defvar-local org-modern--hide-stars-cache nil)
 (defvar-local org-modern--checkbox-cache nil)
 (defvar-local org-modern--progress-cache nil)
@@ -488,8 +505,21 @@ the font.")
       (put-text-property
        (if (eq org-modern-hide-stars 'leading) beg end)
        (1+ end) 'display
-       (aref org-modern--star-cache
-             (min (1- (length org-modern--star-cache)) level))))))
+       ;; `org-fold-folded-p' requires Emacs 29.1, but this
+       ;; does essentially the same for our purposes.
+       (let ((cache (if (and org-modern--folded-star-cache
+                             (get-char-property (pos-eol) 'invisible))
+                        org-modern--folded-star-cache
+                      org-modern--expanded-star-cache)))
+         (aref cache (min (1- (length cache)) level)))))))
+
+(defun org-modern--cycle (state)
+  "Flush font-lock for buffer or line at point for `org-cycle-hook'.
+When STATE is `overview', `contents', or `all', flush for the
+whole buffer; otherwise, for the line at point."
+  (pcase state
+    ((or 'overview 'contents 'all) (font-lock-flush))
+    (_ (font-lock-flush (pos-bol) (pos-eol)))))
 
 (defun org-modern--table ()
   "Prettify vertical table lines."
@@ -657,7 +687,7 @@ the font.")
      `(("^\\*+.*? \\(\\(\\[\\)#.\\(\\]\\)\\) "
         (1 (org-modern--priority)))))
    (when org-modern-todo
-     `((,(format "^\\*+ +%s " (regexp-opt org-todo-keywords-1 t))
+     `((,(format "^\\*+ +%s\\(?: \\|$\\)" (regexp-opt org-todo-keywords-1 t))
         (0 (org-modern--todo)))))
    (when org-modern-checkbox
      `((,org-list-full-item-re
@@ -767,8 +797,14 @@ the font.")
    (org-modern-mode
     (add-to-invisibility-spec 'org-modern)
     (setq
-     org-modern--star-cache
-     (vconcat (mapcar #'org-modern--symbol org-modern-star))
+     org-modern--folded-star-cache
+     (and (eq org-modern-star 'fold)
+          (vconcat (mapcar #'org-modern--symbol (mapcar #'car org-modern-fold-stars))))
+     org-modern--expanded-star-cache
+     (and org-modern-star
+          (vconcat (mapcar #'org-modern--symbol (if (eq org-modern-star 'fold)
+                                                    (mapcar #'cdr org-modern-fold-stars)
+                                                  org-modern-replace-stars))))
      org-modern--hide-stars-cache
      (and (char-or-string-p org-modern-hide-stars)
           (list (org-modern--symbol org-modern-hide-stars)
@@ -789,6 +825,7 @@ the font.")
     (add-hook 'pre-redisplay-functions #'org-modern--pre-redisplay nil 'local)
     (add-hook 'org-after-promote-entry-hook #'org-modern--unfontify-line nil 'local)
     (add-hook 'org-after-demote-entry-hook #'org-modern--unfontify-line nil 'local)
+    (add-hook 'org-cycle-hook #'org-modern--cycle nil 'local)
     (org-modern--update-label-face)
     (org-modern--update-fringe-bitmaps))
    (t
@@ -798,7 +835,8 @@ the font.")
     (setq-local font-lock-unfontify-region-function #'org-unfontify-region)
     (remove-hook 'pre-redisplay-functions #'org-modern--pre-redisplay 'local)
     (remove-hook 'org-after-promote-entry-hook #'org-modern--unfontify-line 'local)
-    (remove-hook 'org-after-demote-entry-hook #'org-modern--unfontify-line 'local)))
+    (remove-hook 'org-after-demote-entry-hook #'org-modern--unfontify-line 'local)
+    (remove-hook 'org-cycle-hook #'org-modern--cycle 'local)))
   (without-restriction
     (with-silent-modifications
       (org-modern--unfontify (point-min) (point-max)))
