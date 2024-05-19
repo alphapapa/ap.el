@@ -5,7 +5,8 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/plz.el
-;; Version: 0.7
+;; Package-Version: 20240421.628
+;; Version: 0.8-pre
 ;; Package-Requires: ((emacs "26.3"))
 ;; Keywords: comm, network, http
 
@@ -254,7 +255,7 @@ connection phase and waiting to receive the response (the
 
 ;;;;; Public
 
-(cl-defun plz (method url &rest rest &key headers body else finally noquery
+(cl-defun plz (method url &rest rest &key headers body else filter finally noquery
                       (as 'string) (then 'sync)
                       (body-type 'text) (decode t decode-s)
                       (connect-timeout plz-connect-timeout) (timeout plz-timeout))
@@ -330,6 +331,15 @@ from a host, respectively.
 
 NOQUERY is passed to `make-process', which see.
 
+FILTER is an optional function to be used as the process filter
+for the curl process.  It can be used to handle HTTP responses in
+a streaming way.  The function must accept 2 arguments, the
+process object running curl, and a string which is output
+received from the process.  The default process filter inserts
+the output of the process into the process buffer.  The provided
+FILTER function should at least insert output up to the HTTP body
+into the process buffer.
+
 \(To silence checkdoc, we mention the internal argument REST.)"
   ;; FIXME(v0.8): Remove the note about error changes from the docstring.
   ;; FIXME(v0.8): Update error signals in docstring.
@@ -390,10 +400,10 @@ NOQUERY is passed to `make-process', which see.
                    ('binary nil)
                    (_ decode)))
          (default-directory
-           ;; Avoid making process in a nonexistent directory (in case the current
-           ;; default-directory has since been removed).  It's unclear what the best
-           ;; directory is, but this seems to make sense, and it should still exist.
-           temporary-file-directory)
+          ;; Avoid making process in a nonexistent directory (in case the current
+          ;; default-directory has since been removed).  It's unclear what the best
+          ;; directory is, but this seems to make sense, and it should still exist.
+          temporary-file-directory)
          (process-buffer (generate-new-buffer " *plz-request-curl*"))
          (stderr-process (make-pipe-process :name "plz-request-curl-stderr"
                                             :buffer (generate-new-buffer " *plz-request-curl-stderr*")
@@ -404,6 +414,7 @@ NOQUERY is passed to `make-process', which see.
                                 :coding 'binary
                                 :command (append (list plz-curl-program) curl-command-line-args)
                                 :connection-type 'pipe
+                                :filter filter
                                 :sentinel #'plz--sentinel
                                 :stderr stderr-process
                                 :noquery noquery))
@@ -449,6 +460,8 @@ NOQUERY is passed to `make-process', which see.
                       (progn
                         (write-region (point-min) (point-max) filename)
                         (funcall then filename))
+                    (file-already-exists
+                     (funcall then (make-plz-error :message (format "error while writing to file %S: %S" filename err))))
                     ;; In case of an error writing to the file, delete the temp file
                     ;; and signal the error.  Ignore any errors encountered while
                     ;; deleting the file, which would obscure the original error.
@@ -463,6 +476,8 @@ NOQUERY is passed to `make-process', which see.
               (progn
                 (write-region (point-min) (point-max) filename nil nil nil 'excl)
                 (funcall then filename))
+            (file-already-exists
+             (funcall then (make-plz-error :message (format "error while writing to file %S: %S" filename err))))
             ;; Since we are creating the file, it seems sensible to delete it in case of an
             ;; error while writing to it (e.g. a disk-full error).  And we ignore any errors
             ;; encountered while deleting the file, which would obscure the original error.
@@ -631,11 +646,11 @@ making QUEUE's requests."
 Return when QUEUE is at limit or has no more queued requests.
 
 QUEUE should be a `plz-queue' structure."
-  (cl-labels ((readyp
-               (queue) (and (not (plz-queue-canceled-p queue))
-                            (plz-queue-requests queue)
-                            ;; With apologies to skeeto...
-                            (< (length (plz-queue-active queue)) (plz-queue-limit queue)))))
+  (cl-labels ((readyp (queue)
+                (and (not (plz-queue-canceled-p queue))
+                     (plz-queue-requests queue)
+                     ;; With apologies to skeeto...
+                     (< (length (plz-queue-active queue)) (plz-queue-limit queue)))))
     (while (readyp queue)
       (pcase-let* ((request (plz--queue-pop queue))
                    ((cl-struct plz-queued-request method url
@@ -826,7 +841,7 @@ Arguments are PROCESS and STATUS (ok, checkdoc?)."
 (defun plz--skip-redirect-headers ()
   "Skip HTTP redirect headers in current buffer."
   (when (and (looking-at plz-http-response-status-line-regexp)
-             (member (string-to-number (match-string 2)) '(301 302 307 308)))
+             (member (string-to-number (match-string 2)) '(301 302 303 307 308)))
     ;; Skip redirect headers ("--dump-header" forces redirect headers to be included
     ;; even when used with "--location").
     (or (re-search-forward "\r\n\r\n" nil t)
