@@ -1399,7 +1399,15 @@ Suitable for use as \"function-finding-location\" in
              "ocz" #'ap/org-clock-add-note)
   :config
   (add-hook 'org-clock-in-hook #'org-clock-update-mode-line)
+  (add-hook 'org-clock-in-hook
+            ;; `org-clock-update-mode-line' doesn't pass t to `force-mode-line-update'.
+            (lambda ()
+              (force-mode-line-update t)))
   (add-hook 'org-clock-out-hook #'org-clock-update-mode-line)
+  (add-hook 'org-clock-out-hook
+            ;; `org-clock-update-mode-line' doesn't pass t to `force-mode-line-update'.
+            (lambda ()
+              (force-mode-line-update t)))
 
   (defun ap/org-clock-heading-function ()
     (concat (propertize (org-get-category)
