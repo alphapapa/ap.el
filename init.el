@@ -1605,6 +1605,12 @@ Also, ignores effort, because it's not useful for this purpose."
       :lightens '(10 20 30)))
 
   (unpackaged/define-chooser ap/prism-theme
+    ("ef-dream"
+     ;; Very LCARS-ish.  This set seems to work nicely, a bit more color than the default.
+     (prism-set-colors :colors '( font-lock-type-face font-lock-function-name-face
+                                  font-lock-keyword-face font-lock-doc-face)))
+    ("doom-vibrant"
+     (prism-set-colors :colors '("#C57BDB" "#5cEfFF" "#FCCE7B")))
     ("Shuffle random number of theme faces"
      (prism-set-colors :num 24
        :colors (let* ((faces (list 'font-lock-regexp-grouping-backslash 'font-lock-regexp-grouping-construct
