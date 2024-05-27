@@ -1247,6 +1247,21 @@ Includes \"%s\" format spec for length of playlist in minutes."
       :background ,(face-attribute 'org-scheduled-previously :foreground))))
 
   :config
+  (define-advice outline-up-heading
+      (:around (oldfun arg &optional invisible-ok) ap/org-outline-up-heading)
+    "Move to parent Org heading, even if it's outside narrowing."
+    (let ((old-pos (point)))
+      (funcall oldfun arg invisible-ok)
+      (when (and (eq 'org-mode major-mode)
+                 (equal old-pos (point))
+                 (buffer-narrowed-p)
+                 (not (= 1 (org-current-level))))
+        ;; Buffer narrowed to subtree: narrow to parent heading.
+        ;; TODO: Also rename buffer.
+        (widen)
+        (outline-up-heading 1)
+        (org-narrow-to-subtree))))
+
   (define-advice org-insert-item
       (:around (oldfun &optional checkbox) ap/org-insert-item)
     "Call `org-insert-item' and provide CHECKBOX argument smartly."
