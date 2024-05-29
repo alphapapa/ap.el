@@ -1886,7 +1886,7 @@ setting up an IDE-like layout)."
     (interactive (list (current-buffer)
                        :side (pcase current-prefix-arg
                                ('nil 'right)
-                               ('(0) left)
+                               ('(0) 'left)
                                (_ (intern (completing-read "Side: " '(left right top bottom) nil t))))
                        :slot (pcase current-prefix-arg
                                ('nil 0)
