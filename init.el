@@ -1087,7 +1087,25 @@ Includes \"%s\" format spec for length of playlist in minutes."
                                                     "--play-and-exit" (expand-file-name "~/Dropbox/Sounds/Cell Phone Ringers/Homer's Cell Phone.mp3"))))))))
         (when (timerp hammy-always-timer)
           (cancel-timer hammy-always-timer)
-          (setf hammy-always-timer nil))))))
+          (setf hammy-always-timer nil)))))
+
+  (hammy-define "☕"
+    :documentation "Single-use timer that prompts for name and duration."
+    :complete-p (do (> cycles 0))
+    :before
+    (lambda (hammy)
+      (hammy-reset hammy)
+      (setf (hammy-intervals hammy)
+            (ring-convert-sequence-to-ring
+             (list (interval
+                    :name (read-string "Interval name (optional): " nil nil "")
+                    :duration (read-string "Duration: ")
+                    :advance (remind "5 seconds"
+                                     (do (let ((message (format "%s is over!" interval-name)))
+                                           (announce message)
+                                           (notify message)
+                                           (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_yoshi_tongue.wav")))))))))))))
+
 
 (use-package helm-bufler
   :quelpa

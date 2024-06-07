@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/hammy.el
-;; Package-Version: 20240328.1628
+;; Package-Version: 20240607.1622
 ;; Version: 0.3-pre
 ;; Package-Requires: ((emacs "28.1") (svg-lib "0.2.5") (ts "0.2.2"))
 ;; Keywords: convenience
@@ -875,6 +875,12 @@ cropped, depending on font."
   "Update the mode line every second while a hammy is running."
   :type 'boolean)
 
+(defface hammy-mode-lighter-name '((t (:inherit bold)))
+  "Applied to hammy names in the lighter.")
+
+(defface hammy-mode-lighter-interval '((t (:inherit italic)))
+  "Applied to interval names in the lighter.")
+
 (defface hammy-mode-lighter-prefix-inactive '((t (:inherit warning)))
   "Used when no hammy is active.")
 
@@ -945,13 +951,15 @@ appropriate face to ensure proper appearance.")
                     (float-time (time-subtract (current-time)
                                                (hammy-current-interval-start-time hammy)))))))
            (format "%s(%s%s:%s)"
-                   (hammy-name hammy)
+                   (propertize (hammy-name hammy)
+                               'face 'hammy-mode-lighter-name)
                    (if (hammy-overduep hammy)
                        (propertize hammy-mode-lighter-overdue
                                    'face 'hammy-mode-lighter-overdue)
                      "")
                    (propertize (hammy-interval-name (hammy-interval hammy))
-                               'face (hammy-interval-face (hammy-interval hammy)))
+                               'face `(hammy-mode-lighter-interval
+                                       ,(hammy-interval-face (hammy-interval hammy))))
                    (concat (when hammy-mode-lighter-pie
                              (propertize " " 'display (hammy--pie hammy)))
                            (if (hammy-overduep hammy)
@@ -1179,6 +1187,22 @@ Suitable for inserting with `insert-image'."
                                   (when hammy-sound-end-break
                                     (play-sound-file hammy-sound-end-break))))))
   :stopped (do (setf (alist-get 'unused-break etc) nil)))
+
+(hammy-define "1-shot"
+  :documentation "Single-use timer that prompts for name and duration."
+  :complete-p (do (> cycles 0))
+  :before
+  (lambda (hammy)
+    (hammy-reset hammy)
+    (setf (hammy-intervals hammy)
+          (ring-convert-sequence-to-ring
+           (list (interval
+                  :name (read-string "Interval name (optional): " nil nil "")
+                  :duration (read-string "Duration: ")
+                  :advance (remind "5 minutes"
+                                   (do (let ((message (format "%s is over!" interval-name)))
+                                         (announce message)
+                                         (notify message))))))))))
 
 ;;;; Footer
 
