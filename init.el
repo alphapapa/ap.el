@@ -1169,6 +1169,10 @@ Includes \"%s\" format spec for length of playlist in minutes."
       `(org-done ((t :foreground ,(face-background 'default) :background ,(face-foreground 'default)
                      :box (:line-width 2 :color "black" :style flat) :inverse-video t))))))
 
+(use-package mosey
+  :bind (("C-e" . mosey-forward-bounce)
+         ("C-a" . mosey-backward-bounce)))
+
 (use-package mu4e
   :init
   (defun ap/mu4e-accounts-folder-function (folder)
