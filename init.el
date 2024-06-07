@@ -668,6 +668,9 @@ Like it used to."
 (use-package emacs
   ;; Buffer-related things.
   :config
+  (with-current-buffer "*scratch*"
+    ;; Prevent scratch buffer from being killed.
+    (emacs-lock-mode 'kill))
   (defun ap/kill-this-buffer ()
     "Kill current buffer."
     (interactive)
