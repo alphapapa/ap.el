@@ -1100,7 +1100,7 @@ Includes \"%s\" format spec for length of playlist in minutes."
              (list (interval
                     :name (read-string "Interval name (optional): " nil nil "")
                     :duration (read-string "Duration: ")
-                    :advance (remind "5 seconds"
+                    :advance (remind "5 minutes"
                                      (do (let ((message (format "%s is over!" interval-name)))
                                            (announce message)
                                            (notify message)
