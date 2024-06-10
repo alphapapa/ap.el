@@ -1603,6 +1603,10 @@ Also, ignores effort, because it's not useful for this purpose."
 (use-package org-web-tools
   :quelpa (org-web-tools :fetcher github :repo "alphapapa/org-web-tools"))
 
+(use-package plz
+  ;; For when I need to install the latest version directly from git.
+  :quelpa (plz :fetcher github :repo "alphapapa/plz.el"))
+
 (use-package prism
   :quelpa (prism :fetcher github :repo "alphapapa/prism.el")
 
