@@ -1076,6 +1076,7 @@ Includes \"%s\" format spec for length of playlist in minutes."
       :global t
       (if hammy-always-mode
           (progn
+            (setf hammy-mode-lighter-suffix-inactive "🌲")
             (unless (timerp hammy-always-timer)
               (setf hammy-always-timer
                     (run-at-time t 600
@@ -1085,9 +1086,15 @@ Includes \"%s\" format spec for length of playlist in minutes."
                                                            :body "&#x1F439; Remember to use timers!")
                                      (start-process "cvlc" nil "cvlc"
                                                     "--play-and-exit" (expand-file-name "~/Dropbox/Sounds/Cell Phone Ringers/Homer's Cell Phone.mp3"))))))))
+        (setf hammy-mode-lighter-suffix-inactive
+              ;; TODO: It would be nice if Emacs had a nicer way to do this.
+              (eval (car (or (get 'hammy-mode-lighter-suffix-inactive 'customized-value)
+                             (get 'hammy-mode-lighter-suffix-inactive 'saved-value)
+                             (get 'hammy-mode-lighter-suffix-inactive 'standard-value)))))
         (when (timerp hammy-always-timer)
           (cancel-timer hammy-always-timer)
-          (setf hammy-always-timer nil)))))
+          (setf hammy-always-timer nil)))
+      (hammy--mode-line-update)))
 
   (hammy-define "☕"
     :documentation "Single-use timer that prompts for name and duration."
