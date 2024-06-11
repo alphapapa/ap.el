@@ -1643,8 +1643,17 @@ Also, ignores effort, because it's not useful for this purpose."
   (unpackaged/define-chooser ap/prism-theme
     ("ef-dream"
      ;; Very LCARS-ish.  This set seems to work nicely, a bit more color than the default.
-     (prism-set-colors :colors '( font-lock-type-face font-lock-function-name-face
-                                  font-lock-keyword-face font-lock-doc-face)))
+     (let (desaturations lightens)
+       (pcase current-prefix-arg
+         ('nil (setf desaturations prism-desaturations
+                     lightens prism-lightens))
+         (_ (setf desaturations (cl-loop for i from 0 below 24
+                                         collect (* i 2.5))
+                  lightens (cl-loop for i from 0 below 24
+                                    collect (* i 2.5)))))
+       (prism-set-colors :colors '("#80aadf" "#efd5c5" "#d09950")
+         :desaturations desaturations
+         :lightens lightens)))
     ("doom-vibrant"
      (prism-set-colors :colors '("#C57BDB" "#5cEfFF" "#FCCE7B")))
     ("Shuffle random number of theme faces"
@@ -1676,24 +1685,27 @@ Also, ignores effort, because it's not useful for this purpose."
                           collect (* 3 i))
        :colors (list "red" "white" "dodgerblue" "white")))
     ("Keen"
-     (prism-set-colors :num 24
-       :local (pcase current-prefix-arg
-                ('(24) 'reset)
-                (_ current-prefix-arg))
-       :desaturations (cl-loop for i from 0 below 24
-                               collect (* i 2.5))
-       :lightens (cl-loop for i from 0 below 24
-                          collect (* i 2.5))
-       :colors (list "sandy brown" "dodgerblue" "medium sea green")
-       :comments-fn
-       (lambda (color)
-         (prism-blend color (face-attribute 'font-lock-comment-face :foreground) 0.25))
-       :strings-fn
-       (lambda (color)
-         (prism-blend color "white" 0.5))
-       :parens-fn
-       (lambda (color)
-         (prism-blend color (face-attribute 'default :background) 0.25))))
+     (let (desaturations lightens)
+       (pcase current-prefix-arg
+         ('nil (setf desaturations prism-desaturations
+                     lightens prism-lightens))
+         (_ (setf desaturations (cl-loop for i from 0 below 24
+                                         collect (* i 2.5))
+                  lightens (cl-loop for i from 0 below 24
+                                    collect (* i 2.5)))))
+       (prism-set-colors :num 24
+         :desaturations desaturations
+         :lightens lightens
+         :colors (list "sandy brown" "dodgerblue" "medium sea green")
+         :comments-fn
+         (lambda (color)
+           (prism-blend color (face-attribute 'font-lock-comment-face :foreground) 0.25))
+         :strings-fn
+         (lambda (color)
+           (prism-blend color "white" 0.5))
+         :parens-fn
+         (lambda (color)
+           (prism-blend color (face-attribute 'default :background) 0.25)))))
     ("Solarized: rainbow"
      (prism-set-colors :num 24
        :local (pcase current-prefix-arg
