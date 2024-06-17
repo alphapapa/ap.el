@@ -107,6 +107,8 @@
  '(native-comp-async-jobs-number 2)
  '(objed-cursor-color "#ff665c")
  '(org-agenda-files "~/org/.agenda-files")
+ '(org-archive-location "%s_archive::datetree/")
+ '(org-archive-save-context-info '(time file category todo priority itags olpath ltags))
  '(org-attach-use-inheritance nil)
  '(org-blank-before-new-entry '((heading . t) (plain-list-item . auto)))
  '(org-bookmark-heading-make-ids
