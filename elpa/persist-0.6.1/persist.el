@@ -1,11 +1,12 @@
 ;;; persist.el --- Persist Variables between Emacs Sessions -*- lexical-binding: t -*-
 
-;; Copyright (C) 2019 Free Software Foundation, Inc.
+;; Copyright (C) 2019, 2024 Free Software Foundation, Inc.
 
 ;; Author: Phillip Lord <phillip.lord@russet.org.uk>
 ;; Maintainer: Joseph Turner <persist-el@breatheoutbreathe.in>
 ;; Package-Type: multi
-;; Version: 0.6
+;; Package-Requires: ((emacs "26.1"))
+;; Version: 0.6.1
 
 ;; The contents of this file are subject to the GPL License, Version 3.0.
 
@@ -121,9 +122,7 @@ to load a previously saved location."
   (let ((initvalue (or initvalue (symbol-value symbol))))
     (add-to-list 'persist--symbols symbol)
     (put symbol 'persist t)
-    (if (hash-table-p initvalue)
-        (put symbol 'persist-default (copy-hash-table initvalue))
-      (put symbol 'persist-default (persist-copy-tree initvalue t)))))
+    (put symbol 'persist-default (persist-copy initvalue))))
 
 (defun persist--persistant-p (symbol)
   "Return non-nil if SYMBOL is a persistent variable."
@@ -163,8 +162,8 @@ variables persist automatically when Emacs exits."
   (get symbol 'persist-default))
 
 (defun persist-reset (symbol)
-  "Reset the value of SYMBOL to the default."
-  (set symbol (persist-default symbol)))
+  "Set the value of SYMBOL to a copy of the default."
+  (set symbol (persist-copy (persist-default symbol))))
 
 (defun persist-load (symbol)
   "Load the saved value of SYMBOL."
@@ -195,7 +194,7 @@ This does not remove any saved value of SYMBOL."
 (defun persist-equal (a b)
   "Return non-nil when the values of A and B are equal.
 A and B are compared using `equal' unless they are both hash
-tables. In that case, the following are compared:
+tables.  In that case, the following are compared:
 
 - hash table count
 - hash table predicate
@@ -239,6 +238,12 @@ traverses and copies vectors and records as well as conses."
 	    (aset tree i (persist-copy-tree (aref tree i) vectors-and-records)))
 	  tree)
       tree)))
+
+(defun persist-copy (obj)
+  "Return copy of OBJ."
+  (if (hash-table-p obj)
+      (copy-hash-table obj)
+    (persist-copy-tree obj t)))
 
 (provide 'persist)
 ;;; persist.el ends here

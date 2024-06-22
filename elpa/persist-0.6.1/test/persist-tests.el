@@ -134,3 +134,13 @@
         (should-error
          (persist-save 'fred)))
     (delete-directory "./persist-defined-location" t)))
+
+(ert-deftest test-persist-reset ()
+  "Symbol should be reset to a copy of the default."
+  (with-local-temp-persist
+   (persist-defvar persist--test-reset-variable (make-hash-table) "docstring")
+   (should-not (eq persist--test-reset-variable
+                   (persist-default 'persist--test-reset-variable)))
+   (persist-reset 'persist--test-reset-variable)
+   (should-not (eq persist--test-reset-variable
+                   (persist-default 'persist--test-reset-variable)))))
