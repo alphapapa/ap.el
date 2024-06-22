@@ -36,7 +36,7 @@ of the project instance object.
 (put 'project-vc-include-untracked 'safe-local-variable #'booleanp)
 (put 'project-vc-name 'safe-local-variable #'stringp)
 (put 'project-vc-extra-root-markers 'safe-local-variable (lambda (val) (and (listp val) (not (memq nil (mapcar #'stringp val))))))
-(defvar project-prefix-map (let ((map (make-sparse-keymap))) (define-key map "!" 'project-shell-command) (define-key map "&" 'project-async-shell-command) (define-key map "f" 'project-find-file) (define-key map "F" 'project-or-external-find-file) (define-key map "b" 'project-switch-to-buffer) (define-key map "s" 'project-shell) (define-key map "d" 'project-find-dir) (define-key map "D" 'project-dired) (define-key map "v" 'project-vc-dir) (define-key map "c" 'project-compile) (define-key map "e" 'project-eshell) (define-key map "k" 'project-kill-buffers) (define-key map "p" 'project-switch-project) (define-key map "g" 'project-find-regexp) (define-key map "G" 'project-or-external-find-regexp) (define-key map "r" 'project-query-replace-regexp) (define-key map "x" 'project-execute-extended-command) (define-key map "\2" 'project-list-buffers) map) "\
+(defvar project-prefix-map (let ((map (make-sparse-keymap))) (define-key map "!" 'project-shell-command) (define-key map "&" 'project-async-shell-command) (define-key map "f" 'project-find-file) (define-key map "F" 'project-or-external-find-file) (define-key map "b" 'project-switch-to-buffer) (define-key map "s" 'project-shell) (define-key map "d" 'project-find-dir) (define-key map "D" 'project-dired) (define-key map "v" 'project-vc-dir) (define-key map "c" 'project-compile) (define-key map "e" 'project-eshell) (define-key map "k" 'project-kill-buffers) (define-key map "p" 'project-switch-project) (define-key map "g" 'project-find-regexp) (define-key map "G" 'project-or-external-find-regexp) (define-key map "r" 'project-query-replace-regexp) (define-key map "x" 'project-execute-extended-command) (define-key map "o" 'project-any-command) (define-key map "\2" 'project-list-buffers) map) "\
 Keymap for project commands.")
  (define-key ctl-x-map "p" project-prefix-map)
 (autoload 'project-other-window-command "project" "\
@@ -74,8 +74,6 @@ requires quoting, e.g. `\\[quoted-insert]<space>'.
 (fn REGEXP)" t)
 (autoload 'project-or-external-find-regexp "project" "\
 Find all matches for REGEXP in the project roots or external roots.
-With \\[universal-argument] prefix, you can specify the file name
-pattern to search for.
 
 (fn REGEXP)" t)
 (autoload 'project-find-file "project" "\
@@ -221,6 +219,24 @@ Return the list of root directories of all known projects.")
 (autoload 'project-execute-extended-command "project" "\
 Execute an extended command in project root." t)
 (function-put 'project-execute-extended-command 'interactive-only 'command-execute)
+(autoload 'project-any-command "project" "\
+Run the next command in the current project.
+
+If the command name starts with `project-', or its symbol has
+property `project-aware', it gets passed the project to use
+with the variable `project-current-directory-override'.
+Otherwise, `default-directory' is temporarily set to the current
+project's root.
+
+If OVERRIDING-MAP is non-nil, it will be used as
+`overriding-terminal-local-map' to provide shorter bindings
+from that map which will take priority over the global ones.
+
+(fn &optional OVERRIDING-MAP PROMPT-FORMAT)" t)
+(autoload 'project-prefix-or-any-command "project" "\
+Run the next command in the current project.
+Works like `project-any-command', but also mixes in the shorter
+bindings from `project-prefix-map'." t)
 (autoload 'project-switch-project "project" "\
 \"Switch\" to another project by running an Emacs command.
 The available commands are presented as a dispatch menu
@@ -239,6 +255,12 @@ the buffer's directory name when buffers from two different projects
 would otherwise have the same name.
 
 (fn DIRNAME)")
+(defvar project-mode-line nil "\
+Whether to show current project name and Project menu on the mode line.
+This feature requires the presence of the following item in
+`mode-line-format': `(project-mode-line project-mode-line-format)'; it
+is part of the default mode line beginning with Emacs 30.")
+(custom-autoload 'project-mode-line "project" t)
 (register-definition-prefixes "project" '("project-"))
 
 ;;; End of scraped data
