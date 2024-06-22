@@ -2,9 +2,9 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Version: 1.4-pre
-;; Package-Version: 20231216.634
+;; Package-Version: 20240622.447
 ;; Url: http://github.com/alphapapa/org-bookmark-heading
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25.1") (compat "29.1.4.5"))
 ;; Keywords: hypermedia, outlines
 
 ;;; Commentary:
@@ -63,6 +63,8 @@
 (require 'mode-local)
 (require 'org)
 (require 'bookmark)
+
+(require 'compat)
 
 (eval-when-compile
   ;; Support map pattern in pcase
@@ -177,16 +179,16 @@ Returns in format \"parent-directory/filename\"."
 BOOKMARK record should have fields `map', `outline-path', and
 `id', (and, for compatibility, `front-context-string' is also
 supported, in which case it should be an entry ID)."
-  (cl-flet ((jump-to-id
-             (id) (when-let ((id id)
-                             (marker (org-id-find id 'markerp)))
-                    (org-goto-marker-or-bmk marker)
-                    (current-buffer)))
+  (cl-flet ((jump-to-id (id)
+              (when-let ((id id)
+                         (marker (org-id-find id 'markerp)))
+                (org-goto-marker-or-bmk marker)
+                (current-buffer)))
             (jump-to-olp (outline-path)
-                         (when-let ((olp outline-path)
-                                    (marker (org-find-olp outline-path 'this-buffer)))
-                           (org-goto-marker-or-bmk marker)
-                           (current-buffer))))
+              (when-let ((olp outline-path)
+                         (marker (org-find-olp outline-path 'this-buffer)))
+                (org-goto-marker-or-bmk marker)
+                (current-buffer))))
     (pcase-let* ((`(,_name . ,(map filename outline-path id front-context-string indirectp)) bookmark)
                  (id (or id
                          ;; For old bookmark records made before we
@@ -230,8 +232,8 @@ supported, in which case it should be an entry ID)."
             ;; non-indirect buffer at the bottom of the prev-buffers list
             ;; so it won't be selected when the indirect buffer is killed.
             (set-window-prev-buffers nil (append (cdr (window-prev-buffers))
-                                                 (list (car (window-prev-buffers))))))
-          (run-hooks 'org-bookmark-heading-after-jump-hook))
+                                                 (list (car (window-prev-buffers)))))))
+        (run-hooks 'org-bookmark-heading-after-jump-hook)
         (unless (equal (file-truename (or (buffer-file-name (buffer-base-buffer))
                                           (buffer-file-name)))
                        (file-truename filename))
