@@ -603,10 +603,15 @@ Like it used to."
 
 (use-package deffy
   :quelpa (deffy :fetcher github :repo "alphapapa/taxy.el"
-            :files ("examples/deffy.el"))
+                 :files ("examples/deffy.el"))
   :bind (:map global-map
               ("C-x p d" . deffy-project)
-              ("M-g d" . deffy-jump)))
+              ("M-g d" . deffy-jump)
+              ("M-g M-d" . (lambda ()
+                             "Call `deffy-jump' with universal argument."
+                             (interactive)
+                             (let ((current-prefix-arg '(4)))
+                               (call-interactively #'deffy-jump))))))
 
 (use-package dired
   :bind (:map dired-mode-map
