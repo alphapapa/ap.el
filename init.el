@@ -124,6 +124,10 @@
         (file-in-directory-p buffer-file-name org-directory))))
  '(org-capture-templates
    '(("F" "Find (with Org QL)")
+     ("i" "Inbox" entry
+      (file "~/org/inbox.org")
+      "* %^{Heading} %^G\12\12+ %U%(when (org-clocking-p) \" [%K]\") %?" :empty-lines 1)
+     ("F" "Find (with Org QL)")
      ("Fa" "Find in agenda files" entry
       #'(lambda nil
           (call-interactively #'org-ql-find-in-agenda))
@@ -137,6 +141,7 @@
           (call-interactively #'org-ql-find))
       "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
      ("H" "Here (current heading)" entry #'ap/org-capture-here "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
+     ("P" "Parent (of current heading)" entry #'ap/org-capture-parent "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
      ("c" "Commonplace Book")
      ("cl" "Link to Web page" entry
       (file+olp+datetree "~/org/cpb.org")
@@ -144,7 +149,14 @@
      ("w" "Work")
      ("wl" "Work log entry" plain
       (file+olp+datetree "~/work/work.org" "Log")
-      "+ %U%(when (org-clocking-p) \" [%K]\") %?" :empty-lines 1)))
+      "+ %U%(when (org-clocking-p) \" [%K]\") %?" :empty-lines 1)
+     ("l" "Log")
+     ("ld" "Debrief" entry
+      (file+olp+datetree "~/org/log.org")
+      "* Debrief %u\11:debrief:\12\12+ %U %?" :empty-lines 1)
+     ("lt" "Today" entry
+      (file+olp+datetree "~/org/log.org")
+      "* %^{heading}\12\12+ %U %?" :empty-lines 1)))
  '(org-clock-mode-line-total 'today)
  '(org-clock-report-include-clocking-task t)
  '(org-crypt-disable-auto-save 'encrypt)
@@ -1442,7 +1454,15 @@ org-agenda to deny bulk actions."
 Suitable for use as \"function-finding-location\" in
 `org-capture-templates'."
     (cl-assert (derived-mode-p 'org-mode))
-    (org-back-to-heading)))
+    (org-back-to-heading))
+
+  (defun ap/org-capture-parent ()
+    "Move point to parent heading.
+Suitable for use as \"function-finding-location\" in
+`org-capture-templates'."
+    (cl-assert (derived-mode-p 'org-mode))
+    (unless (org-up-heading-safe)
+      (user-error "No parent heading"))))
 
 (use-package org-clock
   :general (ap/general-def
