@@ -95,6 +95,8 @@ NARROW corresponds to the `org-ql-select' argument NARROW.
 Return marker at entry in BUFFERS-FILES selected with `org-ql'.
 PROMPT is shown to the user.
 
+NARROWP is passed to `org-ql-select', which see.
+
 QUERY-PREFIX may be a string to prepend to the query entered by
 the user (e.g. use \"heading:\" to only search headings, easily
 creating a custom command that saves the user from having to type
@@ -106,7 +108,7 @@ with commas to turn multiple tokens, which would normally be
 treated as multiple predicates, into multiple arguments to a
 single predicate).
 
-(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (ACTION #\\='org-ql-completing-read-action) (SNIPPET #\\='org-ql-completing-read-snippet) (PATH #\\='org-ql-completing-read-path) (ACTION-FILTER #\\='list) (PROMPT \"Find entry: \"))")
+(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER NARROWP (ACTION #\\='org-ql-completing-read-action) (SNIPPET #\\='org-ql-completing-read-snippet) (PATH #\\='org-ql-completing-read-path) (ACTION-FILTER #\\='list) (PROMPT \"Find entry: \"))")
 (function-put 'org-ql-completing-read 'lisp-indent-function 'defun)
 (register-definition-prefixes "org-ql-completing-read" '("org-ql-completing-read-"))
 
@@ -118,8 +120,12 @@ Go to an Org entry in BUFFERS-FILES selected by searching entries with `org-ql'.
 Interactively, search the buffers and files relevant to the
 current buffer (i.e. in `org-agenda-mode', the value of
 `org-ql-view-buffers-files' or `org-agenda-contributing-files';
-in `org-mode', that buffer).  With universal prefix, select
-multiple buffers to search with completion and PROMPT.
+in `org-mode', that buffer).
+
+With one or more universal prefix arguments, WIDEN buffers before
+searching (otherwise, respect any narrowing).  With two universal
+prefix arguments, select multiple buffers to search with
+completion and PROMPT.
 
 QUERY-PREFIX may be a string to prepend to the query (e.g. use
 \"heading:\" to only search headings, easily creating a custom
@@ -131,7 +137,7 @@ with commas to turn multiple tokens, which would normally be
 treated as multiple predicates, into multiple arguments to a
 single predicate).
 
-(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER (PROMPT \"Find entry: \"))" t)
+(fn BUFFERS-FILES &key QUERY-PREFIX QUERY-FILTER WIDEN (PROMPT \"Find entry: \"))" t)
 (autoload 'org-ql-refile "org-ql-find" "\
 Refile current entry to MARKER (interactively, one selected with `org-ql').
 Interactive completion uses files listed in `org-refile-targets',

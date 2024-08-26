@@ -157,10 +157,9 @@ This list should not contain any duplicates."))
 (defvar org-ql-regexp-part-ts-date
   (rx (repeat 4 digit) "-" (repeat 2 digit) "-" (repeat 2 digit)
       ;; Day of week
-      (optional " " (1+ alpha)))
+      (optional " " (1+ (or alpha punct))))
   "Matches the inner, date part of an Org timestamp, both active and inactive.
-Also matches optional day-of-week.  Used to build other timestamp
-regexps.")
+Used to build other timestamp regexps.")
 
 (defvar org-ql-regexp-part-ts-repeaters
   ;; Repeaters (not sure if the colon is necessary, but it's in the org.el one)
@@ -170,7 +169,8 @@ regexps.")
 Includes leading space character.")
 
 (defvar org-ql-regexp-part-ts-time
-  (rx " " (repeat 1 2 digit) ":" (repeat 2 digit))
+  (rx " " (repeat 1 2 digit) ":" (repeat 2 digit)
+      (optional "-" (repeat 1 2 digit) ":" (repeat 2 digit)))
   "Matches the inner, time part of an Org timestamp (i.e. HH:MM).
 Includes leading space character.  Used to build other timestamp
 regexps.")
@@ -1118,7 +1118,10 @@ defined in `org-ql-predicates' by calling `org-ql-defpred'."
                                         ;; Only one preamble is allowed
                                         element)
                                       (pcase element
-                                        (`(or _) element)
+                                        (`(or ,element)
+                                         ;; A predicate with a single name: unwrap the OR.  (Pcase doesn't like
+                                         ;; "one-armed ORs", giving a "Please avoid it" compilation error.)
+                                         element)
 
                                         ,@preamble-patterns
 
@@ -1141,7 +1144,7 @@ defined in `org-ql-predicates' by calling `org-ql-defpred'."
     (byte-compile 'org-ql--query-preamble)))
 
 (cl-defmacro org-ql-defpred (name args docstring &key body preambles normalizers coalesce)
-  "Define an \\+`org-ql' selector predicate \\=`org-ql--predicate-NAME'.
+  "Define an Org QL selector predicate `org-ql--predicate-NAME'.
 NAME may be a symbol or a list of symbols: if a list, the first
 is used as NAME and the rest are aliases.  A function is only
 created for NAME, not for aliases, so a normalizer should be used
@@ -1226,7 +1229,7 @@ Then if NORMALIZERS were:
 
 It would be expanded to:
 
-  ((\\=`(,(or 'heading 'h) . ,args)
+  ((\\=`(,(or \\='heading \\='h) . ,args)
     \\=`(heading ,@args)))"
   ;; FIXME: Update defpred tutorial to include :coalesce.
 
