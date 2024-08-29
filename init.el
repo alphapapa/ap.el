@@ -1557,8 +1557,11 @@ Also, ignores effort, because it's not useful for this purpose."
   (:map org-mode-map
         "M-g f" #'org-ql-find
         "M-g p" #'org-ql-find-path)
-  ("M-g O" #'org-ql-find-in-org-directory)
+  ("M-g O" #'org-ql-find-in-org-directory))
 
+(use-package org-ql-find
+  ;; This form is used because `org-ql-find-goto-hook' is not defined
+  ;; until `org-ql-find' is loaded on-demand.
   :config
   (progn
     ;; TODO: Figure out how to do this more elegantly, either
@@ -1586,7 +1589,7 @@ Also, ignores effort, because it's not useful for this purpose."
               (org-reveal)))
         (ap/org-ql-find-tree-to-indirect-buffer)))
 
-    (setf org-ql-find-goto-hook (cl-subst 'ap/org-ql-find-goto 'org-reveal org-ql-find-goto-hook))
+    (setopt org-ql-find-goto-hook (cl-subst 'ap/org-ql-find-goto 'org-reveal org-ql-find-goto-hook))
 
     (defun ap/org-ql-find-tree-to-indirect-buffer ()
       "Show entry in indirect buffer and bury base buffer."
