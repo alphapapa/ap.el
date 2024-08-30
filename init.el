@@ -345,6 +345,7 @@
  '(tab-bar-close-button-show nil)
  '(tab-bar-format
    '(tab-bar-format-history tab-bar-format-tabs-groups tab-bar-separator tab-bar-format-add-tab))
+ '(tab-bar-history-mode t)
  '(tab-bar-mode t)
  '(tab-bar-tab-name-function 'tab-bar-tab-name-current-with-count)
  '(tab-bar-new-tab-choice "*scratch*")
@@ -379,7 +380,7 @@
  '(vc-annotate-very-old-color nil)
  '(which-key-mode t)
  '(window-resize-pixelwise t)
- '(winner-mode t)
+ '(winner-mode nil)
  '(xref-search-program 'ripgrep))
 
 (custom-set-faces
