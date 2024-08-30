@@ -54,6 +54,7 @@
  '(compilation-scroll-output 'first-error)
  '(completion-cycle-threshold 5)
  '(completions-format 'vertical)
+ '(confirm-kill-emacs 'y-or-n-p)
  '(corfu-auto t)
  '(custom-enabled-themes '(ef-winter))
  '(custom-safe-themes
