@@ -172,7 +172,7 @@
  '(org-export-with-broken-links 'mark)
  '(org-extend-today-until 4)
  '(org-fold-catch-invisible-edits 'error)
- '(org-fold-core-style 'text-properties)
+ '(org-fold-core-style 'overlays)
  '(org-fontify-quote-and-verse-blocks t)
  '(org-hide-emphasis-markers t)
  '(org-id-link-to-org-use-id t)
