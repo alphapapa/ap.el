@@ -34,6 +34,7 @@
  ;; If there is more than one, they won't work right.
  '(Info-additional-directory-list '("~/.local/share/info"))
  '(activities-kill-buffers t)
+ '(activities-name-prefix "🐿 ")
  '(ansi-color-names-vector
    ["#1E1C31" "#FF8080" "#95FFA4" "#FFE9AA" "#91DDFF" "#C991E1" "#AAFFE4" "#CBE3E7"])
  '(async-bytecomp-package-mode t)
