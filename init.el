@@ -335,6 +335,7 @@
      (magit-todos-exclude-globs "makem.sh" "Makefile")
      (magit-todos-update)))
  '(scroll-bar-mode nil)
+ '(show-paren-style 'parenthesis)
  '(standard-themes-bold-constructs t)
  '(standard-themes-italic-constructs t)
  '(standard-themes-mixed-fonts t)
