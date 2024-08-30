@@ -45,6 +45,8 @@
  '(bufler-columns '("Name" "Size" "Mode" "VC" "Path"))
  '(bufler-filter-buffer-modes
    '(bufler-list-mode calendar-mode fundamental-mode helm-major-mode magit-diff-mode magit-process-mode magit-revision-mode magit-section-mode special-mode timer-list-mode deffy-mode))
+ '(bufler-workspace-mode-lighter "β ")
+ '(bufler-workspace-prefix-abbreviation '("\\`Workspace: " . "🦬"))
  '(burly-before-open-bookmark-hook '(tab-bar-new-tab))
  '(comint-input-ignoredups t)
  '(comp-deferred-compilation t t)
