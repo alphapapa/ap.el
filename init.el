@@ -48,6 +48,7 @@
  '(bufler-workspace-mode-lighter "β ")
  '(bufler-workspace-prefix-abbreviation '("\\`Workspace: " . "🦬"))
  '(burly-before-open-bookmark-hook '(tab-bar-new-tab))
+ '(burly-tabs-abbreviate-name '("\\`Burly: " . "🦫"))
  '(comint-input-ignoredups t)
  '(comp-deferred-compilation t t)
  '(compilation-scroll-output 'first-error)
