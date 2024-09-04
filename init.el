@@ -420,7 +420,9 @@
   (quelpa-update-melpa-p nil))
 
 (use-package quelpa-use-package
-  :demand t)
+  :demand t
+  :config
+  (setf quelpa-use-package-inhibit-loading-quelpa t))
 
 (use-package general
 
