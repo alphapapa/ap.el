@@ -1389,7 +1389,8 @@ If HEADING, append it to the name of the new buffer."
       ;; ;; `clone-indirect-buffer-hook'.
       ;; (org-fold-core-decouple-indirect-buffer-folds)
       indirect-buffer))
-  (advice-add #'org-get-indirect-buffer :override #'ap/org-get-indirect-buffer)
+  ;; (advice-add #'org-get-indirect-buffer :override #'ap/org-get-indirect-buffer)
+  ;; (advice-remove #'org-get-indirect-buffer #'ap/org-get-indirect-buffer)
 
   (defun ap/org-tree-to-indirect-buffer (&optional arg)
     "Create indirect buffer and narrow it to current subtree.
@@ -1405,12 +1406,21 @@ selected instead of creating a new buffer."
            ;;                     (heading-string (propertize (org-link-display-format heading)
            ;;                                                 'face face)))
            ;;                (concat heading-string "::" (buffer-name))))
-           (new-buffer (org-get-indirect-buffer (current-buffer) (org-get-heading t t))))
-      (switch-to-buffer new-buffer)
-      ;; I don't understand why setting the point again is necessary, but it is.
-      ;; (rename-buffer buffer-name)
-      (goto-char pos)
-      (org-narrow-to-subtree)
+           (new-buffer (org-get-indirect-buffer
+                        (current-buffer) (org-link-display-format (org-entry-get nil "ITEM")))))
+      (with-current-buffer new-buffer
+        ;; I don't understand why setting the point again is necessary, but it is.
+        ;; (rename-buffer buffer-name)
+        (goto-char pos)
+        ;; Make sure the entry is revealed, otherwise narrowing to the
+        ;; subtree won't work.
+        (org-reveal)
+        (org-narrow-to-subtree))
+      (if-let ((existing-buffer (ap/org-find-buffer-matching new-buffer)))
+          (progn
+            (kill-buffer new-buffer)
+            (switch-to-buffer existing-buffer))
+        (switch-to-buffer new-buffer))
       ;; NOTE: It took way too much time and effort and
       ;; experimentation to arrive at calling
       ;; `org-cycle-internal-local' in the new indirect buffer to
@@ -1420,8 +1430,11 @@ selected instead of creating a new buffer."
       ;; `org-cycle-internal-global', etc.  There should be one public
       ;; function for users to call that should take sensible,
       ;; intuitive, well-documented arguments to cause the desired
+
       ;; behavior.
-      (org-cycle-internal-local)))
+      ;; [2023-09-22 Fri] Somehow this seems to be causing an infinite loop, so commenting out for now.
+      ;; (org-cycle-internal-local)
+      ))
   (advice-add #'org-tree-to-indirect-buffer :override #'ap/org-tree-to-indirect-buffer)
   ;; (advice-remove #'org-tree-to-indirect-buffer #'ap/org-tree-to-indirect-buffer)
 
@@ -1431,16 +1444,42 @@ selected instead of creating a new buffer."
     (if switch-to
         (org-agenda-switch-to)
       (org-agenda-goto))
-    (org-tree-to-indirect-buffer)
-
-    ;; Put the non-indirect buffer at the bottom of the prev-buffers
-    ;; list so it won't be selected when the indirect buffer is killed
-    (set-window-prev-buffers nil (append (cdr (window-prev-buffers))
-                                         (list (car (window-prev-buffers))))))
+    (pcase (length (window-prev-buffers))
+      (1
+       ;; Remove the parent buffer so that quitting the indirect
+       ;; buffer's window will close the window.
+       (set-window-prev-buffers nil nil))
+      (_
+       ;; Put the non-indirect buffer at the bottom of the
+       ;; prev-buffers list so it won't be selected when the indirect
+       ;; buffer is killed.
+       (set-window-prev-buffers nil (append (cdr (window-prev-buffers))
+                                            (list (car (window-prev-buffers)))))))
+    (let ((quit-restore (window-parameter nil 'quit-restore)))
+      (setf (cl-fourth quit-restore) (current-buffer)
+            (window-parameter nil 'quit-restore) quit-restore)))
 
   (defun ap/org-agenda-switch-to-heading-in-indirect-buffer ()
     (interactive)
-    (ap/org-agenda-goto-heading-in-indirect-buffer t)))
+    (ap/org-agenda-goto-heading-in-indirect-buffer t))
+
+  (defun ap/org-find-buffer-matching (buffer)
+    "Return a buffer that matches BUFFER.
+A buffer matches if it has the same mode, is visiting the same
+file, and has the same boundaries."
+    (with-current-buffer buffer
+      (let ((point-min (point-min))
+            (point-max (point-max))
+            (mode major-mode))
+        (cl-loop for existing-buffer in (buffer-list)
+                 when (with-current-buffer existing-buffer
+                        (and (not (eq existing-buffer buffer))
+                             (eq major-mode mode)
+                             (equal (buffer-file-name existing-buffer)
+                                    (buffer-file-name buffer))
+                             (= point-min (point-min))
+                             (= point-max (point-max))))
+                 return existing-buffer))))
 
 (use-package org-agenda
   :config
@@ -1536,6 +1575,7 @@ Also, ignores effort, because it's not useful for this purpose."
             (lambda ()
               ;; It's frustrating that apparently the only way to get the
               ;; visibility state I want is to call this interactively.
+              (org-cycle-set-startup-visibility)
               (call-interactively #'org-cycle))))
 
 (use-package org-auto-expand
