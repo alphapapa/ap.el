@@ -2,7 +2,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Version: 1.4-pre
-;; Package-Version: 20240622.447
+;; Package-Version: 20240906.21
 ;; Url: http://github.com/alphapapa/org-bookmark-heading
 ;; Package-Requires: ((emacs "25.1") (compat "29.1.4.5"))
 ;; Keywords: hypermedia, outlines
@@ -60,6 +60,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'mode-local)
 (require 'org)
 (require 'bookmark)
@@ -188,7 +189,23 @@ supported, in which case it should be an entry ID)."
               (when-let ((olp outline-path)
                          (marker (org-find-olp outline-path 'this-buffer)))
                 (org-goto-marker-or-bmk marker)
-                (current-buffer))))
+                (current-buffer)))
+            (find-matching-indirect-buffer (buffer)
+              "Return an existing, indirect Org buffer that matches BUFFER.
+A buffer matches if it is visiting the same file and is narrowed
+to the same region."
+              (with-current-buffer buffer
+                (let ((point-min (point-min))
+                      (point-max (point-max)))
+                  (cl-loop for existing-buffer in (buffer-list)
+                           when (with-current-buffer existing-buffer
+                                  (and (not (eq existing-buffer buffer))
+                                       (eq major-mode 'org-mode)
+                                       (equal (buffer-file-name existing-buffer)
+                                              (buffer-file-name buffer))
+                                       (= point-min (point-min))
+                                       (= point-max (point-max))))
+                           return existing-buffer)))))
     (pcase-let* ((`(,_name . ,(map filename outline-path id front-context-string indirectp)) bookmark)
                  (id (or id
                          ;; For old bookmark records made before we
@@ -223,10 +240,19 @@ supported, in which case it should be an entry ID)."
         (when (and (or indirectp org-bookmark-heading-jump-indirect)
                    (or id outline-path))
           ;; Found heading (not just file): open in indirect buffer.
-          (let ((org-indirect-buffer-display 'current-window))
-            ;; We bind `org-indirect-buffer-display' to this because
-            ;; this is the only value that makes sense for our purpose.
-            (org-tree-to-indirect-buffer))
+          (let* ((org-indirect-buffer-display
+                  ;; We bind `org-indirect-buffer-display' to this because
+                  ;; this is the only value that makes sense for our purpose.
+                  'current-window)
+                 (new-buffer (save-excursion
+                               (org-tree-to-indirect-buffer)
+                               (current-buffer)))
+                 (existing-buffer (find-matching-indirect-buffer new-buffer)))
+            (if existing-buffer
+                (progn
+                  (kill-buffer new-buffer)
+                  (switch-to-buffer existing-buffer))
+              (switch-to-buffer new-buffer)))
           (unless (equal original-buffer (car (window-prev-buffers)))
             ;; The selected bookmark was in a different buffer.  Put the
             ;; non-indirect buffer at the bottom of the prev-buffers list
