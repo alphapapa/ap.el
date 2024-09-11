@@ -1444,6 +1444,7 @@ selected instead of creating a new buffer."
     (if switch-to
         (org-agenda-switch-to)
       (org-agenda-goto))
+    (org-tree-to-indirect-buffer)
     (pcase (length (window-prev-buffers))
       (1
        ;; Remove the parent buffer so that quitting the indirect
