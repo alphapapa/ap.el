@@ -1,4 +1,4 @@
-(define-package "taxy-magit-section" "20240124.35" "View Taxy structs in a Magit Section buffer"
+(define-package "taxy-magit-section" "20240908.404" "View Taxy structs in a Magit Section buffer"
   '((emacs "26.3")
     (magit-section "3.2.1")
     (taxy "0.10"))

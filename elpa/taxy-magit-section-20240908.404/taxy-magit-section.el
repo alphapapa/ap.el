@@ -5,7 +5,7 @@
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/taxy.el
-;; Version: 0.13
+;; Version: 0.14.1
 ;; Package-Requires: ((emacs "26.3") (magit-section "3.2.1") (taxy "0.10"))
 ;; Keywords: lisp
 
@@ -276,8 +276,12 @@ PLIST may be a plist setting the following options:
                                          (format "Columns defined by `%s'."
                                                  definer-name)))
          (column-formatters-variable-name (intern (format "%s-column-formatters" prefix)))
-         (column-formatters-variable-docstring (format "Column formatters defined by `%s'."
-                                                       definer-name)))
+         (column-formatters-variable-docstring
+          ;; For the best chance for this docstring to not exceed 80 characters in width,
+          ;; the macro's name goes on its own line.
+          (format "Column formatters defined by the macro:
+`%s'."
+                  definer-name)))
     `(let ((columns-variable ',columns-variable-name)
            (column-formatters-variable ',column-formatters-variable-name))
        (defcustom ,level-indent-variable-name 2
@@ -318,8 +322,13 @@ PLIST may be a plist setting the following options:
                             ;; calculates widths, I don't see much alternative.  It would
                             ;; be nice if it returned nil when no change was made.
                             (let ((old-string string)
-                                  (new-string (truncate-string-to-width
-                                               string ,max-width-variable nil nil "…")))
+                                  ;; NOTE: We do not specify an ELLIPSIS argument to
+                                  ;; `truncate-string-to-width', because some fonts display
+                                  ;; e.g. U+2026 "HORIZONTAL ELLIPSIS" with a width greater
+                                  ;; than that of the space character, which breaks
+                                  ;; alignment.  The ellipsis used can be controlled with
+                                  ;; the variable `truncate-string-ellipsis', which see.
+                                  (new-string (truncate-string-to-width string ,max-width-variable nil nil t)))
                               (unless (equal old-string new-string)
                                 ;; String was elided: add help-echo.
                                 (put-text-property 0 (length new-string) 'help-echo old-string new-string)
@@ -373,14 +382,14 @@ and values are the column width.  Each string is formatted
 according to `columns' and takes into account the width of all
 the items' values for each column."
   (let ((table (make-hash-table))
-        column-aligns column-sizes image-p)
+        column-aligns column-sizes image-p window-system-frame)
     (cl-labels ((string-width* (string)
                   (if-let (pos (text-property-not-all 0 (length string)
                                                       'display nil string))
                       ;; Text has a display property: check for an image.
                       (pcase (get-text-property pos 'display string)
                         ((and `(image . ,_rest) spec)
-                         ;; An image: try to calcuate the display width.  (See also:
+                         ;; An image: try to calculate the display width.  (See also:
                          ;; `org-string-width'.)
 
                          ;; FIXME: The entire string may not be an image, so the
@@ -390,7 +399,14 @@ the items' values for each column."
                          ;; TODO: Do we need to specify the frame?  What if the
                          ;; buffer isn't currently displayed?
                          (setf image-p t)
-                         (floor (car (image-size spec))))
+                         (floor (car (image-size
+                                      spec nil
+                                      (or window-system-frame
+                                          (setf window-system-frame
+                                                (cl-loop for frame in (frame-list)
+                                                         when (member (framep frame) '(x w32 ns pgtk))
+                                                         return frame))
+                                          (error "taxy-magit-section-format-items: No graphical frame to calculate image size"))))))
                         (_
                          ;; No image: just use `string-width'.
                          (setf image-p nil)
