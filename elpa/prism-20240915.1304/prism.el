@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/prism.el
-;; Package-Version: 20240610.2205
+;; Package-Version: 20240915.1304
 ;; Version: 0.4-pre
 ;; Package-Requires: ((emacs "27.1") (compat "29.1.4.5") (dash "2.14.1"))
 ;; Keywords: faces lisp
@@ -509,9 +509,12 @@ Matches up to LIMIT."
                                (save-excursion
                                  (when (re-search-forward (rx (or (syntax string-quote)
                                                                   (syntax comment-start)))
-                                                          (or (ignore-errors
-                                                                (scan-lists (point) 1 1))
-                                                              limit)
+                                                          ;; FIXME: Point may have moved past
+                                                          ;; limit.  This is a workaround.
+                                                          (max (or (ignore-errors
+                                                                     (scan-lists (point) 1 1))
+                                                                   limit)
+                                                               (point))
                                                           t)
                                    ;; Found string or comment in current list: stop at beginning of it.
                                    (pcase (syntax-after (match-beginning 0))
@@ -1221,9 +1224,10 @@ See `color-distance'."
   :group 'prism)
 
 (defcustom prism-whitespace-mode-indents
-  (list (cons 'python-mode 'python-indent-offset)
-        (cons 'haskell-mode 'haskell-indentation-left-offset)
-        (cons t 4))
+  '((python-mode . python-indent-offset)
+    (haskell-mode . haskell-indentation-left-offset)
+    (yaml-mode . yaml-indent-offset)
+    (t . 4))
   "Alist mapping major modes to indentation offsets for `prism-whitespace-mode'.
 Each key should be a major mode function symbol, and the value
 either a variable whose value to use or an integer number of
