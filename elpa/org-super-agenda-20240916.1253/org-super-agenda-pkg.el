@@ -1,4 +1,4 @@
-(define-package "org-super-agenda" "20240301.1002" "Supercharge your agenda"
+(define-package "org-super-agenda" "20240916.1253" "Supercharge your agenda"
   '((emacs "26.1")
     (compat "29.1.4.1")
     (s "1.10.0")

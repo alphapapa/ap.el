@@ -458,17 +458,7 @@ This matches the `dotime' text-property, which, if NOT set to
 `time' (I know, this gets confusing), means it WILL appear in the
 agenda time-grid. "
   :section-name "Timed items"  ; Note: this does not mean the item has a "SCHEDULED:" line
-  :test (or (--when-let (org-find-text-property-in-string 'time item)
-              ;; This property is a string; if empty, it doesn't match
-              (not (string-empty-p it)))
-            ;; This property is nil if it doesn't match
-            (org-find-text-property-in-string 'time-of-day item)
-            (--when-let (org-find-text-property-in-string 'dotime item)
-              ;; For this to match, the 'dotime property must be set, and
-              ;; it must not be equal to 'time.  If it is not set, or if
-              ;; it is set and is equal to 'time, the item is not part of
-              ;; the time-grid.  Yes, this is confusing.  :)
-              (not (eql it 'time)))))
+  :test (org-find-text-property-in-string 'time-of-day item))
 
 (org-super-agenda--defgroup deadline
   "Group items that have a deadline.
@@ -788,6 +778,37 @@ keyword, or `nil' to match only non-todo items."
           (_ ;; Oops
            (user-error "Argument to `:todo' must be a string, list of strings, t, or nil"))))
 
+(org-super-agenda--defgroup ancestor-with-todo
+  "their earliest ancestor having the to-do keyword"
+  ;; TODO: Add tests.
+  ;; FIXME: It's very awkward that for a single argument `args' is
+  ;; that argument, while multiple ones are provided as a list.
+  :section-name (let ((keyword (cl-typecase (car args)
+                                 (atom (car args))
+                                 (cons (caar args))))
+                      (prefix (if (cl-typecase (car args)
+                                    (cons (plist-get (cdar args) :nearestp)))
+                                  "Nearest"
+                                "Ancestor")))
+                  (format "%s: %s" prefix keyword))
+  :test (let ((keyword (cl-typecase (car args)
+                         (atom (car args))
+                         (cons (caar args))))
+              (limit (cl-typecase (car args)
+                       (cons (plist-get (cdar args) :limit))))
+              (nearestp (cl-typecase (car args)
+                          (cons (plist-get (cdar args) :nearestp)))))
+          (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
+            (cl-loop with ancestor
+                     while (and (or (not limit)
+                                    (natnump (cl-decf limit)))
+                                (org-up-heading-safe))
+                     when (equal keyword (org-get-todo-state))
+                     do (setf ancestor (org-entry-get nil "ITEM"))
+                     when (and nearestp ancestor)
+                     return ancestor
+                     finally return ancestor))))
+
 ;;;;; Priority
 
 (org-super-agenda--defgroup priority
@@ -1093,44 +1114,14 @@ key and as the header for its group."
 
 (org-super-agenda--def-auto-group outline-path "their outline paths"
   :key-form (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
-              (s-join "/" (org-get-outline-path))))
+	      (if-let ((outline-path (org-get-outline-path)))
+		  (s-join "/" outline-path)
+		"Top-level headings")))
 
 (org-super-agenda--def-auto-group parent "their parent heading"
   :key-form (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
               (when (org-up-heading-safe)
                 (org-entry-get nil "ITEM"))))
-
-(org-super-agenda--def-auto-group ancestor-with-todo
-  "their earliest ancestor having the to-do keyword"
-  ;; TODO: Add tests.
-  :keyword :ancestor-with-todo
-  ;; FIXME: It's very awkward that for a single argument `args' is
-  ;; that argument, while multiple ones are provided as a list.
-  :key-form (let* ((keyword (cl-typecase (car args)
-                              (atom (car args))
-                              (cons (caar args))))
-                   (limit (cl-typecase (car args)
-                            (cons (plist-get (cdar args) :limit))))
-                   (nearestp (cl-typecase (car args)
-                               (cons (plist-get (cdar args) :nearestp)))))
-              (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
-                (cl-loop with ancestor
-                         while (and (or (not limit)
-                                        (natnump (cl-decf limit)))
-                                    (org-up-heading-safe))
-                         when (equal keyword (org-get-todo-state))
-                         do (setf ancestor (org-entry-get nil "ITEM"))
-                         when (and nearestp ancestor)
-                         return ancestor
-                         finally return ancestor)))
-  :header-form (let ((keyword (cl-typecase (car args)
-                                (atom (car args))
-                                (cons (caar args))))
-                     (prefix (if (cl-typecase (car args)
-                                   (cons (plist-get (cdar args) :nearestp)))
-                                 "Nearest"
-                               "Ancestor")))
-                 (format "%s %s: %s" prefix keyword key)))
 
 ;;;;; Dispatchers
 
