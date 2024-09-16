@@ -1,4 +1,4 @@
-(define-package "taxy" "20220329.16" "Programmable taxonomical grouping for arbitrary objects"
+(define-package "taxy" "20240816.1840" "Programmable taxonomical grouping for arbitrary objects"
   '((emacs "26.3"))
   :authors
   '(("Adam Porter" . "adam@alphapapa.net"))
@@ -6,7 +6,7 @@
   '("Adam Porter" . "adam@alphapapa.net")
   :keywords
   '("lisp")
-  :url ...)
+  :url "https://github.com/alphapapa/taxy.el")
 ;; Local Variables:
 ;; no-byte-compile: t
 ;; End:
