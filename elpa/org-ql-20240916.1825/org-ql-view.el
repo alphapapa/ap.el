@@ -59,6 +59,13 @@
   "Face for due dates in `org-ql-view' views."
   :group 'org-ql-view)
 
+(defface org-ql-view-query nil
+  "View query in header line.
+This face is added to the formatted query after font-lock faces
+are applied to it.  It may be used, e.g. to reduce the height so
+more of it is visible."
+  :group 'org-ql-view)
+
 (defface org-ql-view-title '((t :weight bold))
   "View title in header line."
   :group 'org-ql-view)
@@ -241,6 +248,12 @@ See info node `(elisp)Cyclic Window Ordering'."
                               (choice (variable-item :tag "Default org-super-agenda groups" org-super-agenda-groups)
                                       (sexp :tag "org-super-agenda grouping expression")
                                       (variable :tag "Variable holding org-super-agenda  grouping expression"))))))))
+
+(defcustom org-ql-view-relative-deadline-prefix "due "
+  ;; TODO(v0.9): Add one for scheduled, too.
+  "Prefix for relative deadlines.
+Relative deadlines are, e.g. \"in 5d\", \"5d ago\"."
+  :type 'string)
 
 ;;;; Commands
 
@@ -483,6 +496,7 @@ If TITLE, prepend it to the header."
                                                      (org-ql-view--font-lock-string 'emacs-lisp-mode)
                                                      (s-truncate available-width))
                                                 'help-echo buffers-files-formatted))))
+    (add-face-text-property 0 (length query-propertized) 'org-ql-view-query 'append query-propertized)
     (concat title
             (when query (propertize "Query:" 'face 'transient-argument))
             (when query query-propertized)
@@ -513,6 +527,22 @@ with human-readable strings."
       (funcall mode)
       (font-lock-ensure)
       (buffer-string))))
+
+(defun org-ql-view--font-lock-as-org (s)
+  "Return string S font-locked as in `org-mode'."
+  ;; This works like `org-fontify-like-in-org-mode', but uses a single
+  ;; buffer instead of a new one every time.
+  ;; TODO(C): Submit these improvements upstream.
+  (let ((buffer (or (get-buffer " *org-ql-view--font-lock-as-org*")
+                    (with-current-buffer (get-buffer-create " *org-ql-view--font-lock-as-org*")
+                      (buffer-disable-undo)
+                      (org-mode)
+                      (current-buffer)))))
+    (with-current-buffer buffer
+      (insert s)
+      (font-lock-ensure)
+      (prog1 (buffer-string)
+        (erase-buffer)))))
 
 (defun org-ql-view--buffer (&optional name)
   "Return `org-ql-view' buffer, creating it if necessary.
@@ -884,6 +914,11 @@ return an empty string."
            ;; (which would also make it easier to do it independently of faces, etc).
            (title (--> (org-ql-view--add-faces element)
                        (org-element-property :raw-value it)))
+           ;; TODO(B): Needs refactoring.  A function like `org-ql-view--add-faces'
+           ;; should return a list of faces to be added.
+           (title-faces (get-text-property 0 'face title))
+           (title (org-ql-view--font-lock-as-org title))
+           (_ (add-face-text-property 0 (length title) title-faces t title))
            (todo-keyword (-some--> (org-element-property :todo-keyword element)
                            (org-ql-view--add-todo-face
                             (substring-no-properties it))))
@@ -1021,7 +1056,9 @@ property."
              (deadline-day-number (org-time-string-to-absolute
                                    (org-element-timestamp-interpreter deadline-date 'ignore)))
              (difference-days (- today-day-number deadline-day-number))
-             (relative-due-date (org-add-props (org-ql-view--format-relative-date difference-days) nil
+             (relative-due-date (org-add-props
+                                    (concat org-ql-view-relative-deadline-prefix
+                                            (org-ql-view--format-relative-date difference-days)) nil
                                   'help-echo (org-element-property :raw-value deadline-date)))
              ;; FIXME: Unused for now: (todo-keyword (org-element-property :todo-keyword element))
              ;; FIXME: Unused for now: (done-p (member todo-keyword org-done-keywords))

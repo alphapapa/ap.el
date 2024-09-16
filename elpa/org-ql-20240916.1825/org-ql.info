@@ -1096,7 +1096,9 @@ File: README.info,  Node: 09-pre,  Next: 089,  Up: Changelog
 ===========
 
 *Additions*
+   • Face ‘org-ql-view-query’, applied to view queries in header line.
    • Face ‘org-ql-view-title’, applied to view titles in header line.
+   • Option ‘org-ql-view-relative-deadline-prefix’.
 
    *Changes*
    • Command ‘org-ql-find’ respects narrowing of the current buffer by
@@ -1108,6 +1110,9 @@ File: README.info,  Node: 09-pre,  Next: 089,  Up: Changelog
 
    *Fixes*
    • Customization group for face ‘org-ql-view-due-date’.
+   • Command ‘org-ql-refile’ uses the base buffer when refiling to an
+     indirect buffer.
+   • Apply Org syntax font-locking to items in ‘org-ql-view’ buffers.
 
 * Menu:
 
@@ -2153,53 +2158,53 @@ Node: Links39051
 Node: Tips39738
 Node: Changelog40062
 Node: 09-pre41029
-Node: helm-org-ql (1)41743
-Node: 08941884
-Node: 08843026
-Node: 08744102
-Node: 08645330
-Node: 08545564
-Node: 08446220
-Node: 08346672
-Node: 08247013
-Node: 08147406
-Node: 0847829
-Node: 07450555
-Node: 07350780
-Node: 07251514
-Node: 07152435
-Node: 0753246
-Node: 06356112
-Node: 06256645
-Node: 06156952
-Node: 0657522
-Node: 05260578
-Node: 05160880
-Node: 0561305
-Node: 04962836
-Node: 04863118
-Node: 04763467
-Node: 04663876
-Node: 04564284
-Node: 04464645
-Node: 04365004
-Node: 04265207
-Node: 04165368
-Node: 0465615
-Node: 03269716
-Node: 03170119
-Node: 0370316
-Node: 02373616
-Node: 02273850
-Node: 02174130
-Node: 0274335
-Node: 0178413
-Node: Development78514
-Node: Copyright assignment78747
-Node: Notes79337
-Node: Comparison with Org Agenda searches79501
-Node: org-sidebar80390
-Node: License80669
+Node: helm-org-ql (1)42052
+Node: 08942193
+Node: 08843335
+Node: 08744411
+Node: 08645639
+Node: 08545873
+Node: 08446529
+Node: 08346981
+Node: 08247322
+Node: 08147715
+Node: 0848138
+Node: 07450864
+Node: 07351089
+Node: 07251823
+Node: 07152744
+Node: 0753555
+Node: 06356421
+Node: 06256954
+Node: 06157261
+Node: 0657831
+Node: 05260887
+Node: 05161189
+Node: 0561614
+Node: 04963145
+Node: 04863427
+Node: 04763776
+Node: 04664185
+Node: 04564593
+Node: 04464954
+Node: 04365313
+Node: 04265516
+Node: 04165677
+Node: 0465924
+Node: 03270025
+Node: 03170428
+Node: 0370625
+Node: 02373925
+Node: 02274159
+Node: 02174439
+Node: 0274644
+Node: 0178722
+Node: Development78823
+Node: Copyright assignment79056
+Node: Notes79646
+Node: Comparison with Org Agenda searches79810
+Node: org-sidebar80699
+Node: License80978
 
 End Tag Table
 
