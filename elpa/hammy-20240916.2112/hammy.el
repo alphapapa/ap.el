@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/hammy.el
-;; Package-Version: 20240607.2259
+;; Package-Version: 20240916.2112
 ;; Version: 0.3
 ;; Package-Requires: ((emacs "28.1") (svg-lib "0.2.5") (ts "0.2.2"))
 ;; Keywords: convenience
@@ -512,13 +512,10 @@ If QUIETLY, don't say so."
                            (etc (map reminder)))
                 hammy)
                ;; TODO: Logging, totals, etc.
-               (message "Stopped."))
+               )
     (when internal-timer
       (cancel-timer internal-timer)
-      (setf (hammy-timer hammy) nil)
-      (hammy-log hammy message)
-      (unless quietly
-        (message message)))
+      (setf (hammy-timer hammy) nil))
     (when reminder
       (cancel-timer reminder)
       (setf (alist-get 'reminder (hammy-etc hammy)) nil))
@@ -536,6 +533,8 @@ If QUIETLY, don't say so."
       ;; HACK: `hammy--mode-line-update' only updates when a hammy is
       ;; active, so we do it directly.
       (force-mode-line-update 'all))
+    (unless quietly
+      (message (hammy-format hammy "Stopped.")))
     hammy))
 
 (cl-defun hammy-next (hammy &key duration advance interval)
@@ -798,15 +797,22 @@ cycles)."
 (defun hammy-summary (hammy)
   "Return a summary string for HAMMY.
 Summary includes elapsed times, etc."
-  (format "Total elapsed:%s  Intervals:%s  Cycles:%s"
-          (ts-human-format-duration (hammy-elapsed hammy) 'abbr)
-          (mapconcat (lambda (interval)
-                       (format "(%s:%s)"
-                               (hammy-interval-name interval)
-                               (ts-human-format-duration (hammy-elapsed hammy interval) 'abbr)))
-                     (ring-elements (hammy-intervals hammy))
-                     "")
-          (hammy-cycles hammy)))
+  (pcase-let* ((history (hammy-history hammy))
+               (`(,_first-interval . (,first-started ,_first-stopped))
+                (car (last history)))
+               (`(,_last-interval . (,_last-started ,last-stopped))
+                (car history)))
+    (format "Total elapsed:%s  Intervals:%s  Cycles:%s  Started:%s  Stopped:%s"
+            (ts-human-format-duration (hammy-elapsed hammy) 'abbr)
+            (mapconcat (lambda (interval)
+                         (format "(%s:%s)"
+                                 (hammy-interval-name interval)
+                                 (ts-human-format-duration (hammy-elapsed hammy interval) 'abbr)))
+                       (ring-elements (hammy-intervals hammy))
+                       "")
+            (hammy-cycles hammy)
+            (format-time-string "%Y-%m-%d %H:%M:%S" first-started)
+            (format-time-string "%Y-%m-%d %H:%M:%S" last-stopped))))
 
 (declare-function org-clock-in "org-clock")
 (defun hammy--org-clock-in (hammy)
