@@ -1270,6 +1270,9 @@ Includes \"%s\" format spec for length of playlist in minutes."
 
     ;; NOTE: This only binds it for `emu-headers-mode', not for `mu4e-headers-mode'.
     (define-key emu-headers-mode-map (kbd "A") (emu-define-mark-command ap/mu4e-mark-read-and-archive))))
+(use-package nov
+  :mode ("\\.epub\\'" . nov-mode))
+
 
 (use-package orderless
   :custom
