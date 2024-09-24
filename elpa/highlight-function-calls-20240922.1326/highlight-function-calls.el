@@ -2,8 +2,8 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; Url: http://github.com/alphapapa/highlight-function-calls
-;; Package-Version: 20170908.500
-;; Version: 0.1-pre
+;; Package-Version: 20240922.1326
+;; Version: 0.2-pre
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: faces, highlighting
 
@@ -52,24 +52,9 @@
   :group 'highlight-function-calls)
 
 (defcustom highlight-function-calls-exclude-symbols
-  '(
-    =
-    +
-    -
-    /
-    *
-    <
-    >
-    <=
-    >=
-    debug  ; Not intended as an interactive function
-    error
-    provide
-    require
-    signal
-    throw
-    user-error
-    )
+  '( = + - / * < > <= >=
+     debug  ; Not intended as an interactive function
+     error provide require signal throw user-error)
   "List of symbols to not highlight."
   :type '(repeat symbol))
 
@@ -86,10 +71,16 @@
   :type 'boolean)
 
 (defconst highlight-function-calls--keywords
-  '((
-     ;; First we match an opening paren, which prevents matching
-     ;; function names as arguments.  We also avoid matching opening
-     ;; parens immediately after quotes.
+  `((
+     ;; First we match an opening paren (which prevents matching
+     ;; function names as arguments) or a function-quote (in which
+     ;; case an argument should be matched).  We also avoid matching
+     ;; opening parens immediately after quotes (but this is not
+     ;; perfect, since a list within a list could have its second
+     ;; opening paren on a line by itself, in which case it would
+     ;; appear to us like a normal function call and get
+     ;; highlighted--but trying to fix that doesn't seem worth the
+     ;; trouble, given how much trouble all this has already been).
 
      ;; FIXME: This does not avoid matching opening parens in quoted
      ;; lists. I don't know if we can fix this, because `syntax-ppss'
@@ -98,11 +89,13 @@
 
      ;; FIXME: It also doesn't avoid matching, e.g. the `map' in "(let
      ;; ((map".  I'm not sure why.
-     "\\(?:^\\|[[:space:]]+\\)("  ; (rx (or bol (1+ space)) "(")
+     ,(rx (or bol (one-or-more space) ",")
+	  (or "(" "#'"))
 
      ;; NOTE: The (0 nil) is required, although I don't understand
      ;; exactly why.  This was confusing enough, following the
      ;; docstring for `font-lock-add-keywords'.
+     ;; FIXME: This doesn't seem valid.
      (0 nil)
 
      ;; Now we use a HIGHLIGHT MATCH-ANCHORED form to match the symbol
@@ -128,8 +121,8 @@
 (defvar highlight-function-calls--face-name nil)
 
 (defun highlight-function-calls--matcher (end)
-  "The matcher function to be used by font lock mode."
-  (setq end (save-excursion (forward-symbol 1) (point)))
+  "Match function symbols up to END.
+The matcher function to be used by font lock mode."
   (catch 'highlight-function-calls--matcher
     (when (not (nth 5 (syntax-ppss)))
       (while (re-search-forward (rx symbol-start (*? any) symbol-end) end t)
@@ -155,8 +148,8 @@
 Toggle highlighting of function calls on or off.
 
 With a prefix argument ARG, enable if ARG is positive, and
-disable it otherwise. If called from Lisp, enable the mode if ARG
-is omitted or nil, and toggle it if ARG is `toggle'."
+disable it otherwise.  If called from Lisp, enable the mode if
+ARG is omitted or nil, and toggle it if ARG is `toggle'."
   :init-value nil :lighter nil :keymap nil
   (let ((keywords highlight-function-calls--keywords))
     (font-lock-remove-keywords nil keywords)

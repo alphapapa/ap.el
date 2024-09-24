@@ -1,0 +1,2 @@
+;;; Generated package description from highlight-function-calls.el  -*- no-byte-compile: t -*-
+(define-package "highlight-function-calls" "20240922.1326" "Highlight function/macro calls" '((emacs "24.4")) :authors '(("Adam Porter" . "adam@alphapapa.net")) :maintainer '("Adam Porter" . "adam@alphapapa.net") :keywords '("faces" "highlighting") :url "http://github.com/alphapapa/highlight-function-calls")
