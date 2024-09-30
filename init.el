@@ -1485,7 +1485,42 @@ file, and has the same boundaries."
                              (= point-max (point-max))))
                  return existing-buffer))))
 
+  ;; Refiling
+
+  ;; TODO: Add these to unpackaged.el.
+  ;; TODO: Remove these because they're upstream in avy now.
+  (defun ap/org-avy-refile-as-child ()
+    "Refile current heading as first child of heading selected with `avy.'"
+    ;; Inspired by `org-teleport': http://kitchingroup.cheme.cmu.edu/blog/2016/03/18/Org-teleport-headlines/
+    (interactive)
+    ;; NOTE: Use `when-let' so that if avy is aborted with "C-g", `org-refile' won't be called with
+    ;; a nil refile location.
+    (when-let ((marker (ap/org-avy-marker)))
+      (let* ((filename (buffer-file-name (or (buffer-base-buffer (marker-buffer marker))
+                                             (marker-buffer marker))))
+             (heading (org-with-point-at marker
+                        (org-get-heading 'no-tags 'no-todo)))
+             ;; NOTE: I guess this won't work with target buffers whose filename is nil, but I doubt
+             ;; I'll ever want to do that.
+             (rfloc (list heading filename nil marker))
+             (org-after-refile-insert-hook (cons #'org-reveal org-after-refile-insert-hook)))
+        (org-refile nil nil rfloc))))
+
+  (defun ap/org-avy-marker ()
+    "Return marker at Org heading selected with avy."
+    (save-excursion
+      (when-let* ((org-reverse-note-order t)
+                  (pos (atypecase (avy-with avy-goto-line
+                                    (avy--generic-jump (rx bol "*") nil avy-style))
+                                  ;; If avy is aborted with "C-g", it returns `t', so we know it was NOT
+                                  ;; aborted when it returns an int.  If it doesn't return an int, we return
+                                  ;; nil.
+                                  (integer it))))
+        (copy-marker pos)))))
+
 (use-package org-agenda
+  :hook
+  (org-agenda-mode . hl-line-mode)
   :config
   (define-minor-mode ap/org-agenda-bulk-allow-search-type-mode
     "Advise `org-agenda-check-type' to allow `search' type agenda-like buffers to use bulk actions.
@@ -1715,6 +1750,7 @@ Also, ignores effort, because it's not useful for this purpose."
 ;;   :hook (org-mode . org-superstar-mode))
 
 (use-package org-modern
+  :quelpa (org-modern :fetcher github :repo "minad/org-modern")
   :hook (org-mode . org-modern-mode))
 
 (use-package org-web-tools
