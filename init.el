@@ -1225,6 +1225,7 @@ Includes \"%s\" format spec for length of playlist in minutes."
          ("C-a" . mosey-backward-bounce)))
 
 (use-package mu4e
+  :if (locate-library "mu4e")
   :init
   (defun ap/mu4e-accounts-folder-function (folder)
     (cl-assert (not (string-prefix-p "/" folder)))
