@@ -590,7 +590,6 @@ Like it used to."
               (cl-pushnew
                ;; Elisp Imenu section headings.
                '(115 "Sections" font-lock-comment-face)
-               (plist-get (alist-get 'emacs-lisp-mode consult-imenu-config) :types)))))
                (plist-get (alist-get 'emacs-lisp-mode consult-imenu-config) :types))))
   (progn
     ;; From the consult manual:
