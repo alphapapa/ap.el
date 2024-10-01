@@ -2139,16 +2139,47 @@ few common parameters with completion."
     (set-window-parameter window parameter value)))
 
 ;; Install Ement.
-(use-package ement
-  :quelpa (ement :fetcher github :repo "alphapapa/ement.el")
-  :custom
-  (ement-auto-view-rooms '(("@alphapapa:matrix.org"
-			    "#ement.el:matrix.org" "#org-mode:matrix.org"
-			    "#emacs:matrix.org"
-			    ;; #systemcrafters:libera.chat (which doesn't seem to have a canonical alias through the bridge)
-			    "!EoRhMvNpnWxCMTMPeP:libera.chat")))
-  (ement-room-prism 'both)
-  (ement-room-send-message-filter #'ement-room-send-org-filter))
+;; (use-package ement
+;;   :quelpa (ement :fetcher github :repo "alphapapa/ement.el"
+;;                  ;; :branch
+;;                  ;; "fix/157"
+;;                  ;; "wip/247-rendering-many-membership-events"
+;;                  ;; "wip/user-avatars"
+;;                  )
+;;   :custom
+;;   ;; (ement-auto-view-rooms '(("@alphapapa:matrix.org"
+;;   ;;                           "#ement.el:matrix.org" "#org-mode:matrix.org"
+;;   ;;                           "#emacs:matrix.org"
+;;   ;;                           "#systemcrafters-general:matrix.org")))
+;;   (ement-room-prism 'both)
+;;   (ement-room-send-message-filter #'ement-room-send-org-filter)
+;;   (ement-room-list-default-keys
+;;    '(((membership :status 'invite))
+;;      ((membership :status 'leave))
+;;      (favourite)
+;;      (buffer)
+;;      (unread)
+;;      (low-priority space)
+;;      ((and :name "Spaced"
+;;            :keys ((not space-p)
+;;                   (not people)
+;;                   space))
+;;       freshness space)
+;;      ((and :name "Spaces"
+;;            :keys (space-p))
+;;       space)
+;;      ((and :name "Unspaced"
+;;            :keys ((not space)
+;;                   (not people)))
+;;       freshness)
+;;      (people freshness space)))
+;;   :config
+;;   (add-hook 'ement-after-initial-sync-hook
+;;             (defun ap/ement-open-burly-bookmark (session)
+;;               "Open Burly bookmark for Ement session."
+;;               (bookmark-maybe-load-default-file)
+;;               (pcase (ement-user-id (ement-session-user session))
+;;                 ("@alphapapa:matrix.org" (bookmark-jump "Burly: @alphapapa:matrix.org (Ement)"))))))
 
 (use-package derpit
   :load-path ("~/src/emacs/misc/derpit.el")
