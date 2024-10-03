@@ -39,6 +39,7 @@
    ["#1E1C31" "#FF8080" "#95FFA4" "#FFE9AA" "#91DDFF" "#C991E1" "#AAFFE4" "#CBE3E7"])
  '(async-bytecomp-package-mode t)
  '(async-shell-command-buffer 'new-buffer)
+ '(auto-revert-avoid-polling t)
  '(avy-timeout-seconds 0.25)
  '(bookmark-save-flag 1)
  '(browse-url-browser-function 'eww-browse-url)
