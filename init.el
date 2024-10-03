@@ -2090,7 +2090,7 @@ preserve the existing candidates)."
   :general ("C-x w d" #'ap/toggle-window-dedicated-p
             "C-x s" #'window-toggle-side-windows
             "C-x S" #'ap/display-buffer-in-side-window
-            "C-x q" #'bury-buffer
+            "C-x q" #'quit-window ;; #'bury-buffer
             "C-x Q" #'unbury-buffer)
   :config
   (cl-defun ap/display-buffer-in-side-window (&optional (buffer (current-buffer))
