@@ -2203,7 +2203,15 @@ few common parameters with completion."
 
 ;; Load work-related configs.
 (with-demoted-errors "%s"
-  (load-file (expand-file-name "~/work/config.el")))
+  (let ((filename (expand-file-name "~/work/config.el")))
+    (when (file-exists-p filename)
+      (load-file filename))))
+
+(with-demoted-errors "%s"
+  ;; Load system-local config.
+  (let ((filename (expand-file-name "init.local.el" user-emacs-directory)))
+    (when (file-exists-p filename)
+      (load-file filename))))
 
 ;;;; Functions
 
