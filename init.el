@@ -967,11 +967,13 @@ When no misspellings remain, goes to the position before
     (defcustom ap/hammy-mpc-before-command "pmm cheerful -e vocal %s"
       "Command used to play music in function `ap/hammy-mpc-before'.
 Includes \"%s\" format spec for length of playlist in minutes."
-      :type 'string)
+      :type 'string
+      :group 'hammy)
 
     (defcustom ap/hammy-mpc-enabled nil
       "Whether to toggle MPC playback in Hammy timers."
-      :type 'boolean)
+      :type 'boolean
+      :group 'hammy)
 
     (defun ap/hammy-mpc-toggle ()
       "Toggle option `ap/hammy-mpc-enabled'."
@@ -1036,11 +1038,12 @@ Includes \"%s\" format spec for length of playlist in minutes."
                                         (notify "Break time is over!")
                                         (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_princess_help.wav"))))))))
 
-      (defcustom ap/hammy-flywheel-rest-duration "5 minutes"
+      (defcustom ap/hammy-flywheel-rest-duration "10 minutes"
         "Duration of Hammy flywheel rest intervals."
-        :type 'string)
+        :type 'string
+        :group 'hammy)
 
-      (hammy-define (propertize "🎡𝅘𝅥𝅮" 'face '(:foreground "orange"))
+      (hammy-define (propertize "🎡" 'face '(:foreground "orange"))
         :documentation "Get your momentum going! (with MPC)"
         :intervals (list
                     (interval :name "Rest"
@@ -1131,15 +1134,18 @@ Includes \"%s\" format spec for length of playlist in minutes."
       (hammy-reset hammy)
       (setf (hammy-intervals hammy)
             (ring-convert-sequence-to-ring
-             (list (interval
-                    :name (read-string "Interval name (optional): " nil nil "")
-                    :duration (read-string "Duration: ")
-                    :advance (remind "5 minutes"
-                                     (do (let ((message (format "%s is over!" interval-name)))
-                                           (announce message)
-                                           (notify message)
-                                           (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_yoshi_tongue.wav")))))))))))))
-
+             (list (let ((duration (read-string "Duration: ")))
+                     (unless (timer-duration duration)
+                       (user-error "Invalid duration: %S.  See variable `timer-duration-words' for suffixes"
+                                   duration))
+                     (interval
+                      :name (read-string "Interval name (optional): " nil nil "")
+                      :duration duration
+                      :advance (remind "5 minutes"
+                                       (do (let ((message (format "%s is over!" interval-name)))
+                                             (announce message)
+                                             (notify message)
+                                             (run (concat "aplay " (expand-file-name "~/Misc/Sounds/Mario/smw_yoshi_tongue.wav"))))))))))))))
 
 (use-package helm-bufler
   :quelpa
