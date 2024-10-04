@@ -384,24 +384,6 @@
  '(winner-mode nil)
  '(xref-search-program 'ripgrep))
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:height 105 :family "Fantasque Sans Mono"))))
- '(font-lock-builtin-face ((t (:weight bold))))
- '(font-lock-comment-face ((t (:slant italic))))
- '(italic ((t (:slant italic))))
- '(org-ellipsis ((t (:inherit font-lock-comment-face))))
- '(org-meta-line ((t (:inherit font-lock-comment-face))))
- '(org-todo ((t (:foreground "#859900" :inverse-video t :box (:line-width (2 . 2) :color "dark red" :style flat-button) :weight bold))))
- '(scrollkeeper-guideline-highlight ((t (:extend t :background "#2aa198"))) t)
- '(tab-bar ((t (:inherit (header-line default) :box nil :weight bold :height 1.1 :width condensed :family "NK57 Monospace"))))
- '(tab-bar-tab ((t (:inherit (highlight tab-bar)))))
- '(tab-bar-tab-inactive ((t (:inherit tab-bar))))
- '(tab-line ((t (:inherit modus-themes-tab-backdrop :box nil :width condensed :family "NK57 Monospace")))))
-
 (cl-pushnew '("melpa" . "https://melpa.org/packages/") package-archives :test #'equal)
 
 (package-initialize)
