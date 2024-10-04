@@ -386,9 +386,11 @@
  '(winner-mode nil)
  '(xref-search-program 'ripgrep))
 
-(cl-pushnew '("melpa" . "https://melpa.org/packages/") package-archives :test #'equal)
 
-(package-initialize)
+(progn
+  (require 'package)
+  (cl-pushnew '("melpa" . "https://melpa.org/packages/") package-archives :test #'equal)
+  (package-initialize))
 
 ;; (native-compile-async "~/.emacs.d/elpa/" 3 t)
 
