@@ -1182,13 +1182,6 @@ Includes \"%s\" format spec for length of playlist in minutes."
                 imenu-generic-expression))
   (add-hook 'emacs-lisp-mode-hook #'ap/emacs-lisp-imenu-hook))
 
-(use-package ivy
-  :general
-  (:keymaps 'ivy-minibuffer-map
-            "TAB" #'ivy-next-line)
-  ;; :custom
-  ;; (ivy-mode t)
-  )
 (use-package indent-bars
   :quelpa (indent-bars :fetcher github :repo "jdtsmith/indent-bars"))
 
