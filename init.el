@@ -1466,7 +1466,7 @@ selected instead of creating a new buffer."
        ;; buffer is killed.
        (set-window-prev-buffers nil (append (cdr (window-prev-buffers))
                                             (list (car (window-prev-buffers)))))))
-    (let ((quit-restore (window-parameter nil 'quit-restore)))
+    (when-let ((quit-restore (window-parameter nil 'quit-restore)))
       (setf (cl-fourth quit-restore) (current-buffer)
             (window-parameter nil 'quit-restore) quit-restore)))
 
