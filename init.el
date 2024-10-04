@@ -886,9 +886,11 @@ Otherwise, `elisp-flymake-byte-compile' is practically useless,
 because it will always fail to find third-party libraries,
 causing an error that prevents it from even linting the rest of
 the file!"
+                ;; TODO: Use a makem.sh-style .sandbox directory if present.
                 (let ((elisp-flymake-byte-compile-load-path
                        (cons "./" load-path)))
-                  (apply oldfun args)))))
+                  (apply oldfun args))))
+  :hook (emacs-lisp-mode . flymake-mode))
 
 (use-package flyspell
   :hook (org-mode . flyspell-mode)
