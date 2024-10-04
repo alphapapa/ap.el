@@ -2099,6 +2099,19 @@ preserve the existing candidates)."
             "C-x q" #'quit-window ;; #'bury-buffer
             "C-x Q" #'unbury-buffer)
   :config
+  (defun ap/transpose-windows ()
+    "Transpose two windows.  If more or less than two windows are visible, error."
+    (interactive)
+    (unless (= 2 (count-windows))
+      (error "Only 2 windows may be visible"))
+    (let* ((windows (window-list))
+           (w1 (car windows))
+           (w2 (nth 1 windows))
+           (w1b (window-buffer w1))
+           (w2b (window-buffer w2)))
+      (set-window-buffer w1 w2b)
+      (set-window-buffer w2 w1b)))
+
   (cl-defun ap/display-buffer-in-side-window (&optional (buffer (current-buffer))
                                                         &key (side 'right) (slot 0))
     "Display BUFFER in preserved, dedicated side window.
