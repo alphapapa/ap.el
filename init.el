@@ -1931,6 +1931,19 @@ boundaries."
      :doc-spec
      '(("(python)Index" nil "")))))
 
+(use-package project
+  :config
+  (progn
+    ;; From Joseph Turner:
+    (defun ap/project-consult-git-grep ()
+      "Wrapper for `consult-git-grep' that uses symbol at point."
+      (interactive)
+      (consult-git-grep nil
+                        (when (region-active-p)
+                          (buffer-substring (region-beginning) (region-end)))))
+    (cl-pushnew '(ap/project-consult-git-grep "Grep") project-switch-commands)
+    (keymap-set project-prefix-map "g" #'ap/project-consult-git-grep)))
+
 (use-package salv
   :quelpa
   (salv :fetcher github :repo "alphapapa/salv.el")
