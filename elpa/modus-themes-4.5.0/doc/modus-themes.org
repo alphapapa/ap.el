@@ -4,9 +4,9 @@
 #+language: en
 #+options: ':t toc:nil author:t email:t num:t
 #+startup: content
-#+macro: stable-version 4.4.0
-#+macro: release-date 2024-03-17
-#+macro: development-version 4.5.0-dev
+#+macro: stable-version 4.5.0
+#+macro: release-date 2024-08-21
+#+macro: development-version 4.6.0-dev
 #+macro: file @@texinfo:@file{@@$1@@texinfo:}@@
 #+macro: space @@texinfo:@: @@
 #+macro: kbd @@texinfo:@kbd{@@$1@@texinfo:}@@
@@ -1189,6 +1189,92 @@ Named colors can be previewed, such as with the command
 
 For a video tutorial that users of all skill levels can approach,
 watch: https://protesilaos.com/codelog/2022-12-17-modus-themes-v4-demo/.
+
+** Option to extend the palette
+:PROPERTIES:
+:ALT_TITLE: Palette extension
+:DESCRIPTION: Define new colors and use them like the original ones
+:CUSTOM_ID: h:287fb971-a866-4d88-9993-56e902dd63c4
+:END:
+
+It is possible to extend the palette of each theme. For example, the
+user may define their own =cherry= color with a value of =#a0134f= and
+then apply it as an override ([[#h:34c7a691-19bb-4037-8d2f-67a07edab150][Option for palette overrides]]). Those
+colors may also be used in custom code that leverages either the
+~modus-themes-with-colors~ macro or the function
+~modus-themes-get-color-value~.
+
+The palette extension can be done in the form of a common set of
+definitions that are shared among the themes or on a per-theme basis.
+
+#+vindex: modus-themes-common-palette-user
+The common values are stored in the user option ~modus-themes-common-palette-user~.
+As for per-theme variables, we have the following user options:
+
+#+vindex: modus-operandi-palette-user
+- ~modus-operandi-palette-user~
+
+#+vindex: modus-operandi-tinted-palette-user
+- ~modus-operandi-tinted-palette-user~
+
+#+vindex: modus-operandi-deuteranopia-palette-user
+- ~modus-operandi-deuteranopia-palette-user~
+
+#+vindex: modus-operandi-tritanopia-palette-user
+- ~modus-operandi-tritanopia-palette-user~
+
+#+vindex: modus-vivendi-palette-user
+- ~modus-vivendi-palette-user~
+
+#+vindex: modus-vivendi-tinted-palette-user
+- ~modus-vivendi-tinted-palette-user~
+
+#+vindex: modus-vivendi-deuteranopia-palette-user
+- ~modus-vivendi-deuteranopia-palette-user~
+
+#+vindex: modus-vivendi-tritanopia-palette-user
+- ~modus-vivendi-tritanopia-palette-user~
+
+Examples demonstrating how to use the aforementioned:
+
+#+begin_src emacs-lisp
+;;; Common customizations
+
+;; Define two new colors in the common "user" palette of all the Modus themes.
+(setq modus-themes-common-palette-user
+      '((cherry "#a0134f")
+        (plum "#6f459a")))
+
+;; Use them in the overrides.
+(setq modus-themes-common-palette-overrides
+      '((cursor cherry)
+        (string plum)))
+
+;;; Per-theme customizations
+
+;; Define two new colors in the "user" palette of `modus-operandi'.
+;; Other themes will not use these.
+(setq modus-operandi-palette-user
+      '((cherry "#a0134f")
+        (plum "#6f459a")))
+
+;; Use them in the overrides.
+(setq modus-operandi-palette-overrides
+      '((cursor cherry)
+        (string plum)))
+
+
+;; Tweaks on a per-theme basis give the user maximum flexibility. For
+;; example, they can have the above for `modus-operandi' while they use
+;; these for `modus-vivendi':
+(setq modus-vivendi-palette-user
+      '((apricot "#dfb350")
+        (kiwi "#80d458")))
+
+(setq modus-vivendi-palette-overrides
+      '((cursor apricot)
+        (string kiwi)))
+#+end_src
 
 * Preview theme colors
 :properties:
@@ -4002,6 +4088,7 @@ have lots of extensions, so the "full support" may not be 100% true…
 + isearch, occur, etc.
 + ivy*
 + ivy-posframe
++ jabber
 + japanese-holidays
 + jira (org-jira)
 + jit-spell
@@ -4011,6 +4098,7 @@ have lots of extensions, so the "full support" may not be 100% true…
 + julia
 + kaocha-runner
 + keycast
++ kmacro-menu
 + ledger-mode
 + leerzeichen
 + line numbers (~display-line-numbers-mode~ and global variant)
@@ -4020,6 +4108,7 @@ have lots of extensions, so the "full support" may not be 100% true…
 + marginalia
 + markdown-mode
 + markup-faces (~adoc-mode~)
++ mb-depth
 + mct
 + messages
 + minimap
@@ -4115,8 +4204,10 @@ have lots of extensions, so the "full support" may not be 100% true…
 + vertico
 + vertico-quick
 + vimish-fold
++ viper
 + visible-mark
 + visual-regexp
++ vtable
 + vterm
 + vundo
 + wcheck-mode
@@ -4126,6 +4217,7 @@ have lots of extensions, so the "full support" may not be 100% true…
 + which-key
 + whitespace-mode
 + window-divider-mode
++ window-tool-bar
 + writegood-mode
 + woman
 + xah-elisp-mode
@@ -5402,14 +5494,15 @@ The Modus themes are a collective effort.  Every bit of work matters.
   Griffin, Anders Johansson, Antonio Ruiz, Basil L.{{{space()}}}
   Contovounesios, Björn Lindström, Carlo Zancanaro, Christian Tietze,
   Daniel Mendler, David Edmondson, Eli Zaretskii, Fritz Grabo, Gautier
-  Ponsinet, Illia Ostapyshyn, Kévin Le Gouguec, Koen van Greevenbroek,
-  Kostadin Ninev, Madhavan Krishnan, Manuel Giraud, Markus Beppler,
-  Matthew Stevenson, Mauro Aranda, Nacho Barrientos, Niall Dooley,
-  Nicolas De Jaeghere, Paul David, Philip Kaludercic, Pierre
-  Téchoueyres, Rudolf Adamkovič, Sergey Nichiporchik, Shreyas Ragavan,
-  Stefan Kangas, Stephen Berman, Stephen Gildea, Steve Downey, Tomasz
-  Hołubowicz, Utkarsh Singh, Vincent Murphy, Xinglu Chen, Yuanchen
-  Xie, fluentpwn, okamsn.
+  Ponsinet, Illia Ostapyshyn, Jared Finder, Kévin Le Gouguec, Koen van
+  Greevenbroek, Kostadin Ninev, Madhavan Krishnan, Manuel Giraud,
+  Markus Beppler, Matthew Stevenson, Mauro Aranda, Nacho Barrientos,
+  Niall Dooley, Nicolas De Jaeghere, Paul David, Pavel Novichkov,
+  Philip Kaludercic, Pierre Téchoueyres, Rudolf Adamkovič, Sergey
+  Nichiporchik, Shreyas Ragavan, Stefan Kangas, Stephen Berman,
+  Stephen Gildea, Steve Downey, Thanos Apollo, Tomasz Hołubowicz,
+  Utkarsh Singh, Vincent Murphy, Xinglu Chen, Yuanchen Xie, fluentpwn,
+  okamsn.
 
 + Ideas and user feedback :: Aaron Jensen, Adam Porter, Adam Spiers,
   Adrian Manea, Aleksei Pirogov, Alex Griffin, Alex Koen, Alex
@@ -5420,32 +5513,32 @@ The Modus themes are a collective effort.  Every bit of work matters.
   Christopher Dimech, Christopher League, Damien Cassou, Daniel
   Mendler, Dario Gjorgjevski, David Edmondson, Davor Rotim, Divan
   Santana, Eliraz Kedmi, Emanuele Michele Alberto Monterosso, Farasha
-  Euker, Feng Shu, Gautier Ponsinet, Gerry Agbobada, Gianluca Recchia,
-  Gonçalo Marrafa, Guilherme Semente, Gustavo Barros, Hörmetjan
-  Yiltiz, Ilja Kocken, Imran Khan, Iris Garcia, Ivan Popovych, James
-  Ferguson, Jeremy Friesen, Jerry Zhang, Johannes Grødem, John Haman,
-  John Wick, Jonas Collberg, Jorge Morais, Joshua O'Connor, Julio C.
-  Villasante, Kenta Usami, Kevin Fleming, Kévin Le Gouguec, Kevin
-  Kainan Li, Kostadin Ninev, Laith Bahodi, Lasse Lindner, Len Trigg,
-  Lennart C.{{{space()}}} Karssen, Luis Miguel Castañeda, Magne Hov, Manuel Giraud,
-  Manuel Uberti, Mark Bestley, Mark Burton, Mark Simpson, Marko Kocic,
-  Markus Beppler, Matt Armstrong, Matthias Fuchs, Mattias Engdegård,
-  Mauro Aranda, Maxime Tréca, Michael Goldenberg, Morgan Smith, Morgan
-  Willcock, Murilo Pereira, Nicky van Foreest, Nicolas De Jaeghere,
-  Nicolas Semrau, Olaf Meeuwissen, Oliver Epper, Pablo Stafforini,
-  Paul Poloskov, Pengji Zhang, Pete Kazmier, Peter Wu, Philip
-  Kaludercic, Pierre Téchoueyres, Przemysław Kryger, Robert Hepple,
-  Roman Rudakov, Russell Sim, Ryan Phillips, Rytis Paškauskas, Rudolf
-  Adamkovič, Sam Kleinman, Samuel Culpepper, Saša Janiška, Shreyas
-  Ragavan, Simon Pugnet, Steve Downey, Tassilo Horn, Thanos Apollo,
-  Thibaut Verron, Thomas Heartman, Togan Muftuoglu, Tony Zorman, Trey
-  Merkley, Tomasz Hołubowicz, Toon Claes, Uri Sharf, Utkarsh Singh,
-  Vincent Foley, Zoltan Kiraly. As well as users: Ben, CsBigDataHub1,
-  Emacs Contrib, Eugene, Fourchaux, Fredrik, Moesasji, Nick, Summer
-  Emacs, TheBlob42, TitusMu, Trey, bepolymathe, bit9tream,
-  bangedorrunt, derek-upham, doolio, fleimgruber, gitrj95, iSeeU,
-  jixiuf, ltmsyvag, okamsn, pRot0ta1p, soaringbird, tumashu,
-  wakamenod.
+  Euker, Feng Shu, Filippo Argiolas, Gautier Ponsinet, Gerry Agbobada,
+  Gianluca Recchia, Gonçalo Marrafa, Guilherme Semente, Gustavo
+  Barros, Hörmetjan Yiltiz, Ilja Kocken, Imran Khan, Iris Garcia, Ivan
+  Popovych, James Ferguson, Jeremy Friesen, Jerry Zhang, Johannes
+  Grødem, John Haman, John Wick, Jonas Collberg, Jorge Morais, Joshua
+  O'Connor, Julio C. Villasante, Kenta Usami, Kevin Fleming, Kévin Le
+  Gouguec, Kevin Kainan Li, Kostadin Ninev, Laith Bahodi, Lasse
+  Lindner, Len Trigg, Lennart C.{{{space()}}} Karssen, Luis Miguel
+  Castañeda, Magne Hov, Manuel Giraud, Manuel Uberti, Mark Bestley,
+  Mark Burton, Mark Simpson, Marko Kocic, Markus Beppler, Matt
+  Armstrong, Matthias Fuchs, Mattias Engdegård, Mauro Aranda, Maxime
+  Tréca, Michael Goldenberg, Morgan Smith, Morgan Willcock, Murilo
+  Pereira, Nicky van Foreest, Nicolas De Jaeghere, Nicolas Semrau,
+  Olaf Meeuwissen, Oliver Epper, Pablo Stafforini, Paul Poloskov,
+  Pengji Zhang, Pete Kazmier, Peter Wu, Philip Kaludercic, Pierre
+  Téchoueyres, Przemysław Kryger, Robert Hepple, Roman Rudakov,
+  Russell Sim, Ryan Phillips, Rytis Paškauskas, Rudolf Adamkovič, Sam
+  Kleinman, Samuel Culpepper, Saša Janiška, Shreyas Ragavan, Simon
+  Pugnet, Steve Downey, Tassilo Horn, Thanos Apollo, Thibaut Verron,
+  Thomas Heartman, Togan Muftuoglu, Tony Zorman, Trey Merkley, Tomasz
+  Hołubowicz, Toon Claes, Uri Sharf, Utkarsh Singh, Vincent Foley,
+  Zoltan Kiraly. As well as users: Ben, CsBigDataHub1, Emacs Contrib,
+  Eugene, Fourchaux, Fredrik, Moesasji, Nick, Summer Emacs, TheBlob42,
+  TitusMu, Trey, ZharMeny, bepolymathe, bit9tream, bangedorrunt,
+  derek-upham, doolio, fleimgruber, gitrj95, iSeeU, jixiuf, ltmsyvag,
+  okamsn, pRot0ta1p, shipmints, soaringbird, tumashu, wakamenod.
 
 + Packaging :: Basil L.{{{space()}}} Contovounesios, Eli Zaretskii,
   Glenn Morris, Mauro Aranda, Richard Stallman, Stefan Kangas (core

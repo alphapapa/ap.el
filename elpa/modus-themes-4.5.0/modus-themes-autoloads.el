@@ -9,26 +9,6 @@
 
 
 
-;;; Generated autoloads from modus-operandi-deuteranopia-theme.el
-
-(put 'modus-operandi-deuteranopia 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'modus))
-
-
-;;; Generated autoloads from modus-operandi-theme.el
-
-(put 'modus-operandi 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'modus))
-
-
-;;; Generated autoloads from modus-operandi-tinted-theme.el
-
-(put 'modus-operandi-tinted 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'modus))
-
-
-;;; Generated autoloads from modus-operandi-tritanopia-theme.el
-
-(put 'modus-operandi-tritanopia 'theme-properties (list :background-mode 'light :kind 'color-scheme :family 'modus))
-
-
 ;;; Generated autoloads from modus-themes.el
 
 (autoload 'modus-themes-contrast "modus-themes" "\
@@ -64,26 +44,6 @@ corresponding entries.
 (function-put 'modus-themes-theme 'lisp-indent-function 0)
 (when load-file-name (let ((dir (file-name-directory load-file-name))) (unless (equal dir (expand-file-name "themes/" data-directory)) (add-to-list 'custom-theme-load-path dir))))
 (register-definition-prefixes "modus-themes" '("modus-themes-"))
-
-
-;;; Generated autoloads from modus-vivendi-deuteranopia-theme.el
-
-(put 'modus-vivendi-deuteranopia 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'modus))
-
-
-;;; Generated autoloads from modus-vivendi-theme.el
-
-(put 'modus-vivendi 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'modus))
-
-
-;;; Generated autoloads from modus-vivendi-tinted-theme.el
-
-(put 'modus-vivendi-tinted 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'modus))
-
-
-;;; Generated autoloads from modus-vivendi-tritanopia-theme.el
-
-(put 'modus-vivendi-tritanopia 'theme-properties (list :background-mode 'dark :kind 'color-scheme :family 'modus))
 
 ;;; End of scraped data
 

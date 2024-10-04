@@ -1,4 +1,4 @@
-This is docv6TKvo.info, produced by makeinfo version 6.8 from
+This is modus-themes.info, produced by makeinfo version 6.8 from
 modus-themes.texi.
 
 Copyright (C) 2020-2023 Free Software Foundation, Inc.
@@ -20,7 +20,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docv6TKvo.info,  Node: Top,  Next: Overview,  Up: (dir)
+File: modus-themes.info,  Node: Top,  Next: Overview,  Up: (dir)
 
 Modus themes for GNU Emacs
 **************************
@@ -43,11 +43,11 @@ customization options for the Modus themes, and provides every other
 piece of information pertinent to them.
 
    The documentation furnished herein corresponds to stable version
-4.4.0, released on 2024-03-17.  Any reference to a newer feature which
+4.5.0, released on 2024-08-21.  Any reference to a newer feature which
 does not yet form part of the latest tagged commit, is explicitly marked
 as such.
 
-   Current development target is 4.5.0-dev.
+   Current development target is 4.6.0-dev.
 
    • Package name (GNU ELPA): ‘modus-themes’
    • Official manual: <https://protesilaos.com/emacs/modus-themes>
@@ -116,6 +116,7 @@ Customization options
 * Heading styles::               Choose among several styles, also per heading level
 * UI typeface::                  Toggle the use of variable-pitch across the User Interface
 * Palette overrides::            Refashion color values and/or semantic color mappings
+* Palette extension::            Define new colors and use them like the original ones
 
 Use colors from the Modus themes palette
 
@@ -227,7 +228,7 @@ Indices
 
 
 
-File: docv6TKvo.info,  Node: Overview,  Next: Installation,  Prev: Top,  Up: Top
+File: modus-themes.info,  Node: Overview,  Next: Installation,  Prev: Top,  Up: Top
 
 1 Overview
 **********
@@ -294,7 +295,7 @@ GNU Emacs.
 * Learn about the latest changes::
 
 
-File: docv6TKvo.info,  Node: How do the themes look like,  Next: Learn about the latest changes,  Up: Overview
+File: modus-themes.info,  Node: How do the themes look like,  Next: Learn about the latest changes,  Up: Overview
 
 1.1 How do the themes look like
 ===============================
@@ -304,7 +305,7 @@ Check the web page with the screen shots
 themes are highly customizable (*note Customization options::).
 
 
-File: docv6TKvo.info,  Node: Learn about the latest changes,  Prev: How do the themes look like,  Up: Overview
+File: modus-themes.info,  Node: Learn about the latest changes,  Prev: How do the themes look like,  Up: Overview
 
 1.2 Learn about the latest changes
 ==================================
@@ -315,7 +316,7 @@ comprehensive and covers everything that goes into every tagged release
 of the themes.
 
 
-File: docv6TKvo.info,  Node: Installation,  Next: Enable and load,  Prev: Overview,  Up: Top
+File: modus-themes.info,  Node: Installation,  Next: Enable and load,  Prev: Overview,  Up: Top
 
 2 Installation
 **************
@@ -340,7 +341,7 @@ versions of Emacs and of the themes across the years.
 * Dealing with byte compilation errors::
 
 
-File: docv6TKvo.info,  Node: Install manually from source,  Next: Install from the archives,  Up: Installation
+File: modus-themes.info,  Node: Install manually from source,  Next: Install from the archives,  Up: Installation
 
 2.1 Install manually from source
 ================================
@@ -362,7 +363,7 @@ stored in ‘~/.emacs.d’ and that you want to place the Modus themes in
    The themes are now ready to be used: *note Enable and load::.
 
 
-File: docv6TKvo.info,  Node: Install from the archives,  Next: Install on GNU/Linux,  Prev: Install manually from source,  Up: Installation
+File: modus-themes.info,  Node: Install from the archives,  Next: Install on GNU/Linux,  Prev: Install manually from source,  Up: Installation
 
 2.2 Install from the archives
 =============================
@@ -378,7 +379,7 @@ with ‘M-x package-refresh-contents’.  Then all you need to do is type
 load::.
 
 
-File: docv6TKvo.info,  Node: Install on GNU/Linux,  Next: Dealing with byte compilation errors,  Prev: Install from the archives,  Up: Installation
+File: modus-themes.info,  Node: Install on GNU/Linux,  Next: Dealing with byte compilation errors,  Prev: Install from the archives,  Up: Installation
 
 2.3 Install on GNU/Linux
 ========================
@@ -394,7 +395,7 @@ distro’s packaging policies.
 * GNU Guix::
 
 
-File: docv6TKvo.info,  Node: Debian 11 Bullseye,  Next: GNU Guix,  Up: Install on GNU/Linux
+File: modus-themes.info,  Node: Debian 11 Bullseye,  Next: GNU Guix,  Up: Install on GNU/Linux
 
 2.3.1 Debian 11 Bullseye
 ------------------------
@@ -409,7 +410,7 @@ The themes are part of Debian 11 Bullseye.  Get them with:
 2022-07-24 09:57 +0300.
 
 
-File: docv6TKvo.info,  Node: GNU Guix,  Prev: Debian 11 Bullseye,  Up: Install on GNU/Linux
+File: modus-themes.info,  Node: GNU Guix,  Prev: Debian 11 Bullseye,  Up: Install on GNU/Linux
 
 2.3.2 GNU Guix
 --------------
@@ -421,7 +422,7 @@ Users of Guix can get the themes with this command:
    They are now ready to be used: *note Enable and load::.
 
 
-File: docv6TKvo.info,  Node: Dealing with byte compilation errors,  Prev: Install on GNU/Linux,  Up: Installation
+File: modus-themes.info,  Node: Dealing with byte compilation errors,  Prev: Install on GNU/Linux,  Up: Installation
 
 2.4 Dealing with byte compilation errors
 ========================================
@@ -450,7 +451,7 @@ wrong.
    *note Issues you can help with::.
 
 
-File: docv6TKvo.info,  Node: Enable and load,  Next: Customization options,  Prev: Installation,  Up: Top
+File: modus-themes.info,  Node: Enable and load,  Next: Customization options,  Prev: Installation,  Up: Top
 
 3 Enable and load
 *****************
@@ -553,7 +554,7 @@ toggle::).  The aforementioned hold true for them as well.
 * Differences between loading and enabling::
 
 
-File: docv6TKvo.info,  Node: The require-theme for built-in Emacs themes,  Next: Sample configuration with and without use-package,  Up: Enable and load
+File: modus-themes.info,  Node: The require-theme for built-in Emacs themes,  Next: Sample configuration with and without use-package,  Up: Enable and load
 
 3.1 The ‘require-theme’ for built-in Emacs themes
 =================================================
@@ -580,7 +581,7 @@ function must be used in this case as a replacement.  For example:
      (define-key global-map (kbd "<f5>") #'modus-themes-toggle)
 
 
-File: docv6TKvo.info,  Node: Sample configuration with and without use-package,  Next: Differences between loading and enabling,  Prev: The require-theme for built-in Emacs themes,  Up: Enable and load
+File: modus-themes.info,  Node: Sample configuration with and without use-package,  Next: Differences between loading and enabling,  Prev: The require-theme for built-in Emacs themes,  Up: Enable and load
 
 3.2 Sample configuration with and without use-package
 =====================================================
@@ -654,7 +655,7 @@ If either or both of those variables need to be changed, their values
 should be defined before the package declaration of the themes.
 
 
-File: docv6TKvo.info,  Node: Differences between loading and enabling,  Prev: Sample configuration with and without use-package,  Up: Enable and load
+File: modus-themes.info,  Node: Differences between loading and enabling,  Prev: Sample configuration with and without use-package,  Up: Enable and load
 
 3.3 Differences between loading and enabling
 ============================================
@@ -703,7 +704,7 @@ configure custom faces, where ‘load-theme’ is expected, though
 theme colors in code with modus-themes-with-colors.
 
 
-File: docv6TKvo.info,  Node: Customization options,  Next: Preview theme colors,  Prev: Enable and load,  Up: Top
+File: modus-themes.info,  Node: Customization options,  Next: Preview theme colors,  Prev: Enable and load,  Up: Top
 
 4 Customization options
 ***********************
@@ -777,9 +778,10 @@ active, it must be reloaded for changes to take effect.
 * Heading styles::               Choose among several styles, also per heading level
 * UI typeface::                  Toggle the use of variable-pitch across the User Interface
 * Palette overrides::            Refashion color values and/or semantic color mappings
+* Palette extension::            Define new colors and use them like the original ones
 
 
-File: docv6TKvo.info,  Node: Custom reload theme,  Next: Disable other themes,  Up: Customization options
+File: modus-themes.info,  Node: Custom reload theme,  Next: Disable other themes,  Up: Customization options
 
 4.1 Option for reloading the theme on custom change
 ===================================================
@@ -806,7 +808,7 @@ consequences: the user must manually reload the theme (*note Enable and
 load::).
 
 
-File: docv6TKvo.info,  Node: Disable other themes,  Next: Bold constructs,  Prev: Custom reload theme,  Up: Customization options
+File: modus-themes.info,  Node: Disable other themes,  Next: Bold constructs,  Prev: Custom reload theme,  Up: Customization options
 
 4.2 Option for disabling other themes while loading Modus
 =========================================================
@@ -836,7 +838,7 @@ customizations.  Users who use such customization bundles must set this
 variable to a ‘nil’ value.
 
 
-File: docv6TKvo.info,  Node: Bold constructs,  Next: Italic constructs,  Prev: Disable other themes,  Up: Customization options
+File: modus-themes.info,  Node: Bold constructs,  Next: Italic constructs,  Prev: Disable other themes,  Up: Customization options
 
 4.3 Option for more bold constructs
 ===================================
@@ -865,7 +867,7 @@ prompts.
 faces.
 
 
-File: docv6TKvo.info,  Node: Italic constructs,  Next: Option for which themes to toggle,  Prev: Bold constructs,  Up: Customization options
+File: modus-themes.info,  Node: Italic constructs,  Next: Option for which themes to toggle,  Prev: Bold constructs,  Up: Customization options
 
 4.4 Option for more italic constructs
 =====================================
@@ -892,7 +894,7 @@ This typically affects documentation strings and code comments.
 faces.
 
 
-File: docv6TKvo.info,  Node: Option for which themes to toggle,  Next: Mixed fonts,  Prev: Italic constructs,  Up: Customization options
+File: modus-themes.info,  Node: Option for which themes to toggle,  Next: Mixed fonts,  Prev: Italic constructs,  Up: Customization options
 
 4.5 Option for which themes to toggle
 =====================================
@@ -918,7 +920,7 @@ Brief: Choose to Modus themes to toggle between
 ‘modus-themes-toggle’.
 
 
-File: docv6TKvo.info,  Node: Mixed fonts,  Next: Command prompts,  Prev: Option for which themes to toggle,  Up: Customization options
+File: modus-themes.info,  Node: Mixed fonts,  Next: Command prompts,  Prev: Option for which themes to toggle,  Up: Customization options
 
 4.6 Option for font mixing
 ==========================
@@ -947,7 +949,7 @@ of the ‘fixed-pitch’ face.
 for Org and others.
 
 
-File: docv6TKvo.info,  Node: Command prompts,  Next: Completion UIs,  Prev: Mixed fonts,  Up: Customization options
+File: modus-themes.info,  Node: Command prompts,  Next: Completion UIs,  Prev: Mixed fonts,  Up: Customization options
 
 4.7 Option for command prompt styles
 ====================================
@@ -1004,7 +1006,7 @@ in these examples:
 less colorful.
 
 
-File: docv6TKvo.info,  Node: Completion UIs,  Next: Org mode blocks,  Prev: Command prompts,  Up: Customization options
+File: modus-themes.info,  Node: Completion UIs,  Next: Org mode blocks,  Prev: Command prompts,  Up: Customization options
 
 4.8 Option for completion framework aesthetics
 ==============================================
@@ -1070,7 +1072,7 @@ across all keys that are not explicitly referenced.  For example, this:
 completion matches more or less colorful.
 
 
-File: docv6TKvo.info,  Node: Org mode blocks,  Next: Heading styles,  Prev: Completion UIs,  Up: Customization options
+File: modus-themes.info,  Node: Org mode blocks,  Next: Heading styles,  Prev: Completion UIs,  Up: Customization options
 
 4.9 Option for org-mode block styles
 ====================================
@@ -1085,7 +1087,7 @@ provide the relevant setup (*note DIY Use colored Org source blocks per
 language::).
 
 
-File: docv6TKvo.info,  Node: Heading styles,  Next: UI typeface,  Prev: Org mode blocks,  Up: Customization options
+File: modus-themes.info,  Node: Heading styles,  Next: UI typeface,  Prev: Org mode blocks,  Up: Customization options
 
 4.10 Option for the headings’ overall style
 ===========================================
@@ -1198,7 +1200,7 @@ done in older versions of the themes).
 less colorful.
 
 
-File: docv6TKvo.info,  Node: UI typeface,  Next: Palette overrides,  Prev: Heading styles,  Up: Customization options
+File: modus-themes.info,  Node: UI typeface,  Next: Palette overrides,  Prev: Heading styles,  Up: Customization options
 
 4.11 Option for variable-pitch font in UI elements
 ==================================================
@@ -1228,7 +1230,7 @@ items.
 for Org and others.
 
 
-File: docv6TKvo.info,  Node: Palette overrides,  Prev: UI typeface,  Up: Customization options
+File: modus-themes.info,  Node: Palette overrides,  Next: Palette extension,  Prev: UI typeface,  Up: Customization options
 
 4.12 Option for palette overrides
 =================================
@@ -1346,7 +1348,82 @@ watch:
 <https://protesilaos.com/codelog/2022-12-17-modus-themes-v4-demo/>.
 
 
-File: docv6TKvo.info,  Node: Preview theme colors,  Next: Use colors from the Modus themes palette,  Prev: Customization options,  Up: Top
+File: modus-themes.info,  Node: Palette extension,  Prev: Palette overrides,  Up: Customization options
+
+4.13 Option to extend the palette
+=================================
+
+It is possible to extend the palette of each theme.  For example, the
+user may define their own ‘cherry’ color with a value of ‘#a0134f’ and
+then apply it as an override (*note Option for palette overrides:
+Palette overrides.).  Those colors may also be used in custom code that
+leverages either the ‘modus-themes-with-colors’ macro or the function
+‘modus-themes-get-color-value’.
+
+   The palette extension can be done in the form of a common set of
+definitions that are shared among the themes or on a per-theme basis.
+
+   The common values are stored in the user option
+‘modus-themes-common-palette-user’.  As for per-theme variables, we have
+the following user options:
+
+   • ‘modus-operandi-palette-user’
+
+   • ‘modus-operandi-tinted-palette-user’
+
+   • ‘modus-operandi-deuteranopia-palette-user’
+
+   • ‘modus-operandi-tritanopia-palette-user’
+
+   • ‘modus-vivendi-palette-user’
+
+   • ‘modus-vivendi-tinted-palette-user’
+
+   • ‘modus-vivendi-deuteranopia-palette-user’
+
+   • ‘modus-vivendi-tritanopia-palette-user’
+
+   Examples demonstrating how to use the aforementioned:
+
+     ;;; Common customizations
+
+     ;; Define two new colors in the common "user" palette of all the Modus themes.
+     (setq modus-themes-common-palette-user
+           '((cherry "#a0134f")
+             (plum "#6f459a")))
+
+     ;; Use them in the overrides.
+     (setq modus-themes-common-palette-overrides
+           '((cursor cherry)
+             (string plum)))
+
+     ;;; Per-theme customizations
+
+     ;; Define two new colors in the "user" palette of `modus-operandi'.
+     ;; Other themes will not use these.
+     (setq modus-operandi-palette-user
+           '((cherry "#a0134f")
+             (plum "#6f459a")))
+
+     ;; Use them in the overrides.
+     (setq modus-operandi-palette-overrides
+           '((cursor cherry)
+             (string plum)))
+
+
+     ;; Tweaks on a per-theme basis give the user maximum flexibility. For
+     ;; example, they can have the above for `modus-operandi' while they use
+     ;; these for `modus-vivendi':
+     (setq modus-vivendi-palette-user
+           '((apricot "#dfb350")
+             (kiwi "#80d458")))
+
+     (setq modus-vivendi-palette-overrides
+           '((cursor apricot)
+             (string kiwi)))
+
+
+File: modus-themes.info,  Node: Preview theme colors,  Next: Use colors from the Modus themes palette,  Prev: Customization options,  Up: Top
 
 5 Preview theme colors
 **********************
@@ -1383,7 +1460,7 @@ contents are, such as ‘*modus-operandi-list-colors*’ for named colors
 and ‘=*modus-operandi-list-mappings*’ for the semantic color mappings.
 
 
-File: docv6TKvo.info,  Node: Use colors from the Modus themes palette,  Next: Advanced customization,  Prev: Preview theme colors,  Up: Top
+File: modus-themes.info,  Node: Use colors from the Modus themes palette,  Next: Advanced customization,  Prev: Preview theme colors,  Up: Top
 
 6 Use colors from the Modus themes palette
 ******************************************
@@ -1406,7 +1483,7 @@ Macro
 * Use theme colors in code with modus-themes-with-colors::
 
 
-File: docv6TKvo.info,  Node: Get a single color from the palette with modus-themes-get-color-value,  Next: Use theme colors in code with modus-themes-with-colors,  Up: Use colors from the Modus themes palette
+File: modus-themes.info,  Node: Get a single color from the palette with modus-themes-get-color-value,  Next: Use theme colors in code with modus-themes-with-colors,  Up: Use colors from the Modus themes palette
 
 6.1 Get a single color from the palette with ‘modus-themes-get-color-value’
 ===========================================================================
@@ -1457,7 +1534,7 @@ with/without overrides and when recursive mappings are introduced.
      ;; => "#a60000"
 
 
-File: docv6TKvo.info,  Node: Use theme colors in code with modus-themes-with-colors,  Prev: Get a single color from the palette with modus-themes-get-color-value,  Up: Use colors from the Modus themes palette
+File: modus-themes.info,  Node: Use theme colors in code with modus-themes-with-colors,  Prev: Get a single color from the palette with modus-themes-get-color-value,  Up: Use colors from the Modus themes palette
 
 6.2 Use theme colors in code with ‘modus-themes-with-colors’
 ============================================================
@@ -1500,7 +1577,7 @@ will also be needed (*note DIY Use a hook at the post-load-theme
 phase::).
 
 
-File: docv6TKvo.info,  Node: Advanced customization,  Next: Face coverage,  Prev: Use colors from the Modus themes palette,  Up: Top
+File: modus-themes.info,  Node: Advanced customization,  Next: Face coverage,  Prev: Use colors from the Modus themes palette,  Up: Top
 
 7 Advanced customization
 ************************
@@ -1541,7 +1618,7 @@ such, they are labeled as “do-it-yourself” or “DIY”.
 * DIY Use a hook at the post-load-theme phase::
 
 
-File: docv6TKvo.info,  Node: DIY Palette override presets,  Next: DIY Stylistic variants using palette overrides,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Palette override presets,  Next: DIY Stylistic variants using palette overrides,  Up: Advanced customization
 
 7.1 DIY Palette override presets
 ================================
@@ -1604,7 +1681,7 @@ the general idea (extra space for didactic purposes):
              ,@modus-themes-preset-overrides-intense))
 
 
-File: docv6TKvo.info,  Node: DIY Stylistic variants using palette overrides,  Next: DIY More accurate colors in terminal emulators,  Prev: DIY Palette override presets,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Stylistic variants using palette overrides,  Next: DIY More accurate colors in terminal emulators,  Prev: DIY Palette override presets,  Up: Advanced customization
 
 7.2 DIY Stylistic variants using palette overrides
 ==================================================
@@ -1645,7 +1722,7 @@ Palette override presets: DIY Palette override presets.).
 * DIY Make deuteranopia diffs red and blue instead of yellow and blue::
 
 
-File: docv6TKvo.info,  Node: DIY Make the mode line borderless,  Next: DIY Make the active mode line colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make the mode line borderless,  Next: DIY Make the active mode line colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.1 DIY Make the mode line borderless
 ---------------------------------------
@@ -1677,7 +1754,7 @@ line colorful.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make the active mode line colorful,  Next: DIY Make the tab bar more or less colorful,  Prev: DIY Make the mode line borderless,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make the active mode line colorful,  Next: DIY Make the tab bar more or less colorful,  Prev: DIY Make the mode line borderless,  Up: DIY Stylistic variants using palette overrides
 
 7.2.2 DIY Make the active mode line colorful
 --------------------------------------------
@@ -1727,7 +1804,7 @@ borderless.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make the tab bar more or less colorful,  Next: DIY Make the fringe invisible or another color,  Prev: DIY Make the active mode line colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make the tab bar more or less colorful,  Next: DIY Make the fringe invisible or another color,  Prev: DIY Make the active mode line colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.3 DIY Make the tab bar more or less colorful
 ------------------------------------------------
@@ -1771,7 +1848,7 @@ manual.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make the fringe invisible or another color,  Next: DIY Make links use subtle or no underlines,  Prev: DIY Make the tab bar more or less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make the fringe invisible or another color,  Next: DIY Make links use subtle or no underlines,  Prev: DIY Make the tab bar more or less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.4 DIY Make the fringe invisible or another color
 ----------------------------------------------------
@@ -1798,7 +1875,7 @@ which shows indicators such as for truncation or continuation lines.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make links use subtle or no underlines,  Next: DIY Make prompts more or less colorful,  Prev: DIY Make the fringe invisible or another color,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make links use subtle or no underlines,  Next: DIY Make prompts more or less colorful,  Prev: DIY Make the fringe invisible or another color,  Up: DIY Stylistic variants using palette overrides
 
 7.2.5 DIY Make links use subtle or no underlines
 ------------------------------------------------
@@ -1824,7 +1901,7 @@ mappings can read correctly.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make prompts more or less colorful,  Next: DIY Make completion matches more or less colorful,  Prev: DIY Make links use subtle or no underlines,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make prompts more or less colorful,  Next: DIY Make completion matches more or less colorful,  Prev: DIY Make links use subtle or no underlines,  Up: DIY Stylistic variants using palette overrides
 
 7.2.6 DIY Make prompts more or less colorful
 --------------------------------------------
@@ -1855,7 +1932,7 @@ prompts.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make completion matches more or less colorful,  Next: DIY Make comments yellow and strings green,  Prev: DIY Make prompts more or less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make completion matches more or less colorful,  Next: DIY Make comments yellow and strings green,  Prev: DIY Make prompts more or less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.7 DIY Make completion matches more or less colorful
 -------------------------------------------------------
@@ -1933,7 +2010,7 @@ colors to two:
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make comments yellow and strings green,  Next: DIY Make code syntax use the old alt-syntax style,  Prev: DIY Make completion matches more or less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make comments yellow and strings green,  Next: DIY Make code syntax use the old alt-syntax style,  Prev: DIY Make completion matches more or less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.8 DIY Make comments yellow and strings green
 ------------------------------------------------
@@ -1972,7 +2049,7 @@ alternative styles for code syntax.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make code syntax use the old alt-syntax style,  Next: DIY Make use of alternative styles for code syntax,  Prev: DIY Make comments yellow and strings green,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make code syntax use the old alt-syntax style,  Next: DIY Make use of alternative styles for code syntax,  Prev: DIY Make comments yellow and strings green,  Up: DIY Stylistic variants using palette overrides
 
 7.2.9 DIY Make code syntax use the old alt-syntax style
 -------------------------------------------------------
@@ -2048,7 +2125,7 @@ alternative styles for code syntax.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make use of alternative styles for code syntax,  Next: DIY Make matching parenthesis more or less intense,  Prev: DIY Make code syntax use the old alt-syntax style,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make use of alternative styles for code syntax,  Next: DIY Make matching parenthesis more or less intense,  Prev: DIY Make code syntax use the old alt-syntax style,  Up: DIY Stylistic variants using palette overrides
 
 7.2.10 DIY Make use of alternative styles for code syntax
 ---------------------------------------------------------
@@ -2134,7 +2211,7 @@ syntax use the old alt-syntax style.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make matching parenthesis more or less intense,  Next: DIY Make box buttons more or less gray,  Prev: DIY Make use of alternative styles for code syntax,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make matching parenthesis more or less intense,  Next: DIY Make box buttons more or less gray,  Prev: DIY Make use of alternative styles for code syntax,  Up: DIY Stylistic variants using palette overrides
 
 7.2.11 DIY Make matching parenthesis more or less intense
 ---------------------------------------------------------
@@ -2164,7 +2241,7 @@ underlines for those highlights.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make box buttons more or less gray,  Next: DIY Make TODO and DONE more or less intense,  Prev: DIY Make matching parenthesis more or less intense,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make box buttons more or less gray,  Next: DIY Make TODO and DONE more or less intense,  Prev: DIY Make matching parenthesis more or less intense,  Up: DIY Stylistic variants using palette overrides
 
 7.2.12 DIY Make box buttons more or less gray
 ---------------------------------------------
@@ -2185,7 +2262,7 @@ active buttons and amplifies it for the inactive ones.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make TODO and DONE more or less intense,  Next: DIY Make headings more or less colorful,  Prev: DIY Make box buttons more or less gray,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make TODO and DONE more or less intense,  Next: DIY Make headings more or less colorful,  Prev: DIY Make box buttons more or less gray,  Up: DIY Stylistic variants using palette overrides
 
 7.2.13 DIY Make TODO and DONE more or less intense
 --------------------------------------------------
@@ -2220,7 +2297,7 @@ inline code in prose use alternative styles.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make headings more or less colorful,  Next: DIY Make Org block colors more or less colorful,  Prev: DIY Make TODO and DONE more or less intense,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make headings more or less colorful,  Next: DIY Make Org block colors more or less colorful,  Prev: DIY Make TODO and DONE more or less intense,  Up: DIY Stylistic variants using palette overrides
 
 7.2.14 DIY Make headings more or less colorful
 ----------------------------------------------
@@ -2270,7 +2347,7 @@ less intense.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make Org block colors more or less colorful,  Next: DIY Make Org agenda more or less colorful,  Prev: DIY Make headings more or less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make Org block colors more or less colorful,  Next: DIY Make Org agenda more or less colorful,  Prev: DIY Make headings more or less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.15 DIY Make Org block colors more or less colorful
 ------------------------------------------------------
@@ -2365,7 +2442,7 @@ until version 4.3.0.
    *note DIY Use colored Org source blocks per language::.
 
 
-File: docv6TKvo.info,  Node: DIY Make Org agenda more or less colorful,  Next: DIY Make inline code in prose use alternative styles,  Prev: DIY Make Org block colors more or less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make Org agenda more or less colorful,  Next: DIY Make inline code in prose use alternative styles,  Prev: DIY Make Org block colors more or less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.16 DIY Make Org agenda more or less colorful
 ------------------------------------------------
@@ -2435,7 +2512,7 @@ chapters with practical stylistic variants.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make inline code in prose use alternative styles,  Next: DIY Make mail citations and headers more or less colorful,  Prev: DIY Make Org agenda more or less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make inline code in prose use alternative styles,  Next: DIY Make mail citations and headers more or less colorful,  Prev: DIY Make Org agenda more or less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.17 DIY Make inline code in prose use alternative styles
 -----------------------------------------------------------
@@ -2488,7 +2565,7 @@ permutation.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make mail citations and headers more or less colorful,  Next: DIY Make the region preserve text colors plus other styles,  Prev: DIY Make inline code in prose use alternative styles,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make mail citations and headers more or less colorful,  Next: DIY Make the region preserve text colors plus other styles,  Prev: DIY Make inline code in prose use alternative styles,  Up: DIY Stylistic variants using palette overrides
 
 7.2.18 DIY Make mail citations and headers more or less colorful
 ----------------------------------------------------------------
@@ -2547,7 +2624,7 @@ Before we show the code, this is the anatomy of a message:
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make the region preserve text colors plus other styles,  Next: DIY Make mouse highlights more or less colorful,  Prev: DIY Make mail citations and headers more or less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make the region preserve text colors plus other styles,  Next: DIY Make mouse highlights more or less colorful,  Prev: DIY Make mail citations and headers more or less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.19 DIY Make the region preserve text colors, plus other styles
 ------------------------------------------------------------------
@@ -2581,7 +2658,7 @@ region background.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make mouse highlights more or less colorful,  Next: DIY Make language underlines less colorful,  Prev: DIY Make the region preserve text colors plus other styles,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make mouse highlights more or less colorful,  Next: DIY Make language underlines less colorful,  Prev: DIY Make the region preserve text colors plus other styles,  Up: DIY Stylistic variants using palette overrides
 
 7.2.20 DIY Make mouse highlights more or less colorful
 ------------------------------------------------------
@@ -2603,7 +2680,7 @@ hover effects and related highlights:
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make language underlines less colorful,  Next: DIY Make line numbers use alternative styles,  Prev: DIY Make mouse highlights more or less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make language underlines less colorful,  Next: DIY Make line numbers use alternative styles,  Prev: DIY Make mouse highlights more or less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.21 DIY Make language underlines less colorful
 -------------------------------------------------
@@ -2629,7 +2706,7 @@ prose spell checkers.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make line numbers use alternative styles,  Next: DIY Make diffs use only a foreground,  Prev: DIY Make language underlines less colorful,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make line numbers use alternative styles,  Next: DIY Make diffs use only a foreground,  Prev: DIY Make language underlines less colorful,  Up: DIY Stylistic variants using palette overrides
 
 7.2.22 DIY Make line numbers use alternative styles
 ---------------------------------------------------
@@ -2664,7 +2741,7 @@ how to affect the ‘display-line-numbers-mode’.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make diffs use only a foreground,  Next: DIY Make deuteranopia diffs red and blue instead of yellow and blue,  Prev: DIY Make line numbers use alternative styles,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make diffs use only a foreground,  Next: DIY Make deuteranopia diffs red and blue instead of yellow and blue,  Prev: DIY Make line numbers use alternative styles,  Up: DIY Stylistic variants using palette overrides
 
 7.2.23 DIY Make diffs use only a foreground
 -------------------------------------------
@@ -2729,7 +2806,7 @@ palettes directly instead of just using the “common” overrides.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Make deuteranopia diffs red and blue instead of yellow and blue,  Prev: DIY Make diffs use only a foreground,  Up: DIY Stylistic variants using palette overrides
+File: modus-themes.info,  Node: DIY Make deuteranopia diffs red and blue instead of yellow and blue,  Prev: DIY Make diffs use only a foreground,  Up: DIY Stylistic variants using palette overrides
 
 7.2.24 DIY Make deuteranopia diffs red and blue instead of yellow and blue
 --------------------------------------------------------------------------
@@ -2781,7 +2858,7 @@ regular ‘modus-operandi’ and ‘modus-vivendi’.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY More accurate colors in terminal emulators,  Next: DIY Range of color with terminal emulators,  Prev: DIY Stylistic variants using palette overrides,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY More accurate colors in terminal emulators,  Next: DIY Range of color with terminal emulators,  Prev: DIY Stylistic variants using palette overrides,  Up: Advanced customization
 
 7.3 DIY More accurate colors in terminal emulators
 ==================================================
@@ -2810,7 +2887,7 @@ adapted to shell aliases:
      TERM=xterm-direct uxterm -e emacsclient -nw
 
 
-File: docv6TKvo.info,  Node: DIY Range of color with terminal emulators,  Next: DIY Per-theme customization settings,  Prev: DIY More accurate colors in terminal emulators,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Range of color with terminal emulators,  Next: DIY Per-theme customization settings,  Prev: DIY More accurate colors in terminal emulators,  Up: Advanced customization
 
 7.4 DIY Range of color with terminal emulators
 ==============================================
@@ -2880,7 +2957,7 @@ colors::):
      xterm*color15:    #ffffff
 
 
-File: docv6TKvo.info,  Node: DIY Per-theme customization settings,  Next: DIY Do not extend the region background,  Prev: DIY Range of color with terminal emulators,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Per-theme customization settings,  Next: DIY Do not extend the region background,  Prev: DIY Range of color with terminal emulators,  Up: Advanced customization
 
 7.5 DIY Per-theme customization settings
 ========================================
@@ -2916,7 +2993,7 @@ of ‘modus-themes-toggle’ and relevant functions.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Do not extend the region background,  Next: DIY Add padding to the mode line,  Prev: DIY Per-theme customization settings,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Do not extend the region background,  Next: DIY Add padding to the mode line,  Prev: DIY Per-theme customization settings,  Up: Advanced customization
 
 7.6 DIY Do not extend the region background
 ===========================================
@@ -2934,7 +3011,7 @@ to the Emacs configuration file will suffice:
 Make the region preserve text colors plus other styles.
 
 
-File: docv6TKvo.info,  Node: DIY Add padding to the mode line,  Next: DIY Remap face with local value,  Prev: DIY Do not extend the region background,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Add padding to the mode line,  Next: DIY Remap face with local value,  Prev: DIY Do not extend the region background,  Up: Advanced customization
 
 7.7 DIY Add padding to the mode line
 ====================================
@@ -2998,7 +3075,7 @@ state of affairs.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Remap face with local value,  Next: DIY Font configurations for Org and others,  Prev: DIY Add padding to the mode line,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Remap face with local value,  Next: DIY Font configurations for Org and others,  Prev: DIY Add padding to the mode line,  Up: Advanced customization
 
 7.8 DIY Remap face with local value
 ===================================
@@ -3061,7 +3138,7 @@ experimentation up to you.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Font configurations for Org and others,  Next: DIY Configure bold and italic faces,  Prev: DIY Remap face with local value,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Font configurations for Org and others,  Next: DIY Configure bold and italic faces,  Prev: DIY Remap face with local value,  Up: Advanced customization
 
 7.9 DIY Font configurations for Org and others
 ==============================================
@@ -3132,7 +3209,7 @@ the likes of ‘115’ are perfectly valid—some typefaces will change to
 account for those finer increments.
 
 
-File: docv6TKvo.info,  Node: DIY Configure bold and italic faces,  Next: DIY Custom Org todo keyword and priority faces,  Prev: DIY Font configurations for Org and others,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Configure bold and italic faces,  Next: DIY Custom Org todo keyword and priority faces,  Prev: DIY Font configurations for Org and others,  Up: Advanced customization
 
 7.10 DIY Configure bold and italic faces
 ========================================
@@ -3231,7 +3308,7 @@ the post-load-theme phase.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Custom Org todo keyword and priority faces,  Next: DIY Custom Org emphasis faces,  Prev: DIY Configure bold and italic faces,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Custom Org todo keyword and priority faces,  Next: DIY Custom Org emphasis faces,  Prev: DIY Configure bold and italic faces,  Up: Advanced customization
 
 7.11 DIY Custom Org todo keyword and priority faces
 ===================================================
@@ -3314,7 +3391,7 @@ Do it if you plan to control face attributes.
    *note Check color combinations: DIY Measure color contrast.
 
 
-File: docv6TKvo.info,  Node: DIY Custom Org emphasis faces,  Next: DIY Use colored Org source blocks per language,  Prev: DIY Custom Org todo keyword and priority faces,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Custom Org emphasis faces,  Next: DIY Use colored Org source blocks per language,  Prev: DIY Custom Org todo keyword and priority faces,  Up: Advanced customization
 
 7.12 DIY Custom Org emphasis faces
 ==================================
@@ -3435,7 +3512,7 @@ already styled by the themes, it probably is best not to edit them:
 invoke ‘M-x org-mode-restart’.
 
 
-File: docv6TKvo.info,  Node: DIY Use colored Org source blocks per language,  Next: DIY Measure color contrast,  Prev: DIY Custom Org emphasis faces,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Use colored Org source blocks per language,  Next: DIY Measure color contrast,  Prev: DIY Custom Org emphasis faces,  Up: Advanced customization
 
 7.13 DIY Use colored Org source blocks per language
 ===================================================
@@ -3522,7 +3599,7 @@ idea:
      (add-hook 'modus-themes-after-load-theme-hook #'my-modus-themes-org-block-faces)
 
 
-File: docv6TKvo.info,  Node: DIY Measure color contrast,  Next: DIY Load theme depending on time of day,  Prev: DIY Use colored Org source blocks per language,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Measure color contrast,  Next: DIY Load theme depending on time of day,  Prev: DIY Use colored Org source blocks per language,  Up: Advanced customization
 
 7.14 DIY Measure color contrast
 ===============================
@@ -3587,7 +3664,7 @@ minutia and relevant commentary.
 theme’s color palette.
 
 
-File: docv6TKvo.info,  Node: DIY Load theme depending on time of day,  Next: DIY Backdrop for pdf-tools,  Prev: DIY Measure color contrast,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Load theme depending on time of day,  Next: DIY Backdrop for pdf-tools,  Prev: DIY Measure color contrast,  Up: Advanced customization
 
 7.15 DIY Load theme depending on time of day
 ============================================
@@ -3614,7 +3691,7 @@ location using the built-in ‘solar.el’ and then configuring the
        (circadian-setup))
 
 
-File: docv6TKvo.info,  Node: DIY Backdrop for pdf-tools,  Next: DIY Toggle themes without reloading them,  Prev: DIY Load theme depending on time of day,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Backdrop for pdf-tools,  Next: DIY Toggle themes without reloading them,  Prev: DIY Load theme depending on time of day,  Up: Advanced customization
 
 7.16 DIY Backdrop for pdf-tools
 ===============================
@@ -3689,7 +3766,7 @@ to dark mode when ‘modus-themes-toggle’ is called.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Toggle themes without reloading them,  Next: DIY Use more spacious margins or padding in Emacs frames,  Prev: DIY Backdrop for pdf-tools,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Toggle themes without reloading them,  Next: DIY Use more spacious margins or padding in Emacs frames,  Prev: DIY Backdrop for pdf-tools,  Up: Advanced customization
 
 7.17 DIY Toggle themes without reloading them
 =============================================
@@ -3716,7 +3793,7 @@ their own command which calls ‘enable-theme’ instead of ‘load-theme’:
    Recall that ‘modus-themes-toggle’ uses ‘load-theme’.
 
 
-File: docv6TKvo.info,  Node: DIY Use more spacious margins or padding in Emacs frames,  Next: DIY Custom hl-todo colors,  Prev: DIY Toggle themes without reloading them,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Use more spacious margins or padding in Emacs frames,  Next: DIY Custom hl-todo colors,  Prev: DIY Toggle themes without reloading them,  Up: Advanced customization
 
 7.18 DIY Use more spacious margins or padding in Emacs frames
 =============================================================
@@ -3804,7 +3881,7 @@ defining their own theme-agnostic hook (*note A theme-agnostic hook for
 theme loading: DIY A theme-agnostic hook for theme loading.).
 
 
-File: docv6TKvo.info,  Node: DIY Custom hl-todo colors,  Next: DIY Add support for solaire-mode,  Prev: DIY Use more spacious margins or padding in Emacs frames,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Custom hl-todo colors,  Next: DIY Add support for solaire-mode,  Prev: DIY Use more spacious margins or padding in Emacs frames,  Up: Advanced customization
 
 7.19 DIY Custom hl-todo colors
 ==============================
@@ -3847,7 +3924,7 @@ otherwise the defaults are not always legible.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Add support for solaire-mode,  Next: DIY Use a hook at the post-load-theme phase,  Prev: DIY Custom hl-todo colors,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Add support for solaire-mode,  Next: DIY Use a hook at the post-load-theme phase,  Prev: DIY Custom hl-todo colors,  Up: Advanced customization
 
 7.20 DIY Add support for solaire-mode
 =====================================
@@ -3908,7 +3985,7 @@ the post-load-theme phase.
    Reload the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: DIY Use a hook at the post-load-theme phase,  Prev: DIY Add support for solaire-mode,  Up: Advanced customization
+File: modus-themes.info,  Node: DIY Use a hook at the post-load-theme phase,  Prev: DIY Add support for solaire-mode,  Up: Advanced customization
 
 7.21 DIY Use a hook at the post-load-theme phase
 ================================================
@@ -3956,7 +4033,7 @@ it will not use them (in plain terms, the code works with or without
 * DIY A theme-agnostic hook for theme loading::
 
 
-File: docv6TKvo.info,  Node: DIY A theme-agnostic hook for theme loading,  Up: DIY Use a hook at the post-load-theme phase
+File: modus-themes.info,  Node: DIY A theme-agnostic hook for theme loading,  Up: DIY Use a hook at the post-load-theme phase
 
 7.21.1 DIY A theme-agnostic hook for theme loading
 --------------------------------------------------
@@ -4012,7 +4089,7 @@ though the user can replace it with ‘after-enable-theme-hook’ should
 they need to (provided they understand the implications).
 
 
-File: docv6TKvo.info,  Node: Face coverage,  Next: Notes on individual packages,  Prev: Advanced customization,  Up: Top
+File: modus-themes.info,  Node: Face coverage,  Next: Notes on individual packages,  Prev: Advanced customization,  Up: Top
 
 8 Face coverage
 ***************
@@ -4027,7 +4104,7 @@ experience across all available interfaces.
 * Indirectly covered packages::
 
 
-File: docv6TKvo.info,  Node: Supported packages,  Next: Indirectly covered packages,  Up: Face coverage
+File: modus-themes.info,  Node: Supported packages,  Next: Indirectly covered packages,  Up: Face coverage
 
 8.1 Full support for packages or face groups
 ============================================
@@ -4160,6 +4237,7 @@ have lots of extensions, so the “full support” may not be 100% true…
    • isearch, occur, etc.
    • ivy*
    • ivy-posframe
+   • jabber
    • japanese-holidays
    • jira (org-jira)
    • jit-spell
@@ -4169,6 +4247,7 @@ have lots of extensions, so the “full support” may not be 100% true…
    • julia
    • kaocha-runner
    • keycast
+   • kmacro-menu
    • ledger-mode
    • leerzeichen
    • line numbers (‘display-line-numbers-mode’ and global variant)
@@ -4178,6 +4257,7 @@ have lots of extensions, so the “full support” may not be 100% true…
    • marginalia
    • markdown-mode
    • markup-faces (‘adoc-mode’)
+   • mb-depth
    • mct
    • messages
    • minimap
@@ -4273,8 +4353,10 @@ have lots of extensions, so the “full support” may not be 100% true…
    • vertico
    • vertico-quick
    • vimish-fold
+   • viper
    • visible-mark
    • visual-regexp
+   • vtable
    • vterm
    • vundo
    • wcheck-mode
@@ -4284,6 +4366,7 @@ have lots of extensions, so the “full support” may not be 100% true…
    • which-key
    • whitespace-mode
    • window-divider-mode
+   • window-tool-bar
    • writegood-mode
    • woman
    • xah-elisp-mode
@@ -4295,7 +4378,7 @@ have lots of extensions, so the “full support” may not be 100% true…
    Plus many other miscellaneous faces that are provided by Emacs.
 
 
-File: docv6TKvo.info,  Node: Indirectly covered packages,  Prev: Supported packages,  Up: Face coverage
+File: modus-themes.info,  Node: Indirectly covered packages,  Prev: Supported packages,  Up: Face coverage
 
 8.2 Indirectly covered packages
 ===============================
@@ -4358,7 +4441,7 @@ supported by the themes.
    • xref
 
 
-File: docv6TKvo.info,  Node: Notes on individual packages,  Next: Frequently Asked Questions,  Prev: Face coverage,  Up: Top
+File: modus-themes.info,  Node: Notes on individual packages,  Next: Frequently Asked Questions,  Prev: Face coverage,  Up: Top
 
 9 Notes on individual packages
 ******************************
@@ -4389,7 +4472,7 @@ individual packages.
 * Note on goto-address-mode faces::
 
 
-File: docv6TKvo.info,  Node: Note on calendarel weekday and weekend colors,  Next: Note on git-gutter in Doom Emacs,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on calendarel weekday and weekend colors,  Next: Note on git-gutter in Doom Emacs,  Up: Notes on individual packages
 
 9.1 Note on calendar.el weekday and weekend colors
 ==================================================
@@ -4417,7 +4500,7 @@ of weekends uniformly.
 anew.
 
 
-File: docv6TKvo.info,  Node: Note on git-gutter in Doom Emacs,  Next: Note on php-mode multiline comments,  Prev: Note on calendarel weekday and weekend colors,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on git-gutter in Doom Emacs,  Next: Note on php-mode multiline comments,  Prev: Note on calendarel weekday and weekend colors,  Up: Notes on individual packages
 
 9.2 Note on git-gutter in Doom Emacs
 ====================================
@@ -4473,7 +4556,7 @@ the post-load-theme phase.
           `(git-gutter-fr:modified ((,c :foreground ,bg-changed-intense))))))
 
 
-File: docv6TKvo.info,  Node: Note on php-mode multiline comments,  Next: Note on underlines in compilation buffers,  Prev: Note on git-gutter in Doom Emacs,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on php-mode multiline comments,  Next: Note on underlines in compilation buffers,  Prev: Note on git-gutter in Doom Emacs,  Up: Notes on individual packages
 
 9.3 Note on php-mode multiline comments
 =======================================
@@ -4492,7 +4575,7 @@ multiline comments in PHP with the ‘php-mode’ package use the
    As always, re-load the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: Note on underlines in compilation buffers,  Next: Note on inline Latex in Org buffers,  Prev: Note on php-mode multiline comments,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on underlines in compilation buffers,  Next: Note on inline Latex in Org buffers,  Prev: Note on php-mode multiline comments,  Up: Notes on individual packages
 
 9.4 Note on underlines in compilation buffers
 =============================================
@@ -4515,7 +4598,7 @@ to render the affected text with the ‘italic’ face:
 faces.
 
 
-File: docv6TKvo.info,  Node: Note on inline Latex in Org buffers,  Next: Note on dimmerel,  Prev: Note on underlines in compilation buffers,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on inline Latex in Org buffers,  Next: Note on dimmerel,  Prev: Note on underlines in compilation buffers,  Up: Notes on individual packages
 
 9.5 Note on inline Latex in Org buffers
 =======================================
@@ -4529,7 +4612,7 @@ the desired list of values (per its doc string).  For example:
    Remember to use ‘M-x org-mode-restart’ for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: Note on dimmerel,  Next: Note on display-fill-column-indicator-mode,  Prev: Note on inline Latex in Org buffers,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on dimmerel,  Next: Note on display-fill-column-indicator-mode,  Prev: Note on inline Latex in Org buffers,  Up: Notes on individual packages
 
 9.6 Note on dimmer.el
 =====================
@@ -4564,7 +4647,7 @@ gray.  This inadvertently leads to the opposite of the intended utility
 of this package: it draws too much attention to unfocused windows.
 
 
-File: docv6TKvo.info,  Node: Note on display-fill-column-indicator-mode,  Next: Note on highlight-parenthesesel,  Prev: Note on dimmerel,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on display-fill-column-indicator-mode,  Next: Note on highlight-parenthesesel,  Prev: Note on dimmerel,  Up: Notes on individual packages
 
 9.7 Note on display-fill-column-indicator-mode
 ==============================================
@@ -4596,7 +4679,7 @@ For example:
         `(fill-column-indicator ((,c :height 1.0 :background ,bg-inactive :foreground ,bg-inactive)))))
 
 
-File: docv6TKvo.info,  Node: Note on highlight-parenthesesel,  Next: Note on mmm-modeel background colors,  Prev: Note on display-fill-column-indicator-mode,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on highlight-parenthesesel,  Next: Note on mmm-modeel background colors,  Prev: Note on display-fill-column-indicator-mode,  Up: Notes on individual packages
 
 9.8 Note on highlight-parentheses.el
 ====================================
@@ -4723,7 +4806,7 @@ the post-load-theme phase.
    As always, re-load the theme for changes to take effect.
 
 
-File: docv6TKvo.info,  Node: Note on mmm-modeel background colors,  Next: Note for prism,  Prev: Note on highlight-parenthesesel,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on mmm-modeel background colors,  Next: Note for prism,  Prev: Note on highlight-parenthesesel,  Up: Notes on individual packages
 
 9.9 Note on mmm-mode.el background colors
 =========================================
@@ -4773,7 +4856,7 @@ the very high cost of degraded legibility.
         `(mmm-special-submode-face ((,c :background ,bg-green-intense)))))
 
 
-File: docv6TKvo.info,  Node: Note for prism,  Next: Note on company-mode overlay pop-up,  Prev: Note on mmm-modeel background colors,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note for prism,  Next: Note on company-mode overlay pop-up,  Prev: Note on mmm-modeel background colors,  Up: Notes on individual packages
 
 9.10 Note on prism.el
 =====================
@@ -4863,7 +4946,7 @@ examples with the 4, 8, 16 colors):
                        magenta)))
 
 
-File: docv6TKvo.info,  Node: Note on company-mode overlay pop-up,  Next: Note on ERC escaped color sequences,  Prev: Note for prism,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on company-mode overlay pop-up,  Next: Note on ERC escaped color sequences,  Prev: Note for prism,  Up: Notes on individual packages
 
 9.11 Note on company-mode overlay pop-up
 ========================================
@@ -4886,7 +4969,7 @@ instead of overlays.(1)(2)
    (2) <https://github.com/tumashu/company-posframe/>
 
 
-File: docv6TKvo.info,  Node: Note on ERC escaped color sequences,  Next: Note on powerline or spaceline,  Prev: Note on company-mode overlay pop-up,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on ERC escaped color sequences,  Next: Note on powerline or spaceline,  Prev: Note on company-mode overlay pop-up,  Up: Notes on individual packages
 
 9.12 Note on ERC escaped color sequences
 ========================================
@@ -4924,7 +5007,7 @@ together, if you must.
 Emacs: <https://www.mirc.com/colors.html>
 
 
-File: docv6TKvo.info,  Node: Note on powerline or spaceline,  Next: Note on SHR colors,  Prev: Note on ERC escaped color sequences,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on powerline or spaceline,  Next: Note on SHR colors,  Prev: Note on ERC escaped color sequences,  Up: Notes on individual packages
 
 9.13 Note on powerline or spaceline
 ===================================
@@ -4934,7 +5017,7 @@ command ‘powerline-reset’ whenever they make changes to their themes
 and/or mode line setup.
 
 
-File: docv6TKvo.info,  Node: Note on SHR colors,  Next: Note on SHR fonts,  Prev: Note on powerline or spaceline,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on SHR colors,  Next: Note on SHR fonts,  Prev: Note on powerline or spaceline,  Up: Notes on individual packages
 
 9.14 Note on SHR colors
 =======================
@@ -4946,7 +5029,7 @@ webpage provides.
    Consult the doc string of ‘shr-use-colors’.
 
 
-File: docv6TKvo.info,  Node: Note on SHR fonts,  Next: Note on Ement colors and fonts,  Prev: Note on SHR colors,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on SHR fonts,  Next: Note on Ement colors and fonts,  Prev: Note on SHR colors,  Up: Notes on individual packages
 
 9.15 Note on SHR fonts
 ======================
@@ -4968,7 +5051,7 @@ for Org and others.
    This is a non-exhaustive list.
 
 
-File: docv6TKvo.info,  Node: Note on Ement colors and fonts,  Next: Note on pdf-tools link hints,  Prev: Note on SHR fonts,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on Ement colors and fonts,  Next: Note on pdf-tools link hints,  Prev: Note on SHR fonts,  Up: Notes on individual packages
 
 9.16 Note on Ement colors and fonts
 ===================================
@@ -5004,7 +5087,7 @@ Our target is the highest of the sort, though we do not demand that
 everyone conforms with it.
 
 
-File: docv6TKvo.info,  Node: Note on pdf-tools link hints,  Next: Note on the Notmuch logo,  Prev: Note on Ement colors and fonts,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on pdf-tools link hints,  Next: Note on the Notmuch logo,  Prev: Note on Ement colors and fonts,  Up: Notes on individual packages
 
 9.17 Note on pdf-tools link hints
 =================================
@@ -5053,7 +5136,7 @@ your initialization file after you’ve customized any faces.
                  "-draw"       "text %X,%Y '%c'"))))
 
 
-File: docv6TKvo.info,  Node: Note on the Notmuch logo,  Next: Note on goto-address-mode faces,  Prev: Note on pdf-tools link hints,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on the Notmuch logo,  Next: Note on goto-address-mode faces,  Prev: Note on pdf-tools link hints,  Up: Notes on individual packages
 
 9.18 Note on the Notmuch logo
 =============================
@@ -5066,7 +5149,7 @@ those buttons.  Disabling the logo fixes the problem:
      (setq notmuch-show-logo nil)
 
 
-File: docv6TKvo.info,  Node: Note on goto-address-mode faces,  Prev: Note on the Notmuch logo,  Up: Notes on individual packages
+File: modus-themes.info,  Node: Note on goto-address-mode faces,  Prev: Note on the Notmuch logo,  Up: Notes on individual packages
 
 9.19 Note on goto-address-mode faces
 ====================================
@@ -5091,7 +5174,7 @@ addresses stand out more, due to the use of the uncommon ‘@’ character
 but also because they are often enclosed in angled brackets).
 
 
-File: docv6TKvo.info,  Node: Frequently Asked Questions,  Next: Contributing,  Prev: Notes on individual packages,  Up: Top
+File: modus-themes.info,  Node: Frequently Asked Questions,  Next: Contributing,  Prev: Notes on individual packages,  Up: Top
 
 10 Frequently Asked Questions
 *****************************
@@ -5109,7 +5192,7 @@ themes’ design and application.
 * Port the Modus themes to other platforms?::
 
 
-File: docv6TKvo.info,  Node: Is the contrast ratio about adjacent colors?,  Next: What does it mean to avoid exaggerations?,  Up: Frequently Asked Questions
+File: modus-themes.info,  Node: Is the contrast ratio about adjacent colors?,  Next: What does it mean to avoid exaggerations?,  Up: Frequently Asked Questions
 
 10.1 Is the contrast ratio about adjacent colors?
 =================================================
@@ -5137,7 +5220,7 @@ be colored differently.  They would still be legible though, which is
 the primary objective of the Modus themes.
 
 
-File: docv6TKvo.info,  Node: What does it mean to avoid exaggerations?,  Next: Why are colors mostly variants of blue magenta cyan?,  Prev: Is the contrast ratio about adjacent colors?,  Up: Frequently Asked Questions
+File: modus-themes.info,  Node: What does it mean to avoid exaggerations?,  Next: Why are colors mostly variants of blue magenta cyan?,  Prev: Is the contrast ratio about adjacent colors?,  Up: Frequently Asked Questions
 
 10.2 What does it mean to avoid exaggerations?
 ==============================================
@@ -5170,7 +5253,7 @@ magenta can suffice to tell things apart and avoid excess coloration: a
 harmonious rhythm.
 
 
-File: docv6TKvo.info,  Node: Why are colors mostly variants of blue magenta cyan?,  Next: What is the best setup for legibility?,  Prev: What does it mean to avoid exaggerations?,  Up: Frequently Asked Questions
+File: modus-themes.info,  Node: Why are colors mostly variants of blue magenta cyan?,  Next: What is the best setup for legibility?,  Prev: What does it mean to avoid exaggerations?,  Up: Frequently Asked Questions
 
 10.3 Why are colors mostly variants of blue, magenta, cyan?
 ===========================================================
@@ -5258,7 +5341,7 @@ completely different than ‘modus-operandi’, to the effect that the two
 could not be properly considered part of the same project.
 
 
-File: docv6TKvo.info,  Node: What is the best setup for legibility?,  Next: Are these color schemes?,  Prev: Why are colors mostly variants of blue magenta cyan?,  Up: Frequently Asked Questions
+File: modus-themes.info,  Node: What is the best setup for legibility?,  Next: Are these color schemes?,  Prev: Why are colors mostly variants of blue magenta cyan?,  Up: Frequently Asked Questions
 
 10.4 What is the best setup for legibility?
 ===========================================
@@ -5308,7 +5391,7 @@ accessibility, though the remaining contributing factors in each case
 need to be considered in full.
 
 
-File: docv6TKvo.info,  Node: Are these color schemes?,  Next: Port the Modus themes to other platforms?,  Prev: What is the best setup for legibility?,  Up: Frequently Asked Questions
+File: modus-themes.info,  Node: Are these color schemes?,  Next: Port the Modus themes to other platforms?,  Prev: What is the best setup for legibility?,  Up: Frequently Asked Questions
 
 10.5 Are these color schemes?
 =============================
@@ -5380,7 +5463,7 @@ design beyond the particularities of a color scheme.
 requirements.  Please do not conflate the two.
 
 
-File: docv6TKvo.info,  Node: Port the Modus themes to other platforms?,  Prev: Are these color schemes?,  Up: Frequently Asked Questions
+File: modus-themes.info,  Node: Port the Modus themes to other platforms?,  Prev: Are these color schemes?,  Up: Frequently Asked Questions
 
 10.6 Port the Modus themes to other platforms?
 ==============================================
@@ -5440,7 +5523,7 @@ themes, they are welcome to contact me and I will do my best to help
 them in their efforts.
 
 
-File: docv6TKvo.info,  Node: Contributing,  Next: Acknowledgements,  Prev: Frequently Asked Questions,  Up: Top
+File: modus-themes.info,  Node: Contributing,  Next: Acknowledgements,  Prev: Frequently Asked Questions,  Up: Top
 
 11 Contributing
 ***************
@@ -5455,7 +5538,7 @@ in which you can contribute to their ongoing development.
 * Patches require copyright assignment to the FSF::
 
 
-File: docv6TKvo.info,  Node: Sources of the themes,  Next: Issues you can help with,  Up: Contributing
+File: modus-themes.info,  Node: Sources of the themes,  Next: Issues you can help with,  Up: Contributing
 
 11.1 Sources of the themes
 ==========================
@@ -5475,7 +5558,7 @@ File: docv6TKvo.info,  Node: Sources of the themes,  Next: Issues you can help w
    • Backronym: My Old Display Unexpectedly Sharpened ... themes
 
 
-File: docv6TKvo.info,  Node: Issues you can help with,  Next: Patches require copyright assignment to the FSF,  Prev: Sources of the themes,  Up: Contributing
+File: modus-themes.info,  Node: Issues you can help with,  Next: Patches require copyright assignment to the FSF,  Prev: Sources of the themes,  Up: Contributing
 
 11.2 Issues you can help with
 =============================
@@ -5506,7 +5589,7 @@ between aesthetics and accessibility, it shall always be made in the
 interest of the latter.
 
 
-File: docv6TKvo.info,  Node: Patches require copyright assignment to the FSF,  Prev: Issues you can help with,  Up: Contributing
+File: modus-themes.info,  Node: Patches require copyright assignment to the FSF,  Prev: Issues you can help with,  Up: Contributing
 
 11.3 Patches require copyright assignment to the FSF
 ====================================================
@@ -5568,7 +5651,7 @@ you to make contributions to Emacs in general.
 
 
 
-File: docv6TKvo.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Contributing,  Up: Top
+File: modus-themes.info,  Node: Acknowledgements,  Next: GNU Free Documentation License,  Prev: Contributing,  Up: Top
 
 12 Acknowledgements
 *******************
@@ -5582,14 +5665,15 @@ Contributions to code or documentation
      Aleksei Gusev, Alex Griffin, Anders Johansson, Antonio Ruiz, Basil
      L. Contovounesios, Björn Lindström, Carlo Zancanaro, Christian
      Tietze, Daniel Mendler, David Edmondson, Eli Zaretskii, Fritz
-     Grabo, Gautier Ponsinet, Illia Ostapyshyn, Kévin Le Gouguec, Koen
-     van Greevenbroek, Kostadin Ninev, Madhavan Krishnan, Manuel Giraud,
-     Markus Beppler, Matthew Stevenson, Mauro Aranda, Nacho Barrientos,
-     Niall Dooley, Nicolas De Jaeghere, Paul David, Philip Kaludercic,
-     Pierre Téchoueyres, Rudolf Adamkovič, Sergey Nichiporchik, Shreyas
-     Ragavan, Stefan Kangas, Stephen Berman, Stephen Gildea, Steve
-     Downey, Tomasz Hołubowicz, Utkarsh Singh, Vincent Murphy, Xinglu
-     Chen, Yuanchen Xie, fluentpwn, okamsn.
+     Grabo, Gautier Ponsinet, Illia Ostapyshyn, Jared Finder, Kévin Le
+     Gouguec, Koen van Greevenbroek, Kostadin Ninev, Madhavan Krishnan,
+     Manuel Giraud, Markus Beppler, Matthew Stevenson, Mauro Aranda,
+     Nacho Barrientos, Niall Dooley, Nicolas De Jaeghere, Paul David,
+     Pavel Novichkov, Philip Kaludercic, Pierre Téchoueyres, Rudolf
+     Adamkovič, Sergey Nichiporchik, Shreyas Ragavan, Stefan Kangas,
+     Stephen Berman, Stephen Gildea, Steve Downey, Thanos Apollo, Tomasz
+     Hołubowicz, Utkarsh Singh, Vincent Murphy, Xinglu Chen, Yuanchen
+     Xie, fluentpwn, okamsn.
 
 Ideas and user feedback
      Aaron Jensen, Adam Porter, Adam Spiers, Adrian Manea, Aleksei
@@ -5600,32 +5684,33 @@ Ideas and user feedback
      Petegem, Christian Tietze, Christopher Dimech, Christopher League,
      Damien Cassou, Daniel Mendler, Dario Gjorgjevski, David Edmondson,
      Davor Rotim, Divan Santana, Eliraz Kedmi, Emanuele Michele Alberto
-     Monterosso, Farasha Euker, Feng Shu, Gautier Ponsinet, Gerry
-     Agbobada, Gianluca Recchia, Gonçalo Marrafa, Guilherme Semente,
-     Gustavo Barros, Hörmetjan Yiltiz, Ilja Kocken, Imran Khan, Iris
-     Garcia, Ivan Popovych, James Ferguson, Jeremy Friesen, Jerry Zhang,
-     Johannes Grødem, John Haman, John Wick, Jonas Collberg, Jorge
-     Morais, Joshua O’Connor, Julio C.  Villasante, Kenta Usami, Kevin
-     Fleming, Kévin Le Gouguec, Kevin Kainan Li, Kostadin Ninev, Laith
-     Bahodi, Lasse Lindner, Len Trigg, Lennart C. Karssen, Luis Miguel
-     Castañeda, Magne Hov, Manuel Giraud, Manuel Uberti, Mark Bestley,
-     Mark Burton, Mark Simpson, Marko Kocic, Markus Beppler, Matt
-     Armstrong, Matthias Fuchs, Mattias Engdegård, Mauro Aranda, Maxime
-     Tréca, Michael Goldenberg, Morgan Smith, Morgan Willcock, Murilo
-     Pereira, Nicky van Foreest, Nicolas De Jaeghere, Nicolas Semrau,
-     Olaf Meeuwissen, Oliver Epper, Pablo Stafforini, Paul Poloskov,
-     Pengji Zhang, Pete Kazmier, Peter Wu, Philip Kaludercic, Pierre
-     Téchoueyres, Przemysław Kryger, Robert Hepple, Roman Rudakov,
-     Russell Sim, Ryan Phillips, Rytis Paškauskas, Rudolf Adamkovič, Sam
-     Kleinman, Samuel Culpepper, Saša Janiška, Shreyas Ragavan, Simon
-     Pugnet, Steve Downey, Tassilo Horn, Thanos Apollo, Thibaut Verron,
-     Thomas Heartman, Togan Muftuoglu, Tony Zorman, Trey Merkley, Tomasz
-     Hołubowicz, Toon Claes, Uri Sharf, Utkarsh Singh, Vincent Foley,
-     Zoltan Kiraly.  As well as users: Ben, CsBigDataHub1, Emacs
-     Contrib, Eugene, Fourchaux, Fredrik, Moesasji, Nick, Summer Emacs,
-     TheBlob42, TitusMu, Trey, bepolymathe, bit9tream, bangedorrunt,
-     derek-upham, doolio, fleimgruber, gitrj95, iSeeU, jixiuf, ltmsyvag,
-     okamsn, pRot0ta1p, soaringbird, tumashu, wakamenod.
+     Monterosso, Farasha Euker, Feng Shu, Filippo Argiolas, Gautier
+     Ponsinet, Gerry Agbobada, Gianluca Recchia, Gonçalo Marrafa,
+     Guilherme Semente, Gustavo Barros, Hörmetjan Yiltiz, Ilja Kocken,
+     Imran Khan, Iris Garcia, Ivan Popovych, James Ferguson, Jeremy
+     Friesen, Jerry Zhang, Johannes Grødem, John Haman, John Wick, Jonas
+     Collberg, Jorge Morais, Joshua O’Connor, Julio C.  Villasante,
+     Kenta Usami, Kevin Fleming, Kévin Le Gouguec, Kevin Kainan Li,
+     Kostadin Ninev, Laith Bahodi, Lasse Lindner, Len Trigg, Lennart C.
+     Karssen, Luis Miguel Castañeda, Magne Hov, Manuel Giraud, Manuel
+     Uberti, Mark Bestley, Mark Burton, Mark Simpson, Marko Kocic,
+     Markus Beppler, Matt Armstrong, Matthias Fuchs, Mattias Engdegård,
+     Mauro Aranda, Maxime Tréca, Michael Goldenberg, Morgan Smith,
+     Morgan Willcock, Murilo Pereira, Nicky van Foreest, Nicolas De
+     Jaeghere, Nicolas Semrau, Olaf Meeuwissen, Oliver Epper, Pablo
+     Stafforini, Paul Poloskov, Pengji Zhang, Pete Kazmier, Peter Wu,
+     Philip Kaludercic, Pierre Téchoueyres, Przemysław Kryger, Robert
+     Hepple, Roman Rudakov, Russell Sim, Ryan Phillips, Rytis
+     Paškauskas, Rudolf Adamkovič, Sam Kleinman, Samuel Culpepper, Saša
+     Janiška, Shreyas Ragavan, Simon Pugnet, Steve Downey, Tassilo Horn,
+     Thanos Apollo, Thibaut Verron, Thomas Heartman, Togan Muftuoglu,
+     Tony Zorman, Trey Merkley, Tomasz Hołubowicz, Toon Claes, Uri
+     Sharf, Utkarsh Singh, Vincent Foley, Zoltan Kiraly.  As well as
+     users: Ben, CsBigDataHub1, Emacs Contrib, Eugene, Fourchaux,
+     Fredrik, Moesasji, Nick, Summer Emacs, TheBlob42, TitusMu, Trey,
+     ZharMeny, bepolymathe, bit9tream, bangedorrunt, derek-upham,
+     doolio, fleimgruber, gitrj95, iSeeU, jixiuf, ltmsyvag, okamsn,
+     pRot0ta1p, shipmints, soaringbird, tumashu, wakamenod.
 
 Packaging
      Basil L. Contovounesios, Eli Zaretskii, Glenn Morris, Mauro Aranda,
@@ -5644,7 +5729,7 @@ themes’ design and/or aspects of their functionality.
    All errors are my own.
 
 
-File: docv6TKvo.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
+File: modus-themes.info,  Node: GNU Free Documentation License,  Next: Indices,  Prev: Acknowledgements,  Up: Top
 
 Appendix A GNU Free Documentation License
 *****************************************
@@ -6126,7 +6211,7 @@ software license, such as the GNU General Public License, to permit
 their use in free software.
 
 
-File: docv6TKvo.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
+File: modus-themes.info,  Node: Indices,  Prev: GNU Free Documentation License,  Up: Top
 
 B Indices
 *********
@@ -6138,7 +6223,7 @@ B Indices
 * Concept index::
 
 
-File: docv6TKvo.info,  Node: Function index,  Next: Variable index,  Up: Indices
+File: modus-themes.info,  Node: Function index,  Next: Variable index,  Up: Indices
 
 B.1 Function index
 ==================
@@ -6163,7 +6248,7 @@ B.1 Function index
                                                                (line 10)
 
 
-File: docv6TKvo.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
+File: modus-themes.info,  Node: Variable index,  Next: Concept index,  Prev: Function index,  Up: Indices
 
 B.2 Variable index
 ==================
@@ -6173,13 +6258,18 @@ B.2 Variable index
 
 * modus-operandi-deuteranopia-palette-overrides: Palette overrides.
                                                                (line 30)
+* modus-operandi-deuteranopia-palette-user: Palette extension. (line 24)
 * modus-operandi-palette-overrides:      Palette overrides.    (line 28)
+* modus-operandi-palette-user:           Palette extension.    (line 20)
 * modus-operandi-tinted-palette-overrides: Palette overrides.  (line 32)
+* modus-operandi-tinted-palette-user:    Palette extension.    (line 22)
 * modus-operandi-tritanopia-palette-overrides: Palette overrides.
                                                                (line 34)
+* modus-operandi-tritanopia-palette-user: Palette extension.   (line 26)
 * modus-themes-after-load-theme-hook:    Enable and load.      (line 85)
 * modus-themes-bold-constructs:          Bold constructs.      (line  6)
 * modus-themes-common-palette-overrides: Palette overrides.    (line 22)
+* modus-themes-common-palette-user:      Palette extension.    (line 16)
 * modus-themes-completions:              Completion UIs.       (line  6)
 * modus-themes-custom-auto-reload:       Custom reload theme.  (line  6)
 * modus-themes-disable-other-themes:     Disable other themes. (line  6)
@@ -6202,13 +6292,17 @@ B.2 Variable index
 * modus-themes-variable-pitch-ui:        UI typeface.          (line  6)
 * modus-vivendi-deuteranopia-palette-overrides: Palette overrides.
                                                                (line 38)
+* modus-vivendi-deuteranopia-palette-user: Palette extension.  (line 32)
 * modus-vivendi-palette-overrides:       Palette overrides.    (line 36)
+* modus-vivendi-palette-user:            Palette extension.    (line 28)
 * modus-vivendi-tinted-palette-overrides: Palette overrides.   (line 40)
+* modus-vivendi-tinted-palette-user:     Palette extension.    (line 30)
 * modus-vivendi-tritanopia-palette-overrides: Palette overrides.
                                                                (line 42)
+* modus-vivendi-tritanopia-palette-user: Palette extension.    (line 34)
 
 
-File: docv6TKvo.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
+File: modus-themes.info,  Node: Concept index,  Prev: Variable index,  Up: Indices
 
 B.3 Concept index
 =================
@@ -6277,129 +6371,130 @@ B.3 Concept index
 
 
 Tag Table:
-Node: Top869
-Node: Overview8407
-Node: How do the themes look like11176
-Node: Learn about the latest changes11532
-Node: Installation11917
-Node: Install manually from source12844
-Node: Install from the archives13666
-Node: Install on GNU/Linux14262
-Node: Debian 11 Bullseye14752
-Node: GNU Guix15159
-Node: Dealing with byte compilation errors15439
-Node: Enable and load16594
-Node: The require-theme for built-in Emacs themes20535
-Node: Sample configuration with and without use-package21652
-Node: Differences between loading and enabling24497
-Node: Customization options26626
-Node: Custom reload theme30407
-Node: Disable other themes31324
-Node: Bold constructs32563
-Node: Italic constructs33432
-Node: Option for which themes to toggle34257
-Node: Mixed fonts35029
-Node: Command prompts36080
-Node: Completion UIs37920
-Node: Org mode blocks40768
-Node: Heading styles41408
-Node: UI typeface45835
-Node: Palette overrides46805
-Node: Preview theme colors51166
-Node: Use colors from the Modus themes palette52976
-Node: Get a single color from the palette with modus-themes-get-color-value53837
-Node: Use theme colors in code with modus-themes-with-colors56196
-Node: Advanced customization58449
-Node: DIY Palette override presets60105
-Node: DIY Stylistic variants using palette overrides62957
-Node: DIY Make the mode line borderless65008
-Node: DIY Make the active mode line colorful66380
-Node: DIY Make the tab bar more or less colorful68595
-Node: DIY Make the fringe invisible or another color70529
-Node: DIY Make links use subtle or no underlines71727
-Node: DIY Make prompts more or less colorful72842
-Node: DIY Make completion matches more or less colorful74162
-Node: DIY Make comments yellow and strings green77718
-Node: DIY Make code syntax use the old alt-syntax style79424
-Node: DIY Make use of alternative styles for code syntax82544
-Node: DIY Make matching parenthesis more or less intense86003
-Node: DIY Make box buttons more or less gray87372
-Node: DIY Make TODO and DONE more or less intense88382
-Node: DIY Make headings more or less colorful89880
-Node: DIY Make Org block colors more or less colorful91994
-Node: DIY Make Org agenda more or less colorful96365
-Node: DIY Make inline code in prose use alternative styles99537
-Node: DIY Make mail citations and headers more or less colorful101776
-Node: DIY Make the region preserve text colors plus other styles104173
-Node: DIY Make mouse highlights more or less colorful105726
-Node: DIY Make language underlines less colorful106736
-Node: DIY Make line numbers use alternative styles107885
-Node: DIY Make diffs use only a foreground109525
-Node: DIY Make deuteranopia diffs red and blue instead of yellow and blue112413
-Node: DIY More accurate colors in terminal emulators114890
-Node: DIY Range of color with terminal emulators116199
-Node: DIY Per-theme customization settings118989
-Node: DIY Do not extend the region background120419
-Node: DIY Add padding to the mode line121220
-Node: DIY Remap face with local value124150
-Node: DIY Font configurations for Org and others126695
-Ref: DIY Font configurations for Org and others-Footnote-1129675
-Node: DIY Configure bold and italic faces129862
-Node: DIY Custom Org todo keyword and priority faces134481
-Node: DIY Custom Org emphasis faces138221
-Node: DIY Use colored Org source blocks per language143099
-Node: DIY Measure color contrast147736
-Node: DIY Load theme depending on time of day150453
-Node: DIY Backdrop for pdf-tools151480
-Node: DIY Toggle themes without reloading them154646
-Node: DIY Use more spacious margins or padding in Emacs frames155952
-Node: DIY Custom hl-todo colors160206
-Node: DIY Add support for solaire-mode162020
-Node: DIY Use a hook at the post-load-theme phase165143
-Node: DIY A theme-agnostic hook for theme loading167264
-Node: Face coverage169892
-Node: Supported packages170341
-Node: Indirectly covered packages175952
-Node: Notes on individual packages177318
-Node: Note on calendarel weekday and weekend colors178415
-Node: Note on git-gutter in Doom Emacs179560
-Node: Note on php-mode multiline comments182057
-Node: Note on underlines in compilation buffers182814
-Node: Note on inline Latex in Org buffers183683
-Node: Note on dimmerel184290
-Node: Note on display-fill-column-indicator-mode185772
-Node: Note on highlight-parenthesesel187222
-Node: Note on mmm-modeel background colors193302
-Node: Note for prism195653
-Node: Note on company-mode overlay pop-up198872
-Ref: Note on company-mode overlay pop-up-Footnote-1199599
-Ref: Note on company-mode overlay pop-up-Footnote-2199666
-Node: Note on ERC escaped color sequences199721
-Ref: Note on ERC escaped color sequences-Footnote-1201146
-Node: Note on powerline or spaceline201256
-Node: Note on SHR colors201667
-Node: Note on SHR fonts202088
-Node: Note on Ement colors and fonts202772
-Node: Note on pdf-tools link hints204279
-Node: Note on the Notmuch logo206736
-Node: Note on goto-address-mode faces207271
-Node: Frequently Asked Questions208386
-Node: Is the contrast ratio about adjacent colors?209016
-Node: What does it mean to avoid exaggerations?210522
-Node: Why are colors mostly variants of blue magenta cyan?212371
-Node: What is the best setup for legibility?216702
-Node: Are these color schemes?219346
-Node: Port the Modus themes to other platforms?223027
-Node: Contributing225870
-Node: Sources of the themes226266
-Node: Issues you can help with227159
-Node: Patches require copyright assignment to the FSF228549
-Node: Acknowledgements230768
-Node: GNU Free Documentation License234935
-Node: Indices260296
-Node: Function index260472
-Node: Variable index261767
-Node: Concept index264458
+Node: Top872
+Node: Overview8500
+Node: How do the themes look like11272
+Node: Learn about the latest changes11631
+Node: Installation12019
+Node: Install manually from source12949
+Node: Install from the archives13774
+Node: Install on GNU/Linux14373
+Node: Debian 11 Bullseye14866
+Node: GNU Guix15276
+Node: Dealing with byte compilation errors15559
+Node: Enable and load16717
+Node: The require-theme for built-in Emacs themes20661
+Node: Sample configuration with and without use-package21781
+Node: Differences between loading and enabling24629
+Node: Customization options26761
+Node: Custom reload theme30632
+Node: Disable other themes31552
+Node: Bold constructs32794
+Node: Italic constructs33666
+Node: Option for which themes to toggle34494
+Node: Mixed fonts35269
+Node: Command prompts36323
+Node: Completion UIs38166
+Node: Org mode blocks41017
+Node: Heading styles41660
+Node: UI typeface46090
+Node: Palette overrides47063
+Node: Palette extension51453
+Node: Preview theme colors53929
+Node: Use colors from the Modus themes palette55742
+Node: Get a single color from the palette with modus-themes-get-color-value56606
+Node: Use theme colors in code with modus-themes-with-colors58968
+Node: Advanced customization61224
+Node: DIY Palette override presets62883
+Node: DIY Stylistic variants using palette overrides65738
+Node: DIY Make the mode line borderless67792
+Node: DIY Make the active mode line colorful69167
+Node: DIY Make the tab bar more or less colorful71385
+Node: DIY Make the fringe invisible or another color73322
+Node: DIY Make links use subtle or no underlines74523
+Node: DIY Make prompts more or less colorful75641
+Node: DIY Make completion matches more or less colorful76964
+Node: DIY Make comments yellow and strings green80523
+Node: DIY Make code syntax use the old alt-syntax style82232
+Node: DIY Make use of alternative styles for code syntax85355
+Node: DIY Make matching parenthesis more or less intense88817
+Node: DIY Make box buttons more or less gray90189
+Node: DIY Make TODO and DONE more or less intense91202
+Node: DIY Make headings more or less colorful92703
+Node: DIY Make Org block colors more or less colorful94820
+Node: DIY Make Org agenda more or less colorful99194
+Node: DIY Make inline code in prose use alternative styles102369
+Node: DIY Make mail citations and headers more or less colorful104611
+Node: DIY Make the region preserve text colors plus other styles107011
+Node: DIY Make mouse highlights more or less colorful108567
+Node: DIY Make language underlines less colorful109580
+Node: DIY Make line numbers use alternative styles110732
+Node: DIY Make diffs use only a foreground112375
+Node: DIY Make deuteranopia diffs red and blue instead of yellow and blue115266
+Node: DIY More accurate colors in terminal emulators117746
+Node: DIY Range of color with terminal emulators119058
+Node: DIY Per-theme customization settings121851
+Node: DIY Do not extend the region background123284
+Node: DIY Add padding to the mode line124088
+Node: DIY Remap face with local value127021
+Node: DIY Font configurations for Org and others129569
+Ref: DIY Font configurations for Org and others-Footnote-1132552
+Node: DIY Configure bold and italic faces132739
+Node: DIY Custom Org todo keyword and priority faces137361
+Node: DIY Custom Org emphasis faces141104
+Node: DIY Use colored Org source blocks per language145985
+Node: DIY Measure color contrast150625
+Node: DIY Load theme depending on time of day153345
+Node: DIY Backdrop for pdf-tools154375
+Node: DIY Toggle themes without reloading them157544
+Node: DIY Use more spacious margins or padding in Emacs frames158853
+Node: DIY Custom hl-todo colors163110
+Node: DIY Add support for solaire-mode164927
+Node: DIY Use a hook at the post-load-theme phase168053
+Node: DIY A theme-agnostic hook for theme loading170177
+Node: Face coverage172808
+Node: Supported packages173260
+Node: Indirectly covered packages178973
+Node: Notes on individual packages180342
+Node: Note on calendarel weekday and weekend colors181442
+Node: Note on git-gutter in Doom Emacs182590
+Node: Note on php-mode multiline comments185090
+Node: Note on underlines in compilation buffers185850
+Node: Note on inline Latex in Org buffers186722
+Node: Note on dimmerel187332
+Node: Note on display-fill-column-indicator-mode188817
+Node: Note on highlight-parenthesesel190270
+Node: Note on mmm-modeel background colors196353
+Node: Note for prism198707
+Node: Note on company-mode overlay pop-up201929
+Ref: Note on company-mode overlay pop-up-Footnote-1202659
+Ref: Note on company-mode overlay pop-up-Footnote-2202726
+Node: Note on ERC escaped color sequences202781
+Ref: Note on ERC escaped color sequences-Footnote-1204209
+Node: Note on powerline or spaceline204319
+Node: Note on SHR colors204733
+Node: Note on SHR fonts205157
+Node: Note on Ement colors and fonts205844
+Node: Note on pdf-tools link hints207354
+Node: Note on the Notmuch logo209814
+Node: Note on goto-address-mode faces210352
+Node: Frequently Asked Questions211470
+Node: Is the contrast ratio about adjacent colors?212103
+Node: What does it mean to avoid exaggerations?213612
+Node: Why are colors mostly variants of blue magenta cyan?215464
+Node: What is the best setup for legibility?219798
+Node: Are these color schemes?222445
+Node: Port the Modus themes to other platforms?226129
+Node: Contributing228975
+Node: Sources of the themes229374
+Node: Issues you can help with230270
+Node: Patches require copyright assignment to the FSF231663
+Node: Acknowledgements233885
+Node: GNU Free Documentation License238150
+Node: Indices263514
+Node: Function index263693
+Node: Variable index264991
+Node: Concept index268342
 
 End Tag Table
 
