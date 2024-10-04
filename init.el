@@ -1189,6 +1189,9 @@ Includes \"%s\" format spec for length of playlist in minutes."
   ;; :custom
   ;; (ivy-mode t)
   )
+(use-package indent-bars
+  :quelpa (indent-bars :fetcher github :repo "jdtsmith/indent-bars"))
+
 
 (use-package lispy
   :general (:map 'lispy-mode-map
