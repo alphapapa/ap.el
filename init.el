@@ -1226,9 +1226,7 @@ Includes \"%s\" format spec for length of playlist in minutes."
       ;; inherit from it that shouldn't be underlined...
       ;; '(font-lock-function-name-face ((t :underline t)))
       '(font-lock-keyword-face ((t :weight bold)))
-      '(font-lock-warning-face ((t :weight bold)))
-      `(org-done ((t :foreground ,(face-background 'default) :background ,(face-foreground 'default)
-                     :box (:line-width 2 :color "black" :style flat) :inverse-video t))))))
+      '(font-lock-warning-face ((t :weight bold))))))
 
 (use-package mosey
   :bind (("C-e" . mosey-forward-bounce)
