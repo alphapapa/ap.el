@@ -1870,52 +1870,55 @@ Also, ignores effort, because it's not useful for this purpose."
                      'font-lock-builtin-face
                      'font-lock-variable-name-face)))))
 
-(use-package re-builder
-  ;; From Karthik Chikmagalur's blog post at
-  ;; <https://karthinks.com/software/bridging-islands-in-emacs-1/>.
-  ;; See also bug#48009.
-  :config
-  (defvar ap/re-builder-positions nil
-    "Point and region bounds before calling `re-builder'.")
-  (advice-add #'re-builder :before
-              (defun ap/re-builder-save-state (&rest _)
-                "Save point and region before calling `re-builder'."
-                (setq ap/re-builder-positions
-                      (cons (point)
-                            (when (region-active-p)
-                              (list (region-beginning)
-                                    (region-end)))))))
-  (defun reb-replace-regexp (&optional delimited)
-    "Run `query-replace-regexp' with the contents of `re-builder'.
-With DELIMITED, only replace matches surrounded by word
-boundaries."
-    (interactive "P")
-    (reb-update-regexp)
-    (let* ((re (reb-target-binding reb-regexp))
-           (replacement (query-replace-read-to
-                         re
-                         (concat "Query replace"
-                                 (if current-prefix-arg
-                                     (if (eq current-prefix-arg '-) " backward" " word")
-                                   "")
-                                 " regexp"
-                                 (if (with-selected-window reb-target-window
-                                       (region-active-p)) " in region" ""))
-                         t))
-           (pnt (car ap/re-builder-positions))
-           (beg (cadr ap/re-builder-positions))
-           (end (caddr ap/re-builder-positions)))
-      (with-selected-window reb-target-window
-        (goto-char pnt) ; replace with (goto-char (match-beginning 0)) if you want
-                                        ; to control where in the buffer the replacement starts
-                                        ; with re-builder
-        (setq ap/re-builder-positions nil)
-        (reb-quit)
-        (query-replace-regexp re replacement delimited beg end))))
+;; (use-package re-builder
+;;   ;; From Karthik Chikmagalur's blog post at
+;;   ;; <https://karthinks.com/software/bridging-islands-in-emacs-1/>.
+;;   ;; See also bug#48009.
 
-  (define-key reb-mode-map (kbd "RET") #'reb-replace-regexp)
-  (define-key reb-lisp-mode-map (kbd "RET") #'reb-replace-regexp)
-  (global-set-key (kbd "C-M-%") #'re-builder))
+;;   ;; <2023-11-19 Sun> This doesn't work anymore because
+;;   ;; reb-target-binding doesn't exist anymore.
+;;   :config
+;;   (defvar ap/re-builder-positions nil
+;;     "Point and region bounds before calling `re-builder'.")
+;;   (advice-add #'re-builder :before
+;;               (defun ap/re-builder-save-state (&rest _)
+;;                 "Save point and region before calling `re-builder'."
+;;                 (setq ap/re-builder-positions
+;;                       (cons (point)
+;;                             (when (region-active-p)
+;;                               (list (region-beginning)
+;;                                     (region-end)))))))
+;;   (defun reb-replace-regexp (&optional delimited)
+;;     "Run `query-replace-regexp' with the contents of `re-builder'.
+;; With DELIMITED, only replace matches surrounded by word
+;; boundaries."
+;;     (interactive "P")
+;;     (reb-update-regexp)
+;;     (let* ((re (reb-target-binding reb-regexp))
+;;            (replacement (query-replace-read-to
+;;                          re
+;;                          (concat "Query replace"
+;;                                  (if current-prefix-arg
+;;                                      (if (eq current-prefix-arg '-) " backward" " word")
+;;                                    "")
+;;                                  " regexp"
+;;                                  (if (with-selected-window reb-target-window
+;;                                        (region-active-p)) " in region" ""))
+;;                          t))
+;;            (pnt (car ap/re-builder-positions))
+;;            (beg (cadr ap/re-builder-positions))
+;;            (end (caddr ap/re-builder-positions)))
+;;       (with-selected-window reb-target-window
+;;         (goto-char pnt) ; replace with (goto-char (match-beginning 0)) if you want
+;;                                         ; to control where in the buffer the replacement starts
+;;                                         ; with re-builder
+;;         (setq ap/re-builder-positions nil)
+;;         (reb-quit)
+;;         (query-replace-regexp re replacement delimited beg end))))
+
+;;   (define-key reb-mode-map (kbd "RET") #'reb-replace-regexp)
+;;   (define-key reb-lisp-mode-map (kbd "RET") #'reb-replace-regexp)
+;;   (global-set-key (kbd "C-M-%") #'re-builder))
 
 (use-package python
   :hook
