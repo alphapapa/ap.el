@@ -78,6 +78,8 @@
  '(fci-rule-color "#62686E")
  '(forge-topic-list-limit '(60 . -5))
  '(frame-resize-pixelwise t)
+ '(global-hl-line-mode t)
+ '(global-hl-line-sticky-flag t)
  '(global-tab-line-mode t)
  '(indent-tabs-mode nil)
  '(inhibit-startup-screen t)
