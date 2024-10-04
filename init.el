@@ -841,7 +841,8 @@ format."
                           :default-height 105
                           :default-weight normal)
 
-     (iosevka-comfy :default-family "Iosevka Comfy Motion")
+     (iosevka-comfy :default-family "Iosevka Comfy Motion"
+                    :default-height 128)
      (iosevka-comfy-wide :default-family "Iosevka Comfy Wide Motion")
 
      (monaspace-argon :default-family "Monaspace Argon Var"
