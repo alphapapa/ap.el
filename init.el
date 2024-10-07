@@ -1658,13 +1658,21 @@ Also, ignores effort, because it's not useful for this purpose."
     (defun ap/org-ql-find-goto ()
       "If `ap/org-ql-find-buffer-was-narrowed-p', call `org-reveal', otherwise `ap/org-ql-find-tree-to-indirect-buffer'."
       (if (and ap/org-ql-find-buffer-was-narrowed-p
-               (eq (current-buffer) (buffer-base-buffer ap/org-ql-find-buffer-was-narrowed-p)))
+               (eq (current-buffer) (buffer-base-buffer ap/org-ql-find-buffer-was-narrowed-p))
+               (with-current-buffer ap/org-ql-find-buffer-was-narrowed-p
+                 (let ((point-min (point-min))
+                       (point-max (point-max)))
+                   (with-current-buffer (buffer-base-buffer ap/org-ql-find-buffer-was-narrowed-p)
+                     (<= point-min (point) point-max)))))
           (progn
+            ;; Target heading within narrowed buffer: show it there.
             (let ((pos (point)))
               (switch-to-buffer ap/org-ql-find-buffer-was-narrowed-p)
               (goto-char pos)
               (org-show-entry)
               (org-reveal)))
+        ;; Target heading not within narrowed buffer: open it in new,
+        ;; indirect buffer.
         (ap/org-ql-find-tree-to-indirect-buffer)))
 
     (setopt org-ql-find-goto-hook (cl-subst 'ap/org-ql-find-goto 'org-reveal org-ql-find-goto-hook))
