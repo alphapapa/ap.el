@@ -131,16 +131,15 @@
                 (buffer-base-buffer))))))
         (file-in-directory-p buffer-file-name org-directory))))
  '(org-capture-templates
-   '(("F" "Find (with Org QL)")
-     ("i" "Inbox" entry
+   '(("i" "Inbox" entry
       (file "~/org/inbox.org")
       "* %^{Heading} %^G\12\12+ %U%(when (org-clocking-p) \" [%K]\") %?" :empty-lines 1)
      ("F" "Find (with Org QL)")
-     ("Fa" "Find in agenda files" entry
+     ("FA" "Find in agenda files" entry
       #'(lambda nil
           (call-interactively #'org-ql-find-in-agenda))
       "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
-     ("Fo" "Find in org-directory" entry
+     ("FO" "Find in org-directory" entry
       #'(lambda nil
           (call-interactively #'org-ql-find-in-org-directory))
       "* %?\12\12+ %U%(when (org-clocking-p) \" [%K]\")" :empty-lines 1)
