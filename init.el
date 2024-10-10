@@ -68,6 +68,10 @@
    '(("^\\*Ement"
       (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-same-window)
       (nil))))
+ '(doc-view-continuous t)
+ '(doc-view-imenu-enabled t)
+ '(doc-view-mupdf-use-svg t)
+ '(doc-view-pdf->png-converter-function 'doc-view-pdf->png-converter-mupdf)
  '(doom-outrun-electric-brighter-modeline t)
  '(doom-outrun-electric-comment-bg t)
  '(ement-initial-sync-timeout 120)
