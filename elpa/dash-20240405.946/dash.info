@@ -2,7 +2,7 @@ This is dash.info, produced by makeinfo version 6.7 from dash.texi.
 
 This manual is for Dash version 2.19.1.
 
-   Copyright © 2012–2021 Free Software Foundation, Inc.
+   Copyright © 2012–2024 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -24,7 +24,7 @@ Dash
 
 This manual is for Dash version 2.19.1.
 
-   Copyright © 2012–2021 Free Software Foundation, Inc.
+   Copyright © 2012–2024 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -767,31 +767,42 @@ Functions returning a modified copy of the input list.
               ⇒ ("foo" "bar" 3 "quux")
 
  -- Function: -remove-at (n list)
-     Return a list with element at Nth position in LIST removed.
+     Return LIST with its element at index N removed.  That is, remove
+     any element selected as (nth N LIST) from LIST and return the
+     result.
+
+     This is a non-destructive operation: parts of LIST (but not
+     necessarily all of it) are copied as needed to avoid destructively
+     modifying it.
 
      See also: ‘-remove-at-indices’ (*note -remove-at-indices::),
-     ‘-remove’ (*note -remove::)
+     ‘-remove’ (*note -remove::).
 
-          (-remove-at 0 '("0" "1" "2" "3" "4" "5"))
-              ⇒ ("1" "2" "3" "4" "5")
-          (-remove-at 1 '("0" "1" "2" "3" "4" "5"))
-              ⇒ ("0" "2" "3" "4" "5")
-          (-remove-at 2 '("0" "1" "2" "3" "4" "5"))
-              ⇒ ("0" "1" "3" "4" "5")
+          (-remove-at 0 '(a b c))
+              ⇒ (b c)
+          (-remove-at 1 '(a b c))
+              ⇒ (a c)
+          (-remove-at 2 '(a b c))
+              ⇒ (a b)
 
  -- Function: -remove-at-indices (indices list)
-     Return a list whose elements are elements from LIST without
-     elements selected as ‘(nth i list)‘ for all i from INDICES.
+     Return LIST with its elements at INDICES removed.  That is, for
+     each index I in INDICES, remove any element selected as (nth I
+     LIST) from LIST.
+
+     This is a non-destructive operation: parts of LIST (but not
+     necessarily all of it) are copied as needed to avoid destructively
+     modifying it.
 
      See also: ‘-remove-at’ (*note -remove-at::), ‘-remove’ (*note
-     -remove::)
+     -remove::).
 
-          (-remove-at-indices '(0) '("0" "1" "2" "3" "4" "5"))
-              ⇒ ("1" "2" "3" "4" "5")
-          (-remove-at-indices '(0 2 4) '("0" "1" "2" "3" "4" "5"))
-              ⇒ ("1" "3" "5")
-          (-remove-at-indices '(0 5) '("0" "1" "2" "3" "4" "5"))
-              ⇒ ("1" "2" "3" "4")
+          (-remove-at-indices '(0) '(a b c d e))
+              ⇒ (b c d e)
+          (-remove-at-indices '(1 3) '(a b c d e))
+              ⇒ (a c e)
+          (-remove-at-indices '(4 0 2) '(a b c d e))
+              ⇒ (b d)
 
 
 File: dash.info,  Node: Reductions,  Next: Unfolding,  Prev: List to list,  Up: Functions
@@ -1026,7 +1037,7 @@ Functions reducing lists to a single value (which may also be a list).
               ⇒ (nil (1))
 
  -- Function: -tails (list)
-     Return all suffixes of LIST
+     Return all suffixes of LIST.
 
           (-tails '(1 2 3 4))
               ⇒ ((1 2 3 4) (2 3 4) (3 4) (4) nil)
@@ -1185,8 +1196,8 @@ than consuming a list to produce a single value.
               ⇒ (1 2 3 1 2)
           (-take 7 (-cycle '(1 "and" 3)))
               ⇒ (1 "and" 3 1 "and" 3 1)
-          (-zip (-cycle '(1 2 3)) '(1 2))
-              ⇒ ((1 . 1) (2 . 2))
+          (-zip-lists (-cycle '(3)) '(1 2))
+              ⇒ ((3 1) (3 2))
 
 
 File: dash.info,  Node: Predicates,  Next: Partitioning,  Prev: Unfolding,  Up: Functions
@@ -1871,56 +1882,52 @@ Other list functions not fit to be classified elsewhere.
               error→ Wrong type argument: natnump, -1
 
  -- Function: -zip-with (fn list1 list2)
-     Zip the two lists LIST1 and LIST2 using a function FN.  This
-     function is applied pairwise taking as first argument element of
-     LIST1 and as second argument element of LIST2 at corresponding
-     position.
+     Zip LIST1 and LIST2 into a new list using the function FN.  That
+     is, apply FN pairwise taking as first argument the next element of
+     LIST1 and as second argument the next element of LIST2 at the
+     corresponding position.  The result is as long as the shorter list.
 
-     The anaphoric form ‘--zip-with’ binds the elements from LIST1 as
-     symbol ‘it’, and the elements from LIST2 as symbol ‘other’.
+     This function’s anaphoric counterpart is ‘--zip-with’.
 
-          (-zip-with '+ '(1 2 3) '(4 5 6))
-              ⇒ (5 7 9)
-          (-zip-with 'cons '(1 2 3) '(4 5 6))
+     For other zips, see also ‘-zip-lists’ (*note -zip-lists::) and
+     ‘-zip-fill’ (*note -zip-fill::).
+
+          (-zip-with #'+ '(1 2 3 4) '(5 6 7))
+              ⇒ (6 8 10)
+          (-zip-with #'cons '(1 2 3) '(4 5 6 7))
               ⇒ ((1 . 4) (2 . 5) (3 . 6))
-          (--zip-with (concat it " and " other) '("Batman" "Jekyll") '("Robin" "Hyde"))
-              ⇒ ("Batman and Robin" "Jekyll and Hyde")
+          (--zip-with (format "%s & %s" it other) '(Batman Jekyll) '(Robin Hyde))
+              ⇒ ("Batman & Robin" "Jekyll & Hyde")
 
- -- Function: -zip (&rest lists)
-     Zip LISTS together.  Group the head of each list, followed by the
-     second elements of each list, and so on.  The lengths of the
-     returned groupings are equal to the length of the shortest input
-     list.
+ -- Function: -zip-pair (list1 list2)
+     Zip LIST1 and LIST2 together.
 
-     If two lists are provided as arguments, return the groupings as a
-     list of cons cells.  Otherwise, return the groupings as a list of
-     lists.
+     Make a pair with the head of each list, followed by a pair with the
+     second element of each list, and so on.  The number of pairs
+     returned is equal to the length of the shorter input list.
 
-     Use ‘-zip-lists’ (*note -zip-lists::) if you need the return value
-     to always be a list of lists.
+     See also: ‘-zip-lists’ (*note -zip-lists::).
 
-     Alias: ‘-zip-pair’
-
-     See also: ‘-zip-lists’ (*note -zip-lists::)
-
-          (-zip '(1 2 3) '(4 5 6))
+          (-zip-pair '(1 2 3 4) '(5 6 7))
+              ⇒ ((1 . 5) (2 . 6) (3 . 7))
+          (-zip-pair '(1 2 3) '(4 5 6))
               ⇒ ((1 . 4) (2 . 5) (3 . 6))
-          (-zip '(1 2 3) '(4 5 6 7))
-              ⇒ ((1 . 4) (2 . 5) (3 . 6))
-          (-zip '(1 2) '(3 4 5) '(6))
-              ⇒ ((1 3 6))
+          (-zip-pair '(1 2) '(3))
+              ⇒ ((1 . 3))
 
  -- Function: -zip-lists (&rest lists)
-     Zip LISTS together.  Group the head of each list, followed by the
-     second elements of each list, and so on.  The lengths of the
-     returned groupings are equal to the length of the shortest input
-     list.
+     Zip LISTS together.
 
-     The return value is always list of lists, which is a difference
-     from ‘-zip-pair’ which returns a cons-cell in case two input lists
-     are provided.
+     Group the head of each list, followed by the second element of each
+     list, and so on.  The number of returned groupings is equal to the
+     length of the shortest input list, and the length of each grouping
+     is equal to the number of input LISTS.
 
-     See also: ‘-zip’ (*note -zip::)
+     The return value is always a list of proper lists, in contrast to
+     ‘-zip’ (*note -zip::) which returns a list of dotted pairs when
+     only two input LISTS are provided.
+
+     See also: ‘-zip-pair’ (*note -zip-pair::).
 
           (-zip-lists '(1 2 3) '(4 5 6))
               ⇒ ((1 4) (2 5) (3 6))
@@ -1929,35 +1936,111 @@ Other list functions not fit to be classified elsewhere.
           (-zip-lists '(1 2) '(3 4 5) '(6))
               ⇒ ((1 3 6))
 
- -- Function: -zip-fill (fill-value &rest lists)
-     Zip LISTS, with FILL-VALUE padded onto the shorter lists.  The
-     lengths of the returned groupings are equal to the length of the
-     longest input list.
+ -- Function: -zip-lists-fill (fill-value &rest lists)
+     Zip LISTS together, padding shorter lists with FILL-VALUE.  This is
+     like ‘-zip-lists’ (*note -zip-lists::) (which see), except it
+     retains all elements at positions beyond the end of the shortest
+     list.  The number of returned groupings is equal to the length of
+     the longest input list, and the length of each grouping is equal to
+     the number of input LISTS.
 
-          (-zip-fill 0 '(1 2 3 4 5) '(6 7 8 9))
-              ⇒ ((1 . 6) (2 . 7) (3 . 8) (4 . 9) (5 . 0))
+          (-zip-lists-fill 0 '(1 2) '(3 4 5) '(6))
+              ⇒ ((1 3 6) (2 4 0) (0 5 0))
+          (-zip-lists-fill 0 '(1 2) '(3 4) '(5 6))
+              ⇒ ((1 3 5) (2 4 6))
+          (-zip-lists-fill 0 '(1 2 3) nil)
+              ⇒ ((1 0) (2 0) (3 0))
+
+ -- Function: -zip (&rest lists)
+     Zip LISTS together.
+
+     Group the head of each list, followed by the second element of each
+     list, and so on.  The number of returned groupings is equal to the
+     length of the shortest input list, and the number of items in each
+     grouping is equal to the number of input LISTS.
+
+     If only two LISTS are provided as arguments, return the groupings
+     as a list of dotted pairs.  Otherwise, return the groupings as a
+     list of proper lists.
+
+     Since the return value changes form depending on the number of
+     arguments, it is generally recommended to use ‘-zip-lists’ (*note
+     -zip-lists::) instead, or ‘-zip-pair’ (*note -zip-pair::) if a list
+     of dotted pairs is desired.
+
+     See also: ‘-unzip’ (*note -unzip::).
+
+          (-zip '(1 2 3 4) '(5 6 7) '(8 9))
+              ⇒ ((1 5 8) (2 6 9))
+          (-zip '(1 2 3) '(4 5 6) '(7 8 9))
+              ⇒ ((1 4 7) (2 5 8) (3 6 9))
+          (-zip '(1 2 3))
+              ⇒ ((1) (2) (3))
+
+ -- Function: -zip-fill (fill-value &rest lists)
+     Zip LISTS together, padding shorter lists with FILL-VALUE.  This is
+     like ‘-zip’ (*note -zip::) (which see), except it retains all
+     elements at positions beyond the end of the shortest list.  The
+     number of returned groupings is equal to the length of the longest
+     input list, and the length of each grouping is equal to the number
+     of input LISTS.
+
+     Since the return value changes form depending on the number of
+     arguments, it is generally recommended to use ‘-zip-lists-fill’
+     (*note -zip-lists-fill::) instead, unless a list of dotted pairs is
+     explicitly desired.
+
+          (-zip-fill 0 '(1 2 3) '(4 5))
+              ⇒ ((1 . 4) (2 . 5) (3 . 0))
+          (-zip-fill 0 () '(1 2 3))
+              ⇒ ((0 . 1) (0 . 2) (0 . 3))
+          (-zip-fill 0 '(1 2) '(3 4) '(5 6))
+              ⇒ ((1 3 5) (2 4 6))
+
+ -- Function: -unzip-lists (lists)
+     Unzip LISTS.
+
+     This works just like ‘-zip-lists’ (*note -zip-lists::) (which see),
+     but takes a list of lists instead of a variable number of
+     arguments, such that
+
+     (-unzip-lists (-zip-lists ARGS...))
+
+     is identity (given that the lists comprising ARGS are of the same
+     length).
+
+          (-unzip-lists (-zip-lists '(1 2) '(3 4) '(5 6)))
+              ⇒ ((1 2) (3 4) (5 6))
+          (-unzip-lists '((1 2 3) (4 5) (6 7) (8 9)))
+              ⇒ ((1 4 6 8) (2 5 7 9))
+          (-unzip-lists '((1 2 3) (4 5 6)))
+              ⇒ ((1 4) (2 5) (3 6))
 
  -- Function: -unzip (lists)
      Unzip LISTS.
 
-     This works just like ‘-zip’ (*note -zip::) but takes a list of
-     lists instead of a variable number of arguments, such that
+     This works just like ‘-zip’ (*note -zip::) (which see), but takes a
+     list of lists instead of a variable number of arguments, such that
 
      (-unzip (-zip L1 L2 L3 ...))
 
-     is identity (given that the lists are the same length).
+     is identity (given that the lists are of the same length, and that
+     ‘-zip’ (*note -zip::) is not called with two arguments, because of
+     the caveat described in its docstring).
 
-     Note in particular that calling this on a list of two lists will
-     return a list of cons-cells such that the above identity works.
+     Note in particular that calling ‘-unzip’ (*note -unzip::) on a list
+     of two lists will return a list of dotted pairs.
 
-     See also: ‘-zip’ (*note -zip::)
+     Since the return value changes form depending on the number of
+     LISTS, it is generally recommended to use ‘-unzip-lists’ (*note
+     -unzip-lists::) instead.
 
-          (-unzip (-zip '(1 2 3) '(a b c) '("e" "f" "g")))
-              ⇒ ((1 2 3) (a b c) ("e" "f" "g"))
-          (-unzip '((1 2) (3 4) (5 6) (7 8) (9 10)))
-              ⇒ ((1 3 5 7 9) (2 4 6 8 10))
-          (-unzip '((1 2) (3 4)))
-              ⇒ ((1 . 3) (2 . 4))
+          (-unzip (-zip '(1 2) '(3 4) '(5 6)))
+              ⇒ ((1 . 2) (3 . 4) (5 . 6))
+          (-unzip '((1 2 3) (4 5 6)))
+              ⇒ ((1 . 4) (2 . 5) (3 . 6))
+          (-unzip '((1 2 3) (4 5) (6 7) (8 9)))
+              ⇒ ((1 4 6 8) (2 5 7 9))
 
  -- Function: -pad (fill-value &rest lists)
      Pad each of LISTS with FILL-VALUE until they all have equal
@@ -2139,9 +2222,9 @@ Other list functions not fit to be classified elsewhere.
      called with two elements of LIST, and should return non-‘nil’ if
      the first element should sort before the second.
 
-          (-sort '< '(3 1 2))
+          (-sort #'< '(3 1 2))
               ⇒ (1 2 3)
-          (-sort '> '(3 1 2))
+          (-sort #'> '(3 1 2))
               ⇒ (3 2 1)
           (--sort (< it other) '(3 1 2))
               ⇒ (1 2 3)
@@ -2301,8 +2384,8 @@ Functions pretending lists are trees.
      structure but all cons are replaced with new ones.  This is useful
      when you need to clone a structure such as plist or alist.
 
-          (let* ((a '(1 2 3)) (b (-clone a))) (nreverse a) b)
-              ⇒ (1 2 3)
+          (let* ((a (list (list 1))) (b (-clone a))) (setcar (car a) 2) b)
+              ⇒ ((1))
 
 
 File: dash.info,  Node: Threading macros,  Next: Binding,  Prev: Tree operations,  Up: Functions
@@ -3111,12 +3194,12 @@ Functions that manipulate and compose other functions.
      (-compose (-partial #’nth n) (-prod f1 f2 ...)) = (-compose fn
      (-partial #’nth n))
 
-          (funcall (-prodfn '1+ '1- 'number-to-string) '(1 2 3))
+          (funcall (-prodfn #'1+ #'1- #'number-to-string) '(1 2 3))
               ⇒ (2 1 "3")
-          (-map (-prodfn '1+ '1-) '((1 2) (3 4) (5 6) (7 8)))
-              ⇒ ((2 1) (4 3) (6 5) (8 7))
-          (apply '+ (funcall (-prodfn 'length 'string-to-number) '((1 2 3) "15")))
-              ⇒ 18
+          (-map (-prodfn #'1- #'1+) '((1 2) (3 4) (5 6)))
+              ⇒ ((0 3) (2 5) (4 7))
+          (apply #'+ (funcall (-prodfn #'length #'string-to-number) '((t) "5")))
+              ⇒ 6
 
 
 File: dash.info,  Node: Development,  Next: FDL,  Prev: Functions,  Up: Top
@@ -4424,7 +4507,7 @@ Index
                                                               (line  63)
 * -as->:                                 Threading macros.    (line  49)
 * -butlast:                              Other list operations.
-                                                              (line 333)
+                                                              (line 405)
 * -clone:                                Tree operations.     (line 123)
 * -common-prefix:                        Reductions.          (line 242)
 * -common-suffix:                        Reductions.          (line 252)
@@ -4458,17 +4541,17 @@ Index
 * -elem-indices:                         Indexing.            (line  23)
 * -every:                                Predicates.          (line  23)
 * -fifth-item:                           Other list operations.
-                                                              (line 308)
+                                                              (line 380)
 * -filter:                               Sublist selection.   (line   8)
 * -find-index:                           Indexing.            (line  35)
 * -find-indices:                         Indexing.            (line  73)
 * -find-last-index:                      Indexing.            (line  54)
 * -first:                                Other list operations.
-                                                              (line 228)
+                                                              (line 300)
 * -first-item:                           Other list operations.
-                                                              (line 256)
+                                                              (line 328)
 * -fix:                                  Other list operations.
-                                                              (line 373)
+                                                              (line 445)
 * -fixfn:                                Function combinators.
                                                               (line 224)
 * -flatten:                              List to list.        (line  38)
@@ -4476,7 +4559,7 @@ Index
 * -flip:                                 Function combinators.
                                                               (line  95)
 * -fourth-item:                          Other list operations.
-                                                              (line 295)
+                                                              (line 367)
 * -frequencies:                          Reductions.          (line 310)
 * -grade-down:                           Indexing.            (line 103)
 * -grade-up:                             Indexing.            (line  93)
@@ -4503,13 +4586,13 @@ Index
 * -keep:                                 List to list.        (line   8)
 * -lambda:                               Binding.             (line 247)
 * -last:                                 Other list operations.
-                                                              (line 246)
+                                                              (line 318)
 * -last-item:                            Other list operations.
-                                                              (line 321)
+                                                              (line 393)
 * -let:                                  Binding.             (line  61)
 * -let*:                                 Binding.             (line 227)
 * -list:                                 Other list operations.
-                                                              (line 356)
+                                                              (line 428)
 * -map:                                  Maps.                (line  10)
 * -map-first:                            Maps.                (line  38)
 * -map-indexed:                          Maps.                (line  68)
@@ -4530,7 +4613,7 @@ Index
 * -orfn:                                 Function combinators.
                                                               (line 167)
 * -pad:                                  Other list operations.
-                                                              (line 169)
+                                                              (line 241)
 * -partial:                              Function combinators.
                                                               (line   8)
 * -partition:                            Partitioning.        (line  90)
@@ -4558,7 +4641,7 @@ Index
 * -reductions-r-from:                    Reductions.          (line 118)
 * -remove:                               Sublist selection.   (line  26)
 * -remove-at:                            List to list.        (line 151)
-* -remove-at-indices:                    List to list.        (line 164)
+* -remove-at-indices:                    List to list.        (line 170)
 * -remove-first:                         Sublist selection.   (line  44)
 * -remove-item:                          Sublist selection.   (line  84)
 * -remove-last:                          Sublist selection.   (line  65)
@@ -4577,7 +4660,7 @@ Index
 * -running-sum:                          Reductions.          (line 190)
 * -same-items?:                          Set operations.      (line  88)
 * -second-item:                          Other list operations.
-                                                              (line 269)
+                                                              (line 341)
 * -select-by-indices:                    Sublist selection.   (line 211)
 * -select-column:                        Sublist selection.   (line 241)
 * -select-columns:                       Sublist selection.   (line 222)
@@ -4591,7 +4674,7 @@ Index
 * -some->:                               Threading macros.    (line  62)
 * -some->>:                              Threading macros.    (line  74)
 * -sort:                                 Other list operations.
-                                                              (line 343)
+                                                              (line 415)
 * -splice:                               Maps.                (line 102)
 * -splice-list:                          Maps.                (line 127)
 * -split-at:                             Partitioning.        (line   8)
@@ -4600,15 +4683,15 @@ Index
 * -split-with:                           Partitioning.        (line  23)
 * -sum:                                  Reductions.          (line 180)
 * -table:                                Other list operations.
-                                                              (line 184)
+                                                              (line 256)
 * -table-flat:                           Other list operations.
-                                                              (line 203)
+                                                              (line 275)
 * -tails:                                Reductions.          (line 232)
 * -take:                                 Sublist selection.   (line 121)
 * -take-last:                            Sublist selection.   (line 135)
 * -take-while:                           Sublist selection.   (line 177)
 * -third-item:                           Other list operations.
-                                                              (line 282)
+                                                              (line 354)
 * -tree-map:                             Tree operations.     (line  28)
 * -tree-map-nodes:                       Tree operations.     (line  39)
 * -tree-mapreduce:                       Tree operations.     (line  85)
@@ -4619,16 +4702,22 @@ Index
 * -unfold:                               Unfolding.           (line  25)
 * -union:                                Set operations.      (line   8)
 * -unzip:                                Other list operations.
-                                                              (line 147)
+                                                              (line 215)
+* -unzip-lists:                          Other list operations.
+                                                              (line 196)
 * -update-at:                            List to list.        (line 137)
 * -when-let:                             Binding.             (line   9)
 * -when-let*:                            Binding.             (line  21)
 * -zip:                                  Other list operations.
-                                                              (line  96)
+                                                              (line 150)
 * -zip-fill:                             Other list operations.
-                                                              (line 139)
+                                                              (line 176)
 * -zip-lists:                            Other list operations.
-                                                              (line 120)
+                                                              (line 114)
+* -zip-lists-fill:                       Other list operations.
+                                                              (line 135)
+* -zip-pair:                             Other list operations.
+                                                              (line  98)
 * -zip-with:                             Other list operations.
                                                               (line  80)
 * dash-fontify-mode:                     Fontification of special variables.
@@ -4686,167 +4775,170 @@ Ref: -insert-at24816
 Ref: -replace-at25141
 Ref: -update-at25528
 Ref: -remove-at26069
-Ref: -remove-at-indices26554
-Node: Reductions27133
-Ref: -reduce-from27329
-Ref: -reduce-r-from28053
-Ref: -reduce29316
-Ref: -reduce-r30067
-Ref: -reductions-from31345
-Ref: -reductions-r-from32151
-Ref: -reductions32981
-Ref: -reductions-r33692
-Ref: -count34437
-Ref: -sum34667
-Ref: -running-sum34855
-Ref: -product35176
-Ref: -running-product35384
-Ref: -inits35725
-Ref: -tails35970
-Ref: -common-prefix36214
-Ref: -common-suffix36508
-Ref: -min36802
-Ref: -min-by37028
-Ref: -max37549
-Ref: -max-by37774
-Ref: -frequencies38300
-Node: Unfolding38915
-Ref: -iterate39156
-Ref: -unfold39603
-Ref: -repeat40408
-Ref: -cycle40692
-Node: Predicates41091
-Ref: -some41268
-Ref: -every41697
-Ref: -any?42411
-Ref: -all?42760
-Ref: -none?43502
-Ref: -only-some?43822
-Ref: -contains?44367
-Ref: -is-prefix?44873
-Ref: -is-suffix?45205
-Ref: -is-infix?45537
-Ref: -cons-pair?45897
-Node: Partitioning46228
-Ref: -split-at46416
-Ref: -split-with47080
-Ref: -split-on47720
-Ref: -split-when48391
-Ref: -separate49034
-Ref: -partition49568
-Ref: -partition-all50017
-Ref: -partition-in-steps50442
-Ref: -partition-all-in-steps50988
-Ref: -partition-by51502
-Ref: -partition-by-header51880
-Ref: -partition-after-pred52481
-Ref: -partition-before-pred52934
-Ref: -partition-before-item53319
-Ref: -partition-after-item53626
-Ref: -group-by53928
-Node: Indexing54361
-Ref: -elem-index54563
-Ref: -elem-indices55050
-Ref: -find-index55509
-Ref: -find-last-index56178
-Ref: -find-indices56829
-Ref: -grade-up57591
-Ref: -grade-down57998
-Node: Set operations58412
-Ref: -union58595
-Ref: -difference59025
-Ref: -intersection59453
-Ref: -powerset59882
-Ref: -permutations60159
-Ref: -distinct60597
-Ref: -same-items?60991
-Node: Other list operations61600
-Ref: -rotate61825
-Ref: -cons*62178
-Ref: -snoc62600
-Ref: -interpose63012
-Ref: -interleave63306
-Ref: -iota63672
-Ref: -zip-with64155
-Ref: -zip64869
-Ref: -zip-lists65698
-Ref: -zip-fill66396
-Ref: -unzip66718
-Ref: -pad67460
-Ref: -table67945
-Ref: -table-flat68731
-Ref: -first69736
-Ref: -last70269
-Ref: -first-item70615
-Ref: -second-item71027
-Ref: -third-item71444
-Ref: -fourth-item71819
-Ref: -fifth-item72197
-Ref: -last-item72572
-Ref: -butlast72933
-Ref: -sort73178
-Ref: -list73670
-Ref: -fix74239
-Node: Tree operations74728
-Ref: -tree-seq74924
-Ref: -tree-map75785
-Ref: -tree-map-nodes76225
-Ref: -tree-reduce77089
-Ref: -tree-reduce-from77971
-Ref: -tree-mapreduce78571
-Ref: -tree-mapreduce-from79430
-Ref: -clone80715
-Node: Threading macros81042
-Ref: ->81267
-Ref: ->>81755
-Ref: -->82258
-Ref: -as->82814
-Ref: -some->83268
-Ref: -some->>83653
-Ref: -some-->84100
-Ref: -doto84667
-Node: Binding85220
-Ref: -when-let85427
-Ref: -when-let*85888
-Ref: -if-let86417
-Ref: -if-let*86783
-Ref: -let87406
-Ref: -let*93496
-Ref: -lambda94433
-Ref: -setq95239
-Node: Side effects96040
-Ref: -each96234
-Ref: -each-while96761
-Ref: -each-indexed97381
-Ref: -each-r97973
-Ref: -each-r-while98415
-Ref: -dotimes99059
-Node: Destructive operations99612
-Ref: !cons99830
-Ref: !cdr100034
-Node: Function combinators100227
-Ref: -partial100431
-Ref: -rpartial100949
-Ref: -juxt101597
-Ref: -compose102049
-Ref: -applify102656
-Ref: -on103086
-Ref: -flip103858
-Ref: -rotate-args104382
-Ref: -const105011
-Ref: -cut105353
-Ref: -not105833
-Ref: -orfn106377
-Ref: -andfn107170
-Ref: -iteratefn107957
-Ref: -fixfn108659
-Ref: -prodfn110233
-Node: Development111394
-Node: Contribute111683
-Node: Contributors112695
-Node: FDL114788
-Node: GPL140108
-Node: Index177857
+Ref: -remove-at-indices26696
+Node: Reductions27386
+Ref: -reduce-from27582
+Ref: -reduce-r-from28306
+Ref: -reduce29569
+Ref: -reduce-r30320
+Ref: -reductions-from31598
+Ref: -reductions-r-from32404
+Ref: -reductions33234
+Ref: -reductions-r33945
+Ref: -count34690
+Ref: -sum34920
+Ref: -running-sum35108
+Ref: -product35429
+Ref: -running-product35637
+Ref: -inits35978
+Ref: -tails36223
+Ref: -common-prefix36468
+Ref: -common-suffix36762
+Ref: -min37056
+Ref: -min-by37282
+Ref: -max37803
+Ref: -max-by38028
+Ref: -frequencies38554
+Node: Unfolding39169
+Ref: -iterate39410
+Ref: -unfold39857
+Ref: -repeat40662
+Ref: -cycle40946
+Node: Predicates41343
+Ref: -some41520
+Ref: -every41949
+Ref: -any?42663
+Ref: -all?43012
+Ref: -none?43754
+Ref: -only-some?44074
+Ref: -contains?44619
+Ref: -is-prefix?45125
+Ref: -is-suffix?45457
+Ref: -is-infix?45789
+Ref: -cons-pair?46149
+Node: Partitioning46480
+Ref: -split-at46668
+Ref: -split-with47332
+Ref: -split-on47972
+Ref: -split-when48643
+Ref: -separate49286
+Ref: -partition49820
+Ref: -partition-all50269
+Ref: -partition-in-steps50694
+Ref: -partition-all-in-steps51240
+Ref: -partition-by51754
+Ref: -partition-by-header52132
+Ref: -partition-after-pred52733
+Ref: -partition-before-pred53186
+Ref: -partition-before-item53571
+Ref: -partition-after-item53878
+Ref: -group-by54180
+Node: Indexing54613
+Ref: -elem-index54815
+Ref: -elem-indices55302
+Ref: -find-index55761
+Ref: -find-last-index56430
+Ref: -find-indices57081
+Ref: -grade-up57843
+Ref: -grade-down58250
+Node: Set operations58664
+Ref: -union58847
+Ref: -difference59277
+Ref: -intersection59705
+Ref: -powerset60134
+Ref: -permutations60411
+Ref: -distinct60849
+Ref: -same-items?61243
+Node: Other list operations61852
+Ref: -rotate62077
+Ref: -cons*62430
+Ref: -snoc62852
+Ref: -interpose63264
+Ref: -interleave63558
+Ref: -iota63924
+Ref: -zip-with64407
+Ref: -zip-pair65215
+Ref: -zip-lists65781
+Ref: -zip-lists-fill66579
+Ref: -zip67289
+Ref: -zip-fill68316
+Ref: -unzip-lists69230
+Ref: -unzip69853
+Ref: -pad70846
+Ref: -table71331
+Ref: -table-flat72117
+Ref: -first73122
+Ref: -last73655
+Ref: -first-item74001
+Ref: -second-item74413
+Ref: -third-item74830
+Ref: -fourth-item75205
+Ref: -fifth-item75583
+Ref: -last-item75958
+Ref: -butlast76319
+Ref: -sort76564
+Ref: -list77058
+Ref: -fix77627
+Node: Tree operations78116
+Ref: -tree-seq78312
+Ref: -tree-map79173
+Ref: -tree-map-nodes79613
+Ref: -tree-reduce80477
+Ref: -tree-reduce-from81359
+Ref: -tree-mapreduce81959
+Ref: -tree-mapreduce-from82818
+Ref: -clone84103
+Node: Threading macros84441
+Ref: ->84666
+Ref: ->>85154
+Ref: -->85657
+Ref: -as->86213
+Ref: -some->86667
+Ref: -some->>87052
+Ref: -some-->87499
+Ref: -doto88066
+Node: Binding88619
+Ref: -when-let88826
+Ref: -when-let*89287
+Ref: -if-let89816
+Ref: -if-let*90182
+Ref: -let90805
+Ref: -let*96895
+Ref: -lambda97832
+Ref: -setq98638
+Node: Side effects99439
+Ref: -each99633
+Ref: -each-while100160
+Ref: -each-indexed100780
+Ref: -each-r101372
+Ref: -each-r-while101814
+Ref: -dotimes102458
+Node: Destructive operations103011
+Ref: !cons103229
+Ref: !cdr103433
+Node: Function combinators103626
+Ref: -partial103830
+Ref: -rpartial104348
+Ref: -juxt104996
+Ref: -compose105448
+Ref: -applify106055
+Ref: -on106485
+Ref: -flip107257
+Ref: -rotate-args107781
+Ref: -const108410
+Ref: -cut108752
+Ref: -not109232
+Ref: -orfn109776
+Ref: -andfn110569
+Ref: -iteratefn111356
+Ref: -fixfn112058
+Ref: -prodfn113632
+Node: Development114783
+Node: Contribute115072
+Node: Contributors116084
+Node: FDL118177
+Node: GPL143497
+Node: Index181246
 
 End Tag Table
 
