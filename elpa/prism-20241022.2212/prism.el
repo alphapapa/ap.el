@@ -4,7 +4,7 @@
 
 ;; Author: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/prism.el
-;; Package-Version: 20240915.1304
+;; Package-Version: 20241022.2212
 ;; Version: 0.4-pre
 ;; Package-Requires: ((emacs "27.1") (compat "29.1.4.5") (dash "2.14.1"))
 ;; Keywords: faces lisp
@@ -626,7 +626,7 @@ appropriately, e.g. to `python-indent-offset' for `python-mode'."
                                        (goto-char (scan-lists (point) -1 current-depth))
                                        (+ (indent-depth) (car (syntax-ppss))))))))
                           (pcase enclosing-list-depth
-                            (0 (+ list-depth (1- (indent-depth))))
+                            (0 (+ list-depth (indent-depth)))
                             (_  (+ enclosing-list-depth list-depth)))))))
                 (comment-p ()
                   ;; This macro should only be used after `parse-syntax'.
