@@ -2095,8 +2095,9 @@ preserve the existing candidates)."
     (when (> vertico--total 0)
       (let ((vertico--index (max 0 vertico--index)))
         (if crm-completion-table
-            (save-excursion
-              (goto-char (+ (point-min) (minibuffer-prompt-width)))
+            (let ((input (vertico--candidate)))
+              (beginning-of-line)
+              (delete-region (point) (point-max))
               (insert (vertico--candidate) crm-separator))
           (vertico-insert)))))
 
