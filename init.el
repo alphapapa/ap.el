@@ -687,11 +687,7 @@ Like it used to."
   (with-current-buffer "*scratch*"
     ;; Prevent scratch buffer from being killed.
     (emacs-lock-mode 'kill))
-  (defun ap/kill-this-buffer ()
-    "Kill current buffer."
-    (interactive)
-    (kill-buffer (current-buffer)))
-
+  
   (defun ap/switch-to-buffer ()
     "Switch to buffer offered from various sources.
 If an activity is current, use `activities-switch-buffer';
@@ -704,7 +700,7 @@ otherwise use `bufler-switch-buffer'."
 
   :bind
   (("C-x b" . #'ap/switch-to-buffer)
-   ("C-x C-k" . #'ap/kill-this-buffer)))
+   ("C-x C-k" . #'kill-current-buffer)))
 
 (use-package eww
   :custom
