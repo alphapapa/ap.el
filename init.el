@@ -707,6 +707,13 @@ otherwise use `bufler-switch-buffer'."
    ("C-x C-k" . #'ap/kill-this-buffer)))
 
 (use-package eww
+  :custom
+  (eww-auto-rename-buffer 'title)
+  :config
+  (define-advice eww (:around (oldfun &rest args) always-new-buffer)
+    "Always open EWW in a new buffer."
+    (let ((current-prefix-arg '(4)))
+      (apply oldfun args)))
   :general
   (:keymaps 'eww-mode-map
             [mouse-8] #'eww-back-url
