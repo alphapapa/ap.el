@@ -1180,6 +1180,89 @@ Includes \"%s\" format spec for length of playlist in minutes."
 (use-package indent-bars
   :quelpa (indent-bars :fetcher github :repo "jdtsmith/indent-bars"))
 
+(use-package listen
+  :quelpa (listen :fetcher github :repo "alphapapa/listen.el"
+                  :branch "wip/vtable-workaround")
+  ;; :vc (listen :url "https://github.com/alphapapa/listen.el.git")
+  ;; :vc (:fetcher github :repo "alphapapa/listen.el" :rev "wip/ffprobe-queue")
+  ;; :load-path "~/src/emacs/listen.el"
+  :init
+  (listen-mode)
+
+  :general (ap/general-def
+             "l" #'listen)
+
+  :config
+  (defun ap/listen-rate-track (rating track)
+    "Apply RATING to current TRACK."
+    (interactive
+     (let* ((track (listen-current-track))
+            (rating (read-number (format "New rating for %S: " (listen-track-filename track)))))
+       (list rating track)))
+    (unless (<= 0 rating 5)
+      (user-error "Ratings may be from 0-5"))
+    (unless (zerop (call-process "addadptags" nil nil nil
+                                 "-f" (expand-file-name (listen-track-filename track))
+                                 "-r" (number-to-string rating)))
+      (error "addadptags exited non-zero"))
+    (listen-queue-revert-track track))
+
+  (defvar ap/listen-track-tags-history nil)
+
+  (cl-defun ap/listen-tag-track (track &key tags)
+    (interactive
+     (let* ((track (listen-current-track))
+            (set-tags (let ((existing-tags (ensure-list
+                                            (or (listen-track-metadata-get "mood" track)
+                                                (listen-track-metadata-get "adp_tags" track)))))
+                        (ap/listen-complete-adptags :prompt "Listen to (pmm arguments): "
+                                                    :history 'ap/listen-track-tags-history))))
+       (list track :tags set-tags)))
+    (when tags
+      (apply #'call-process "addadptags" nil nil nil
+             "-v" "-f" (expand-file-name (listen-track-filename track))
+             "-s" tags)
+      (listen-queue-revert-track track)
+      (message "Tags: %s" (or (listen-track-metadata-get "mood" track)
+                              (listen-track-metadata-get "adp_tags" track)))))
+
+  (defun ap/listen-to ()
+    (interactive)
+    (let* ((command (concat "pmm -p "
+                            (string-join
+                             (ap/listen-complete-adptags :prompt "Listen to (pmm arguments): "
+                                                         :extra-candidates '("-a" "-o" "-e"))
+                             " ")))
+           (files (mapcar (lambda (filename)
+                            (expand-file-name filename listen-directory))
+                          (string-lines (shell-command-to-string command)))))
+      (listen-queue-play (listen-queue-add-files files (listen-queue-new command)))))
+
+  (cl-defun ap/listen-complete-adptags (&key (prompt "Tags: ") extra-candidates history)
+    "Return tags from ~/.adptags selected with completion."
+    (let* ((crm-separator ",")
+           (tags (append extra-candidates (s-split "\n" (f-read "~/.adptags") t))))
+      (completing-read-multiple "Tag: " tags nil nil nil history)))
+
+  (transient-append-suffix 'listen-menu '(0 1)
+    [("tt" "Track tags" ap/listen-tag-track
+      :description (lambda ()
+                     (when-let ((track (listen-current-track))
+                                (tags (thread-first (or (listen-track-metadata-get "mood" track)
+                                                        (listen-track-metadata-get "adp_tags" track)
+                                                        "")
+                                                    ensure-list
+                                                    (sort #'string<)
+                                                    (string-join ","))))
+                       (format "Track tags: %s" (propertize tags 'face 'transient-value)))))
+     ("tr" "Track rating" ap/listen-rate-track
+      :description (lambda ()
+                     (when-let ((track (listen-current-track))
+                                (rating (pcase (listen-track-metadata-get "fmps_rating" track)
+                                          ((and (pred stringp) value)
+                                           (number-to-string (* 5 (string-to-number value))))
+                                          (_ ""))))
+                       (format "Track rating: %s" (propertize rating 'face 'transient-value)))))]))
 
 (use-package lispy
   :general (:map 'lispy-mode-map
