@@ -6,7 +6,7 @@
 ;; Maintainer: Adam Porter <adam@alphapapa.net>
 ;; URL: https://github.com/alphapapa/activities.el
 ;; Keywords: convenience
-;; Version: 0.7
+;; Version: 0.8-pre
 ;; Package-Requires: ((emacs "29.1") (persist "0.6"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -66,6 +66,7 @@
 (require 'map)
 (require 'persist)
 (require 'subr-x)
+(require 'color)
 
 ;;;; Types
 
@@ -250,8 +251,7 @@ discarded, such a bookmark could become stale."
         (cons 'window-side 'writable)
         (cons 'window-slot 'writable))
   "Additional window parameters to persist.
-See Info node `(elisp)Window Parameters'.  See also option
-`activities-set-window-persistent-parameters'."
+See Info node `(elisp)Window Parameters'."
   :type '(alist :key-type (symbol :tag "Window parameter")
                 :value-type (choice (const :tag "Not saved" nil)
                                     (const :tag "Saved" writable))))
@@ -332,6 +332,27 @@ Kills buffers that have only been shown in that activity's
 frame/tab."
   :type 'boolean)
 
+(defcustom activities-sort-by #'activities-sort-by-active-age
+  "How to sort activities during selection.
+Function used to sort by when prompting for activities.  By
+default, a function is used which sorts active activities first,
+and then by age since modification.  A custom predicate function
+may also be set.  It should take two arguments, both activity
+names (strings), and return non-nil if the first activity should
+sort before the second."
+  :type `(choice (function-item :tag "Active state and age"
+				:doc "Sort by active state and age."
+				,#'activities-sort-by-active-age)
+		 (function :tag "Custom predicate")))
+
+(defcustom activities-annotation-colors '("blue" "red" 0.65)
+  "Colors to use for annotating activity age.
+A list (OLD-COLOR NEW-COLOR ALPHA).  Activity color is based on
+the activity's age, varying between OLD-COLOR and NEW-COLOR, and
+blended with fraction ALPHA into the default foreground."
+  :type '(list (color :tag "Old Color") (color :tag "New Color")
+	       (float :tag "Blend Fraction")))
+
 ;;;; Commands
 
 ;;;###autoload
@@ -392,7 +413,7 @@ available."
          :resetp current-prefix-arg))
   (let ((already-active-p (activities-activity-active-p activity)))
     (activities--switch activity)
-    (unless (or resetp already-active-p)
+    (when (or resetp (not already-active-p))
       (activities-set activity :state (if resetp 'default 'last)))))
 
 (defun activities-switch (activity)
@@ -503,6 +524,45 @@ To be called from `kill-emacs-hook'."
 
 ;;;; Functions
 
+(defun activities--mapcar-window-state-leafs (state func)
+  "Return a list of leaf node values from window-state STATE.
+The returned list contains the values obtained by calling FUNC on
+each of the leaf nodes in STATE."
+  (let (values)
+    (cl-labels ((map-leafs (state func)
+		  (pcase state
+		    (`(leaf . ,_attrs)
+		     (push (funcall func state) values))
+		    ((pred proper-list-p)
+		     (if-let ((leaf-pos (cl-position 'leaf state)))
+			 (push (funcall func (cl-subseq state leaf-pos)) values)
+		       (dolist (s state) (map-leafs s func)))))))
+      (map-leafs state func))
+    (nreverse values)))
+
+(defun activities--buffers-and-files (state)
+  "Return a list of buffers and files from STATE.
+STATE is a window-state.  The returned list contains elements of
+form (BUFFER . FILE) associated with the activity."
+  (activities--mapcar-window-state-leafs
+   (activities-activity-state-window-state state)
+   (lambda (leaf)
+     (let ((buffer-rec (map-nested-elt (cdr leaf)
+				       '(parameters activities-buffer))))
+       (cons (activities-buffer-name buffer-rec)
+	     (activities-buffer-filename buffer-rec))))))
+
+(defun activities--buffers-and-files-differ-p (bfa bfb)
+  "Return non-nil if BFA and BFB are not the same set of files or buffers.
+Each of BFA and BFB is a list of buffer and files, as returned
+from `activities--buffers-and-files'."
+  (cl-labels ((file-or-buffer (cell)
+		"Given a CELL, return the true filename or buffer.
+The CELL is a (BUFFER . FILE) cons.  If the file is nil, BUFFER is returned."
+		(if (cdr cell) (file-truename (cdr cell)) (car cell))))
+    (not (seq-set-equal-p (mapcar #'file-or-buffer bfa)
+			  (mapcar #'file-or-buffer bfb)))))
+
 (cl-defun activities-save (activity &key defaultp lastp persistp)
   "Save states of ACTIVITY.
 If DEFAULTP, save its default state; if LASTP, its last.  If
@@ -513,6 +573,12 @@ according to option `activities-always-persist', which see)."
       (unless (run-hook-with-args-until-success 'activities-anti-save-predicates)
         (pcase-let* (((cl-struct activities-activity default last) activity)
                      (new-state (activities-state)))
+	  (when (and lastp last
+		     (not (activities--buffers-and-files-differ-p
+			   (activities--buffers-and-files last)
+			   (activities--buffers-and-files new-state))))
+	    (setf (map-elt (activities-activity-state-etc new-state) 'time)
+		  (map-elt (activities-activity-state-etc last) 'time)))
           (setf (activities-activity-default activity) (if (or defaultp (not default)) new-state default)
                 (activities-activity-last activity) (if (or lastp (not last)) new-state last)))))
     ;; Always set the value so, e.g. the activity can be modified
@@ -639,17 +705,18 @@ activity's name is NAME."
 
 (defun activities--windows-set (state)
   "Set window configuration according to STATE."
-  (setf window-persistent-parameters (copy-sequence activities-window-persistent-parameters))
-  (pcase-let* ((window-persistent-parameters (append activities-window-persistent-parameters
-                                                     window-persistent-parameters))
-               (state
-                ;; NOTE: We copy the state so as not to mutate the one in storage.
-                (activities--bufferize-window-state (copy-tree state))))
-    ;; HACK: Since `bookmark--jump-via' insists on calling a buffer-display
-    ;; function after handling the bookmark, we use an immediate timer to
-    ;; set the window configuration.
-    (run-at-time nil nil (lambda ()
-                           (window-state-put state (frame-root-window))))))
+  ;; HACK: Since `bookmark--jump-via' insists on calling a buffer-display
+  ;; function after handling the bookmark, we use an immediate timer to
+  ;; set the window configuration.
+  (run-at-time nil nil
+	       (lambda (frame state)
+		 (let ((window-persistent-parameters
+			(append activities-window-persistent-parameters
+				window-persistent-parameters)))
+		   (window-state-put state (frame-root-window frame) 'safe)))
+	       (selected-frame)
+	       ;; NOTE: We copy the state so as not to mutate the one in storage.
+	       (activities--bufferize-window-state (copy-tree state))))
 
 (defun activities--bufferize-window-state (state)
   "Return window state STATE with its buffers reincarnated."
@@ -675,9 +742,11 @@ activity's name is NAME."
                              ((map parameters) attrs))
                   (pcase-dolist (`(,parameter . ,(map deserialize))
                                  activities-window-parameters-translators)
-                    (when (map-elt parameters parameter)
-                      (setf (map-elt parameters parameter)
-                            (funcall deserialize (map-elt parameters parameter)))))
+                    (condition-case-unless-debug nil
+                        (when (map-elt parameters parameter)
+                          (setf (map-elt parameters parameter)
+                                (funcall deserialize (map-elt parameters parameter))))
+                      (error (setf parameters (map-delete parameters parameter)))))
                   (setf (map-elt attrs 'parameters) parameters)
                   (cons 'leaf attrs))))
     (if-let ((leaf-pos (cl-position 'leaf state)))
@@ -747,6 +816,7 @@ activity's name is NAME."
   ;; buffer was changed in order to know whether it worked.  We call
   ;; it from a temp buffer in case the jumped-to buffer would be the
   ;; same as the current buffer.
+  ;; FIXME: Use `bookmark-jump`'s DISPLAY-FUNC argument!
   (with-temp-buffer
     (pcase-let* (((cl-struct activities-buffer bookmark) struct)
                  (temp-buffer (current-buffer))
@@ -800,6 +870,60 @@ activity's name is NAME."
                   "In the meantime, it's recommended to not use buffers of this major mode in an activity's layout; or you may simply ignore this error and use the other buffers in the activity.")
           (current-buffer)))))
 
+(defvar activities--age-spec
+  `((?Y "year"   "years"   ,(round (* 60 60 24 365.2425)))
+    (?M "month"  "months"  ,(round (* 60 60 24 30.436875)))
+    (?w "week"   "weeks"   ,(* 60 60 24 7))
+    (?d "day"    "days"    ,(* 60 60 24))
+    (?h "hour"   "hours"   ,(* 60 60))
+    (?m "min"    "mins"    60)
+    (?s "sec"    "secs"    1))
+  "Age specification.  See `magit--age-spec', which this duplicates.")
+
+(defun activities--age (age &optional abbrev)
+  "Summarize AGE.
+Abbreviate the units if ABBREV is non-nil."
+  ;; Based orginally on `magit--age'."
+  ;; TODO: replace this if seconds-to-string adds READABLE support; see bug#71572
+  (let ((half t)
+	(age-spec activities--age-spec)
+	age-unit cnt)
+    (if (= (round age (if half 0.5 1.)) 0)
+	(format "0%s" (if abbrev "s" " seconds"))
+      (while (and (setq age-unit (pop age-spec)) age-spec
+                  (< (/ age (nth 3 age-unit)) 1)))
+      (setq cnt (round (/ (float age) (nth 3 age-unit)) (if half 0.5 1.)))
+      (concat (let ((c (if half (/ cnt 2) cnt)))
+		(and (> c 0) (number-to-string c)))
+	      (and half (= (mod cnt 2) 1) "½")
+	      (or abbrev " ")
+	      (cond (abbrev (car age-unit))
+		    ((<= cnt (if half 2 1)) (nth 1 age-unit))
+		    (t (nth 2 age-unit)))))))
+
+(defun activities--oldest-age (activities)
+  "Return the age in seconds of the oldest activity in ACTIVITIES."
+  (cl-loop for (_name . activity) in activities
+	   for state = (pcase-let (((cl-struct activities-activity default last) activity))
+			 (or last default))
+	   if state
+	   for etc = (activities-activity-state-etc state)
+	   maximize (float-time (time-since (map-elt etc 'time)))))
+
+(defun activities-sort-by-active-age (names)
+  "Return the list of activity NAMES sorted active first, then by age."
+  (cl-labels ((time-active-p (name)
+		(pcase-let* ((activity (map-elt activities-activities name))
+			     (active-p (activities-activity-active-p activity))
+			     ((cl-struct activities-activity last default) activity)
+			     (state (or last default))
+			     (time (map-elt (activities-activity-state-etc state) 'time)))
+		  (cons time active-p))))
+    (sort names (pcase-lambda ((app time-active-p `(,time-a . ,activep-a))
+			       (app time-active-p `(,time-b . ,activep-b)))
+		  (if (xor activep-a activep-b) activep-a
+		    (time-less-p time-b time-a))))))
+
 (cl-defun activities-completing-read
     (&key (activities activities-activities)
           (default (when (activities-current)
@@ -808,11 +932,64 @@ activity's name is NAME."
   "Return an activity read with completion from ACTIVITIES.
 PROMPT is passed to `completing-read' by way of `format-prompt',
 which see, with DEFAULT."
-  (let* ((prompt (format-prompt prompt default))
-         (names (activities-names activities))
-         (name (completing-read prompt names nil t nil 'activities-completing-read-history default)))
-    (or (map-elt activities-activities name)
-        (make-activities-activity :name name))))
+  (pcase-let*
+      ((names (activities-names activities))
+       (max-age (activities--oldest-age activities))
+       (`(,old-col ,new-col ,blend-frac) activities-annotation-colors)
+       (prompt (format-prompt prompt default)))
+    (cl-labels
+	((activity-annotation-function (name)
+	   "Add buffer and file count, age, active and changed status to activity NAME."
+	   (when-let ((activity (map-elt activities-activities name)))
+	     (let (activity-data)
+	       (dolist (type '(last default))
+		 (when-let ((state (cl-struct-slot-value 'activities-activity type activity)))
+		   (let* ((time (map-elt (activities-activity-state-etc state) 'time))
+			  (buffers-and-files (activities--buffers-and-files state)))
+		     (setf (alist-get type activity-data)
+			   (list (and time (float-time (time-since time))) buffers-and-files)))))
+	       (pcase-let*
+		   ((`(,default-age ,default-buffers-and-files) (map-elt activity-data 'default))
+		    (`(,last-age ,last-buffers-and-files) (map-elt activity-data 'last)) ;possibly nil
+		    (age (if last-age (min last-age default-age) default-age))
+		    (buffers-and-files (if last-age last-buffers-and-files default-buffers-and-files))
+		    (num-buffers (length buffers-and-files))
+		    (num-files (seq-count #'stringp (mapcar #'cdr buffers-and-files)))
+		    (dirtyp (when last-buffers-and-files
+			      (activities--buffers-and-files-differ-p
+			       last-buffers-and-files
+			       default-buffers-and-files)))
+		    (annotation (format "%s%s buf%s %s file%s "
+					(if (activities-activity-active-p activity)
+					    (propertize "@" 'face 'bold) " ")
+					(propertize (format "%2d" num-buffers) 'face 'success)
+					(if (= num-buffers 1) " " "s")
+					(propertize (format "%2d" num-files) 'face 'warning)
+					(if (= num-files 1) " " "s")))
+		    (age-color  (apply #'color-rgb-to-hex
+				       (cl-loop for co in (color-name-to-rgb old-col)
+						for cn in (color-name-to-rgb new-col)
+						for cd in (color-name-to-rgb (face-foreground 'default))
+						collect (+ (* blend-frac (+ cn (* (- co cn) (/ age max-age))))
+							   (* (- 1. blend-frac) cd)))))
+		    (age-annotation (propertize
+				     (format "%10s" (activities--age age))
+				     'face `(:foreground ,age-color :weight bold)))
+		    (dirty-annotation (if dirtyp (propertize "*" 'face 'bold) " ")))
+		 (concat (propertize " " 'display
+				     `(space :align-to (- right ,(+ 1 (length annotation)
+								    (length age-annotation)))))
+			 annotation age-annotation dirty-annotation)))))
+	 (activity-table (str pred action)
+	   "Complete activities from STR, using completion PRED and ACTION."
+	   (if (eq action 'metadata)
+	       `(metadata (annotation-function . ,#'activity-annotation-function)
+			  (display-sort-function . ,activities-sort-by))
+	     (complete-with-action action names str pred))))
+      (let ((name (completing-read prompt #'activity-table nil t nil
+				   'activities-completing-read-history default)))
+	(or (map-elt activities-activities name)
+            (make-activities-activity :name name))))))
 
 (cl-defun activities-names (&optional (activities activities-activities))
   "Return list of names of ACTIVITIES."
@@ -887,6 +1064,7 @@ with prefix argument, choose another activity."
                   (handler . activities-bookmark-handler))))
     (bookmark-store bookmark-name props nil)))
 
+;;;###autoload
 (defun activities-bookmark-handler (bookmark)
   "Switch to BOOKMARK's activity."
   (activities-resume (map-elt activities-activities (bookmark-prop-get bookmark 'activities-name))))

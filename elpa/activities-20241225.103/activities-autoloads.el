@@ -56,6 +56,10 @@ The mode's hook is called both when the mode is enabled and when
 it is disabled.
 
 (fn &optional ARG)" t)
+(autoload 'activities-bookmark-handler "activities" "\
+Switch to BOOKMARK's activity.
+
+(fn BOOKMARK)")
 (register-definition-prefixes "activities" '("activities-"))
 
 
