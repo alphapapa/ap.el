@@ -1,4 +1,4 @@
-(define-package "activities" "20241225.103" "Save/restore sets of windows, tabs/frames, and their buffers"
+(define-package "activities" "20250223.1758" "Save/restore sets of windows, tabs/frames, and their buffers"
   '((emacs "29.1")
     (persist "0.6"))
   :authors
