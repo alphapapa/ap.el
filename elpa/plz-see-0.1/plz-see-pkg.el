@@ -1,0 +1,2 @@
+;; Generated package description from plz-see.el  -*- no-byte-compile: t -*-
+(define-package "plz-see" "0.1" "Interactive HTTP client" '((emacs "29.1") (plz "0.7")) :commit "c55e6aa2971caad582df1d449e0f57604250cae1" :authors '(("Augusto Stoffel" . "arstoffel@gmail.com")) :maintainer '("Augusto Stoffel" . "arstoffel@gmail.com") :keywords '("comm" "network" "http") :url "https://github.com/astoff/plz-see.el")
