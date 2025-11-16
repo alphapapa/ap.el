@@ -1,6 +1,6 @@
 ;;; consult-org.el --- Consult commands for org-mode -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 ;; This file is part of GNU Emacs.
 
@@ -40,7 +40,7 @@
                   (apply #'append (mapcar #'cdr org-todo-keywords))))))
     (list :predicate
           (lambda (cand)
-            (pcase-let ((`(,level ,todo . ,prio)
+            (pcase-let ((`(,level ,todo ,prio . ,_)
                          (get-text-property 0 'consult-org--heading cand)))
               (cond
                ((<= ?1 consult--narrow ?9) (<= level (- consult--narrow ?0)))
@@ -75,41 +75,34 @@ MATCH, SCOPE and SKIP are as in `org-map-entries'."
                     (cand (org-format-outline-path
                            (org-get-outline-path 'with-self 'use-cache)
                            most-positive-fixnum)))
+         (when todo
+           (put-text-property 0 (length todo) 'face (org-get-todo-face todo) todo))
          (when tags
            (put-text-property 0 (length tags) 'face 'org-tag tags))
-         (setq cand (if prefix
-                        (concat buffer " " cand (and tags " ")
-                                tags (consult--tofu-encode idx))
-                      (concat cand (and tags " ")
-                              tags (consult--tofu-encode idx))))
+         (setq cand (concat (and prefix buffer) (and prefix " ") cand (and tags " ")
+                            tags (consult--tofu-encode idx)))
          (cl-incf idx)
          (add-text-properties 0 1
                               `(org-marker ,(point-marker)
-                                consult-org--heading (,level ,todo . ,prio))
+                                consult-org--heading (,level ,todo ,prio . ,buffer))
                               cand)
          cand))
      match scope skip)))
 
-(defun consult-org--annotate ()
-  "Generate annotation function for `consult-org-heading'."
-  (let (buf)
-    (when (derived-mode-p #'org-mode)
-      (setq buf (current-buffer)))
-    (lambda (cand)
-      (unless (buffer-live-p buf)
-        (setq buf (seq-find (lambda (b)
-                              (with-current-buffer b (derived-mode-p #'org-mode)))
-                            (buffer-list))))
-      (pcase-let ((`(,_level ,kwd . ,prio)
-                   (get-text-property 0 'consult-org--heading cand)))
-        (consult--annotate-align
-         cand
-         (concat
-          (propertize (or kwd "") 'face
-                      (with-current-buffer (or buf (current-buffer))
-                        ;; `org-get-todo-face' must be called inside an Org buffer
-                        (org-get-todo-face kwd)))
-          (and prio (format #(" [#%c]" 1 6 (face org-priority)) prio))))))))
+(defun consult-org--annotate (cand)
+  "Annotate CAND for `consult-org-heading'."
+  (pcase-let ((`(,_level ,todo ,prio . ,_)
+               (get-text-property 0 'consult-org--heading cand)))
+    (consult--annotate-align
+     cand
+     (concat todo
+             (and prio (format #(" [#%c]" 1 6 (face org-priority)) prio))))))
+
+(defun consult-org--group (cand transform)
+  "Return title for CAND or TRANSFORM the candidate."
+  (pcase-let ((`(,_level ,_todo ,_prio . ,buffer)
+               (get-text-property 0 'consult-org--heading cand)))
+    (if transform (substring cand (1+ (length buffer))) buffer)))
 
 ;;;###autoload
 (defun consult-org-heading (&optional match scope)
@@ -132,14 +125,8 @@ buffer are offered."
      :history '(:input consult-org--history)
      :narrow (consult-org--narrow)
      :state (consult--jump-state)
-     :annotate (consult-org--annotate)
-     :group
-     (when prefix
-       (lambda (cand transform)
-         (let ((name (buffer-name
-                      (marker-buffer
-                       (get-text-property 0 'org-marker cand)))))
-           (if transform (substring cand (1+ (length name))) name))))
+     :annotate #'consult-org--annotate
+     :group (and prefix #'consult-org--group)
      :lookup (apply-partially #'consult--lookup-prop 'org-marker))))
 
 ;;;###autoload

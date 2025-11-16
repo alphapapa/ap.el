@@ -1,6 +1,6 @@
 ;;; consult-xref.el --- Xref integration for Consult -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 ;; This file is part of GNU Emacs.
 
@@ -27,6 +27,7 @@
 
 (require 'consult)
 (require 'xref)
+(eval-when-compile (require 'subr-x))
 
 (defvar consult-xref--history nil)
 
@@ -35,16 +36,17 @@
 The fetch is stored globally such that it can be accessed by
  Embark for `embark-export'.")
 
+(defvar consult-xref--preview
+  '(xref-buffer-location xref-file-location xref-etags-location)
+  "Only the xref types listed here are previewed.")
+
 (defun consult-xref--candidates ()
   "Return xref candidate list."
   (let ((root (consult--project-root)))
     (mapcar (lambda (xref)
               (let* ((loc (xref-item-location xref))
-                     (group (if (fboundp 'xref--group-name-for-display)
-                                ;; This function is available in xref 1.3.2
-                                (xref--group-name-for-display
-                                 (xref-location-group loc) root)
-                              (xref-location-group loc)))
+                     (group (xref-location-group loc))
+                     (group (if root (string-remove-prefix root group) group))
                      (cand (consult--format-file-line-match
                             group
                             (or (xref-location-line loc) 0)
@@ -63,23 +65,23 @@ The fetch is stored globally such that it can be accessed by
         (funcall open))
       (let ((consult--buffer-display display))
         (funcall preview action
-                 (when-let (loc (and cand (eq action 'preview)
-                                     (xref-item-location cand)))
-                   (let ((type (type-of loc)))
-                     ;; Only preview file and buffer markers
-                     (pcase type
-                       ('xref-buffer-location
-                        (xref-location-marker loc))
-                       ((or 'xref-file-location 'xref-etags-location)
-                        (consult--marker-from-line-column
-                         (funcall open
-                                  ;; xref-location-group returns the file name
-                                  (let ((xref-file-name-display 'abs))
-                                    (xref-location-group loc)))
-                         (xref-location-line loc)
-                         (if (eq type 'xref-file-location)
-                             (xref-file-location-column loc)
-                           0)))))))))))
+                 (when-let ((loc (and cand (eq action 'preview)
+                                      (xref-item-location cand)))
+                            (type (type-of loc))
+                            ;; Only preview xrefs listed in consult-xref--preview
+                            ((memq type consult-xref--preview)))
+                   (pcase type
+                     ((or 'xref-file-location 'xref-etags-location)
+                      (consult--marker-from-line-column
+                       (funcall open
+                                ;; xref-location-group returns the file name
+                                (let ((xref-file-name-display 'abs))
+                                  (xref-location-group loc)))
+                       (xref-location-line loc)
+                       (if (eq type 'xref-file-location)
+                           (xref-file-location-column loc)
+                         0)))
+                     (_ (xref-location-marker loc)))))))))
 
 ;;;###autoload
 (defun consult-xref (fetcher &optional alist)
@@ -90,31 +92,28 @@ See `xref-show-xrefs-function' for the description of the
 FETCHER and ALIST arguments."
   (let* ((consult-xref--fetcher fetcher)
          (candidates (consult-xref--candidates))
-         (display (alist-get 'display-action alist)))
+         (display (alist-get 'display-action alist))
+         (this-command #'consult-xref))
     (unless candidates
       (user-error "No xref locations"))
     (xref-pop-to-location
      (if (cdr candidates)
-         (apply
-          #'consult--read
+         (consult--read
           candidates
-          (append
-           (consult--customize-get #'consult-xref)
-           (list
-            :prompt "Go to xref: "
-            :history 'consult-xref--history
-            :require-match t
-            :sort nil
-            :category 'consult-xref
-            :group #'consult--prefix-group
-            :state
-            ;; do not preview other frame
-            (when-let (fun (pcase-exhaustive display
-                             ('frame nil)
-                             ('window #'switch-to-buffer-other-window)
-                             ('nil #'switch-to-buffer)))
-              (consult-xref--preview fun))
-            :lookup (apply-partially #'consult--lookup-prop 'consult-xref))))
+          :prompt "Go to xref: "
+          :history 'consult-xref--history
+          :require-match t
+          :sort nil
+          :category 'consult-xref
+          :group #'consult--prefix-group
+          :state
+          ;; do not preview other frame
+          (when-let (fun (pcase-exhaustive display
+                           ('frame nil)
+                           ('window #'switch-to-buffer-other-window)
+                           ('nil #'switch-to-buffer)))
+            (consult-xref--preview fun))
+          :lookup (apply-partially #'consult--lookup-prop 'consult-xref))
        (get-text-property 0 'consult-xref (car candidates)))
      display)))
 

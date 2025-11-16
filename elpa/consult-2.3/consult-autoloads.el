@@ -14,12 +14,11 @@
 (autoload 'consult-completion-in-region "consult" "\
 Use minibuffer completion as the UI for `completion-at-point'.
 
-The function is called with 4 arguments: START END COLLECTION
-PREDICATE.  The arguments and expected return value are as
-specified for `completion-in-region'.  Use this function as a
-value for `completion-in-region-function'.
+The arguments START, END, COLLECTION and PREDICATE and expected return
+value are as specified for `completion-in-region'.  Use this function as
+a value for `completion-in-region-function'.
 
-(fn START END COLLECTION &optional PREDICATE)")
+(fn START END COLLECTION PREDICATE)")
 (autoload 'consult-outline "consult" "\
 Jump to an outline heading, obtained by matching against `outline-regexp'.
 
@@ -66,29 +65,36 @@ to `consult--buffer-query'.
 
 (fn QUERY &optional INITIAL)" t)
 (autoload 'consult-keep-lines "consult" "\
-Select a subset of the lines in the current buffer with live preview.
+Filter a subset of the lines in the current buffer with live preview.
 
-The selected lines are kept and the other lines are deleted.  When called
-interactively, the lines selected are those that match the minibuffer input.  In
-order to match the inverse of the input, prefix the input with `! '.  When
-called from Elisp, the filtering is performed by a FILTER function.  This
-command obeys narrowing.
+The filtered lines are kept and the other lines are deleted.  When
+called interactively, the lines selected are those that match the
+minibuffer input.  In order to match the inverse of the input, prefix
+the input with `! '.  When called from Elisp, the filtering is performed
+by a FILTER function.  If the buffer is narrowed to a region, the
+command only acts on this region.  See also `consult-focus-lines' which
+uses overlays to display only matching lines, but does not modify the
+buffer.
 
-FILTER is the filter function.
+FILTER is the filter function, called for each line.
 INITIAL is the initial input.
 
 (fn FILTER &optional INITIAL)" t)
 (autoload 'consult-focus-lines "consult" "\
-Hide or show lines using overlays.
+Show only matching lines using overlays.
 
-The selected lines are shown and the other lines hidden.  When called
-interactively, the lines selected are those that match the minibuffer input.  In
-order to match the inverse of the input, prefix the input with `! '.  With
-optional prefix argument SHOW reveal the hidden lines.  Alternatively the
-command can be restarted to reveal the lines.  When called from Elisp, the
-filtering is performed by a FILTER function.  This command obeys narrowing.
+In contrast to `consult-keep-lines' the buffer is not modified.  The
+FILTER selects the lines which are shown.  When called interactively,
+the lines selected are those that match the minibuffer input.  In order
+to match the inverse of the input, prefix the input with `! '.  With
+optional prefix argument SHOW reveal the hidden lines.  Alternatively
+rerun the command and exit the minibuffer directly without input to
+reveal the lines.  When called from Elisp, the filtering is performed by
+a FILTER function.  If the buffer is narrowed to a region, the command
+only acts on this region.
 
-FILTER is the filter function.
+FILTER is the filter function, called for each line.
+SHOW is the prefix argument, if non-nil reveal all hidden lines.
 INITIAL is the initial input.
 
 (fn FILTER &optional SHOW INITIAL)" t)
@@ -114,9 +120,9 @@ If no MODES are specified, use currently active major and minor modes.
 Select STRING from the kill ring and insert it.
 With prefix ARG, put point at beginning, and mark at end, like `yank' does.
 
-This command behaves like `yank-from-kill-ring' in Emacs 28, which also offers
-a `completing-read' interface to the `kill-ring'.  Additionally the Consult
-version supports preview of the selected string.
+This command behaves like `yank-from-kill-ring', which also offers a
+`completing-read' interface to the `kill-ring'.  Additionally the
+Consult version supports preview of the selected string.
 
 (fn STRING &optional ARG)" t)
 (autoload 'consult-yank-pop "consult" "\
@@ -125,9 +131,9 @@ If there is a recent yank act like `yank-pop'.
 Otherwise select string from the kill ring and insert it.
 See `yank-pop' for the meaning of ARG.
 
-This command behaves like `yank-pop' in Emacs 28, which also offers a
-`completing-read' interface to the `kill-ring'.  Additionally the Consult
-version supports preview of the selected string.
+This command behaves like `yank-pop', which also offers a
+`completing-read' interface to the `kill-ring'.  Additionally the
+Consult version supports preview of the selected string.
 
 (fn &optional ARG)" t)
 (autoload 'consult-yank-replace "consult" "\
@@ -135,8 +141,6 @@ Select STRING from the kill ring.
 
 If there was no recent yank, insert the string.
 Otherwise replace the just-yanked string with the selected string.
-
-There exists no equivalent of this command in Emacs 28.
 
 (fn STRING)" t)
 (autoload 'consult-bookmark "consult" "\
@@ -198,36 +202,35 @@ Variant of `consult-buffer', switching to a buffer in another tab." t)
 (autoload 'consult-grep "consult" "\
 Search with `grep' for files in DIR where the content matches a regexp.
 
-The initial input is given by the INITIAL argument.  DIR can be
-nil, a directory string or a list of file/directory paths.  If
-`consult-grep' is called interactively with a prefix argument,
-the user can specify the directories or files to search in.
-Multiple directories must be separated by comma in the
-minibuffer, since they are read via `completing-read-multiple'.
-By default the project directory is used if
-`consult-project-function' is defined and returns non-nil.
-Otherwise the `default-directory' is searched.
+The initial input is given by the INITIAL argument.  DIR can be nil, a
+directory string or a list of file/directory paths.  If `consult-grep'
+is called interactively with a prefix argument, the user can specify the
+directories or files to search in.  Multiple directories or files must
+be separated by comma in the minibuffer, since they are read via
+`completing-read-multiple'.  By default the project directory is used if
+`consult-project-function' is defined and returns non-nil.  Otherwise
+the `default-directory' is searched.  If the command is invoked with a
+double prefix argument (twice `C-u') the user is asked for a project, if
+not yet inside a project, or the current project is searched.
 
-The input string is split, the first part of the string (grep
-input) is passed to the asynchronous grep process and the second
-part of the string is passed to the completion-style filtering.
+The input string is split, the first part of the string (grep input) is
+passed to the asynchronous grep process and the second part of the
+string is passed to the completion-style filtering.
 
-The input string is split at a punctuation character, which is
-given as the first character of the input string.  The format is
-similar to Perl-style regular expressions, e.g., /regexp/.
-Furthermore command line options can be passed to grep, specified
-behind --.  The overall prompt input has the form
-`#async-input -- grep-opts#filter-string'.
+The input string is split at a punctuation character, which is given as
+the first character of the input string.  The format is similar to
+Perl-style regular expressions, e.g., /regexp/.  Furthermore command
+line options can be passed to grep, specified behind --.  The overall
+prompt input has the form `#async-input -- grep-opts#filter-string'.
 
 Note that the grep input string is transformed from Emacs regular
-expressions to Posix regular expressions.  Always enter Emacs
-regular expressions at the prompt.  `consult-grep' behaves like
-builtin Emacs search commands, e.g., Isearch, which take Emacs
-regular expressions.  Furthermore the asynchronous input split
-into words, each word must match separately and in any order.
-See `consult--regexp-compiler' for the inner workings.  In order
-to disable transformations of the grep input, adjust
-`consult--regexp-compiler' accordingly.
+expressions to Posix regular expressions.  Always enter Emacs regular
+expressions at the prompt.  `consult-grep' behaves like builtin Emacs
+search commands, e.g., Isearch, which take Emacs regular expressions.
+Furthermore the asynchronous input split into words, each word must
+match separately and in any order.  See `consult--regexp-compiler' for
+the inner workings.  In order to disable transformations of the grep
+input, adjust `consult--regexp-compiler' accordingly.
 
 Here we give a few example inputs:
 
@@ -337,6 +340,11 @@ QUERY can be set to a plist according to `consult--buffer-query'.
 Full text search through info MANUALS.
 
 (fn &rest MANUALS)" t)
+(defun consult-info-define (name &rest manuals) "\
+Define `consult-info-NAME' command to search through MANUALS.
+MANUALS is a list of a strings. NAME can be a symbol or a string. If
+NAME is a string, it is added to the MANUALS list. Return name of
+defined command as symbol." (let ((cmd (intern (format "consult-info-%s" name)))) (when (stringp name) (push name manuals)) (defalias cmd (lambda nil (interactive) (apply #'consult-info manuals)) (format "Search via `consult-info' through the manual%s %s:\n\n%s" (if (cdr manuals) "s" "") (mapconcat (lambda (m) (format "\"%s\"" m)) manuals ", ") (mapconcat (lambda (m) (format "  * Info node `(%s)'" m)) manuals "\n"))) cmd))
 (register-definition-prefixes "consult-info" '("consult-info--"))
 
 

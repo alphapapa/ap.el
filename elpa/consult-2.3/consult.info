@@ -1,4 +1,4 @@
-This is docuDTmBE.info, produced by makeinfo version 6.8 from
+This is doc7WCabF.info, produced by makeinfo version 6.8 from
 consult.texi.
 
 INFO-DIR-SECTION Emacs misc features
@@ -7,7 +7,7 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docuDTmBE.info,  Node: Top,  Next: Available commands,  Up: (dir)
+File: doc7WCabF.info,  Node: Top,  Next: Available commands,  Up: (dir)
 
 consult.el - Consulting completing-read
 ***************************************
@@ -60,6 +60,7 @@ together.
 * Configuration::                Example configuration and customization variables
 * Recommended packages::         Related packages recommended for installation
 * Bug reports::                  How to create reproducible bug reports
+* Hacking::
 * Contributions::                Feature requests and pull requests
 * Acknowledgments::              Contributors and Sources of Inspiration
 * Indices::                      Indices of concepts and functions
@@ -93,7 +94,13 @@ Configuration
 
 * Use-package example::          Configuration example based on use-package
 * Custom variables::             Short description of all customization settings
+* Project support::              Project discovery support for search commands
 * Fine-tuning::                  Fine-grained configuration for special requirements
+
+Hacking
+
+* Creating asynchronous completion commands::
+* Live preview::
 
 Indices
 
@@ -102,7 +109,7 @@ Indices
 
 
 
-File: docuDTmBE.info,  Node: Available commands,  Next: Special features,  Prev: Top,  Up: Top
+File: doc7WCabF.info,  Node: Available commands,  Next: Special features,  Prev: Top,  Up: Top
 
 1 Available commands
 ********************
@@ -135,7 +142,7 @@ their descriptions.
 * Miscellaneous::                Various other useful commands
 
 
-File: docuDTmBE.info,  Node: Virtual Buffers,  Next: Editing,  Up: Available commands
+File: doc7WCabF.info,  Node: Virtual Buffers,  Next: Editing,  Up: Available commands
 
 1.1 Virtual Buffers
 ===================
@@ -152,6 +159,9 @@ File: docuDTmBE.info,  Node: Virtual Buffers,  Next: Editing,  Up: Available com
         • r File registers
         • m Bookmarks
         • p Project
+        • B Project buffers
+        • F Project files
+        • R Project roots
         • Custom *note other sources: Multiple sources. configured in
           ‘consult-buffer-sources’.
    • ‘consult-buffer-other-window’, ‘consult-buffer-other-frame’,
@@ -171,7 +181,7 @@ File: docuDTmBE.info,  Node: Virtual Buffers,  Next: Editing,  Up: Available com
      ‘recentf-mode’ enables tracking of recent files.
 
 
-File: docuDTmBE.info,  Node: Editing,  Next: Register,  Prev: Virtual Buffers,  Up: Available commands
+File: doc7WCabF.info,  Node: Editing,  Next: Register,  Prev: Virtual Buffers,  Up: Available commands
 
 1.2 Editing
 ===========
@@ -189,7 +199,7 @@ File: docuDTmBE.info,  Node: Editing,  Next: Register,  Prev: Virtual Buffers,  
    • ‘consult-kmacro’: Select macro from the macro ring and execute it.
 
 
-File: docuDTmBE.info,  Node: Register,  Next: Navigation,  Prev: Editing,  Up: Available commands
+File: doc7WCabF.info,  Node: Register,  Next: Navigation,  Prev: Editing,  Up: Available commands
 
 1.3 Register
 ============
@@ -200,8 +210,8 @@ File: docuDTmBE.info,  Node: Register,  Next: Navigation,  Prev: Editing,  Up: A
      For quick access use the commands ‘consult-register-load’,
      ‘consult-register-store’ or the built-in Emacs register commands.
    • ‘consult-register-format’: Set ‘register-preview-function’ to this
-     function for an enhanced register formatting.  See the *note
-     example configuration: Use-package example.
+     function for an enhanced register formatting.  Used automatically
+     by ‘consult-register-window’.
    • ‘consult-register-window’: Replace ‘register-preview’ with this
      function for a better register window.  See the *note example
      configuration: Use-package example.
@@ -220,7 +230,7 @@ File: docuDTmBE.info,  Node: Register,  Next: Navigation,  Prev: Editing,  Up: A
         • ‘C-u 100 M-' x’: Store number in register ‘x’.
 
 
-File: docuDTmBE.info,  Node: Navigation,  Next: Search,  Prev: Register,  Up: Available commands
+File: doc7WCabF.info,  Node: Navigation,  Next: Search,  Prev: Register,  Up: Available commands
 
 1.4 Navigation
 ==============
@@ -244,7 +254,7 @@ File: docuDTmBE.info,  Node: Navigation,  Next: Search,  Prev: Register,  Up: Av
      imenu-anywhere (https://github.com/vspinu/imenu-anywhere).
 
 
-File: docuDTmBE.info,  Node: Search,  Next: Grep and Find,  Prev: Navigation,  Up: Available commands
+File: doc7WCabF.info,  Node: Search,  Next: Grep and Find,  Prev: Navigation,  Up: Available commands
 
 1.5 Search
 ==========
@@ -277,7 +287,7 @@ File: docuDTmBE.info,  Node: Search,  Next: Grep and Find,  Prev: Navigation,  U
      region restricts the filtering.
 
 
-File: docuDTmBE.info,  Node: Grep and Find,  Next: Compilation,  Prev: Search,  Up: Available commands
+File: doc7WCabF.info,  Node: Grep and Find,  Next: Compilation,  Prev: Search,  Up: Available commands
 
 1.6 Grep and Find
 =================
@@ -298,11 +308,13 @@ File: docuDTmBE.info,  Node: Grep and Find,  Next: Compilation,  Prev: Search,  
      ‘filter-string’ is passed to the _fast_ Emacs filtering to further
      narrow down the list of matches.  This is particularly useful if
      you are using an advanced completion style like orderless.
-     ‘consult-grep’ supports preview.  If the ‘consult-project-function’
-     returns non-nil, ‘consult-grep’ searches the current project
-     directory.  Otherwise the ‘default-directory’ is searched.  If
+     ‘consult-grep’ supports preview.  ‘consult-grep’ searches the
+     current *note project directory: Project support. if a project is
+     found.  Otherwise the ‘default-directory’ is searched.  If
      ‘consult-grep’ is invoked with prefix argument ‘C-u M-s g’, you can
      specify one or more comma-separated files and directories manually.
+     If invoked with two prefix arguments ‘C-u C-u M-s g’, you can first
+     select a project if you are not yet inside a project.
    • ‘consult-find’, ‘consult-fd’, ‘consult-locate’: Find file by
      matching the path against a regexp.  Like for ‘consult-grep’,
      either the project root or the current directory is the root
@@ -312,7 +324,7 @@ File: docuDTmBE.info,  Node: Grep and Find,  Next: Compilation,  Prev: Search,  
      ‘consult-find’ work just like those for the consult grep commands.
 
 
-File: docuDTmBE.info,  Node: Compilation,  Next: Histories,  Prev: Grep and Find,  Up: Available commands
+File: doc7WCabF.info,  Node: Compilation,  Next: Histories,  Prev: Grep and Find,  Up: Available commands
 
 1.7 Compilation
 ===============
@@ -327,7 +339,7 @@ File: docuDTmBE.info,  Node: Compilation,  Next: Histories,  Prev: Grep and Find
      ‘xref-show-xrefs-function’ and ‘xref-show-definitions-function’.
 
 
-File: docuDTmBE.info,  Node: Histories,  Next: Modes,  Prev: Compilation,  Up: Available commands
+File: doc7WCabF.info,  Node: Histories,  Next: Modes,  Prev: Compilation,  Up: Available commands
 
 1.8 Histories
 =============
@@ -350,7 +362,7 @@ File: docuDTmBE.info,  Node: Histories,  Next: Modes,  Prev: Compilation,  Up: A
      ‘isearch-edit-string’.
 
 
-File: docuDTmBE.info,  Node: Modes,  Next: Org Mode,  Prev: Histories,  Up: Available commands
+File: doc7WCabF.info,  Node: Modes,  Next: Org Mode,  Prev: Histories,  Up: Available commands
 
 1.9 Modes
 =========
@@ -363,7 +375,7 @@ File: docuDTmBE.info,  Node: Modes,  Next: Org Mode,  Prev: Histories,  Up: Avai
      local-minor/global-minor/major mode via the keys ‘l/g/m’.
 
 
-File: docuDTmBE.info,  Node: Org Mode,  Next: Help,  Prev: Modes,  Up: Available commands
+File: doc7WCabF.info,  Node: Org Mode,  Next: Help,  Prev: Modes,  Up: Available commands
 
 1.10 Org Mode
 =============
@@ -378,37 +390,32 @@ File: docuDTmBE.info,  Node: Org Mode,  Next: Help,  Prev: Modes,  Up: Available
      live preview and recursive editing.
 
 
-File: docuDTmBE.info,  Node: Help,  Next: Miscellaneous,  Prev: Org Mode,  Up: Available commands
+File: doc7WCabF.info,  Node: Help,  Next: Miscellaneous,  Prev: Org Mode,  Up: Available commands
 
 1.11 Help
 =========
 
    • ‘consult-man’: Find Unix man page, via Unix ‘apropos’ or ‘man -k’.
      ‘consult-man’ opens the selected man page using the Emacs ‘man’
-     command.
+     command.  Supports live preview of the theme while scrolling
+     through the candidates.
    • ‘consult-info’: Full text search through info pages.  If the
      command is invoked from within an ‘*info*’ buffer, it will search
      through the current manual.  You may want to create your own
-     commands which search through a predefined set of info pages, for
-     example:
-     (defun consult-info-emacs ()
-       "Search through Emacs info pages."
-       (interactive)
-       (consult-info "emacs" "efaq" "elisp" "cl" "compat"))
-
-     (defun consult-info-org ()
-       "Search through the Org info page."
-       (interactive)
-       (consult-info "org"))
-
-     (defun consult-info-completion ()
-       "Search through completion info pages."
-       (interactive)
-       (consult-info "vertico" "consult" "marginalia" "orderless" "embark"
-                     "corfu" "cape" "tempel"))
+     ‘consult-info-*’ commands which search through a predefined set of
+     info pages.  You can use the function ‘consult-info-define’ to
+     define commands ‘consult-info-emacs’, ‘consult-info-completion’,
+     ‘consult-info-org’, and so on:
+     (consult-info-define "emacs" "efaq" "elisp" "cl" "compat" "eshell")
+     (consult-info-define 'completion
+                          "vertico" "consult" "marginalia" "orderless"
+                          "embark" "corfu" "cape" "tempel")
+     (consult-info-define "org")
+     (consult-info-define "gnus")
+     (consult-info-define "magit")
 
 
-File: docuDTmBE.info,  Node: Miscellaneous,  Prev: Help,  Up: Available commands
+File: doc7WCabF.info,  Node: Miscellaneous,  Prev: Help,  Up: Available commands
 
 1.12 Miscellaneous
 ==================
@@ -426,14 +433,7 @@ File: docuDTmBE.info,  Node: Miscellaneous,  Prev: Help,  Up: Available commands
      this function can be set as ‘completion-in-region-function’.  Then
      your minibuffer completion UI (e.g., Vertico or Icomplete) will be
      used for ‘completion-at-point’.
-          ;; Use `consult-completion-in-region' if Vertico is enabled.
-          ;; Otherwise use the default `completion--in-region' function.
-          (setq completion-in-region-function
-                (lambda (&rest args)
-                  (apply (if vertico-mode
-                             #'consult-completion-in-region
-                           #'completion--in-region)
-                         args)))
+          (setq completion-in-region-function #'consult-completion-in-region)
      Instead of ‘consult-completion-in-region’, you may prefer to see
      the completions directly in the buffer as a small popup.  In that
      case, I recommend the Corfu (https://github.com/minad/corfu)
@@ -447,7 +447,7 @@ File: docuDTmBE.info,  Node: Miscellaneous,  Prev: Help,  Up: Available commands
      place directly in the original buffer.
 
 
-File: docuDTmBE.info,  Node: Special features,  Next: Configuration,  Prev: Available commands,  Up: Top
+File: doc7WCabF.info,  Node: Special features,  Next: Configuration,  Prev: Available commands,  Up: Top
 
 2 Special features
 ******************
@@ -471,7 +471,7 @@ advanced features.
 * Embark integration::           Actions, Grep/Occur-buffer export
 
 
-File: docuDTmBE.info,  Node: Live previews,  Next: Narrowing and grouping,  Up: Special features
+File: doc7WCabF.info,  Node: Live previews,  Next: Narrowing and grouping,  Up: Special features
 
 2.1 Live previews
 =================
@@ -507,7 +507,7 @@ _your custom command_ to the ‘consult-customize’ call in order for it to
 be considered.
 
      (consult-customize
-      consult-ripgrep consult-git-grep consult-grep
+      consult-ripgrep consult-git-grep consult-grep consult-man
       consult-bookmark consult-recent-file consult-xref
       consult--source-bookmark consult--source-file-register
       consult--source-recent-file consult--source-project-recent-file
@@ -521,16 +521,21 @@ triggered preview.  The main difference is that the files opened by
 manual preview are closed again after the completion session.  During
 preview some functionality is disabled to improve the performance, see
 for example the customization variables ‘consult-preview-variables’ and
-‘consult-preview-allowed-hooks’.  Only the hooks listed in
-‘consult-preview-allowed-hooks’ are executed when a file is opened
-(‘find-file-hook’).  In order to enable additional font locking during
+‘consult-preview-allowed-hooks’.  Only hooks listed in
+‘consult-preview-allowed-hooks’ are executed.  This variable applies to
+‘find-file-hook’, ‘change-major-mode-hook’ and mode hooks, e.g.,
+‘prog-mode-hook’.  In order to enable additional font locking during
 preview, add the corresponding hooks to the allow list.  The following
 code demonstrates this for org-modern
 (https://github.com/minad/org-modern) and hl-todo
 (https://github.com/tarsius/hl-todo).
 
-     (add-to-list 'consult-preview-allowed-hooks 'global-org-modern-mode-check-buffers)
-     (add-to-list 'consult-preview-allowed-hooks 'global-hl-todo-mode-check-buffers)
+     ;; local modes added to prog-mode hooks
+     (add-to-list 'consult-preview-allowed-hooks 'hl-todo-mode)
+     (add-to-list 'consult-preview-allowed-hooks 'elide-head-mode)
+     ;; enabled global modes
+     (add-to-list 'consult-preview-allowed-hooks 'global-org-modern-mode)
+     (add-to-list 'consult-preview-allowed-hooks 'global-hl-todo-mode)
 
    Files larger than ‘consult-preview-partial-size’ are previewed
 partially.  Delaying the preview is also useful for ‘consult-theme’,
@@ -547,7 +552,7 @@ experience.
                           :debounce 1 any))
 
 
-File: docuDTmBE.info,  Node: Narrowing and grouping,  Next: Asynchronous search,  Prev: Live previews,  Up: Special features
+File: doc7WCabF.info,  Node: Narrowing and grouping,  Next: Asynchronous search,  Prev: Live previews,  Up: Special features
 
 2.2 Narrowing and grouping
 ==========================
@@ -582,7 +587,7 @@ keys are automatically shown in the which-key window after pressing the
 ‘consult-narrow-key’.
 
 
-File: docuDTmBE.info,  Node: Asynchronous search,  Next: Multiple sources,  Prev: Narrowing and grouping,  Up: Special features
+File: doc7WCabF.info,  Node: Asynchronous search,  Next: Multiple sources,  Prev: Narrowing and grouping,  Up: Special features
 
 2.3 Asynchronous search
 =======================
@@ -648,18 +653,18 @@ status:
      provided.
 
 
-File: docuDTmBE.info,  Node: Multiple sources,  Next: Embark integration,  Prev: Asynchronous search,  Up: Special features
+File: doc7WCabF.info,  Node: Multiple sources,  Next: Embark integration,  Prev: Asynchronous search,  Up: Special features
 
 2.4 Multiple sources
 ====================
 
-Multiple synchronous candidate sources can be combined.  This feature is
-used by the ‘consult-buffer’ command to present buffer-like candidates
-in a single menu for quick access.  By default ‘consult-buffer’ includes
-buffers, bookmarks, recent files and project-specific buffers and files.
-It is possible to configure the list of sources via the
-‘consult-buffer-sources’ variable.  Arbitrary custom sources can be
-defined.
+Multiple static and asynchronous candidate sources can be combined.
+This feature is used by the ‘consult-buffer’ command to present
+buffer-like candidates in a single menu for quick access.  By default
+‘consult-buffer’ includes buffers, bookmarks, recent files and
+project-specific buffers and files.  The ‘consult-buffer-sources’
+variable configures the list of sources.  Arbitrary custom sources can
+be added to this list.
 
    As an example, the bookmark source is defined as follows:
 
@@ -672,15 +677,21 @@ defined.
          :items    ,#'bookmark-all-names
          :action   ,#'consult--bookmark-action))
 
-   Required source fields:
-   • ‘:category’ Completion category.
+   Either the ‘:items’ or the ‘:async’ source field is required:
    • ‘:items’ List of strings to select from or function returning list
-     of strings.  A list of cons cells is not supported.
+     of strings.  The strings can carry metadata in text properties,
+     which is then available to the ‘:annotate’, ‘:action’ and ‘:state’
+     functions.  The list can also consist of pairs, with the string in
+     the ‘car’ used for display and the ‘cdr’ the actual candidate.
+   • ‘:async’ Alternative to ‘:items’ for asynchronous sources.  See the
+     docstring for details.
 
    Optional source fields:
    • ‘:name’ Name of the source, used for narrowing, group titles and
      annotations.
-   • ‘:narrow’ Narrowing character or ‘(character . string)’ pair.
+   • ‘:narrow’ Narrowing character, ‘(char . string)’ pair or list of
+     pairs.
+   • ‘:category’ Completion category.
    • ‘:preview-key’ Preview key or keys which trigger preview.
    • ‘:enabled’ Function which must return t if the source is enabled.
    • ‘:hidden’ When t candidates of this source are hidden by default.
@@ -735,7 +746,7 @@ and lets you create new ones.
                  (consult--buffer-action (current-buffer))))
              :items
              (lambda ()
-               (consult--buffer-query :mode 'org-mode :as #'buffer-name))))
+               (consult--buffer-query :mode 'org-mode :as #'consult--buffer-pair))))
 
      (add-to-list 'consult-buffer-sources 'org-source 'append)
 
@@ -746,7 +757,7 @@ the internal ‘consult--multi’ API.  The function ‘consult--multi’ can be
 used to create new multi-source commands.
 
 
-File: docuDTmBE.info,  Node: Embark integration,  Prev: Multiple sources,  Up: Special features
+File: doc7WCabF.info,  Node: Embark integration,  Prev: Multiple sources,  Up: Special features
 
 2.5 Embark integration
 ======================
@@ -790,7 +801,7 @@ package is installed.  These three workflows are symmetric.
      ‘wdired-change-to-wdired-mode’ for editing.
 
 
-File: docuDTmBE.info,  Node: Configuration,  Next: Recommended packages,  Prev: Special features,  Up: Top
+File: doc7WCabF.info,  Node: Configuration,  Next: Recommended packages,  Prev: Special features,  Up: Top
 
 3 Configuration
 ***************
@@ -813,22 +824,27 @@ lexical binding, since they use lambdas and closures.
 
 * Use-package example::          Configuration example based on use-package
 * Custom variables::             Short description of all customization settings
+* Project support::              Project discovery support for search commands
 * Fine-tuning::                  Fine-grained configuration for special requirements
 
 
-File: docuDTmBE.info,  Node: Use-package example,  Next: Custom variables,  Up: Configuration
+File: doc7WCabF.info,  Node: Use-package example,  Next: Custom variables,  Up: Configuration
 
 3.1 Use-package example
 =======================
 
 The Consult package only provides commands and does not add any
 keybindings or modes.  Therefore the package is non-intrusive but
-requires a little setup effort.  In order to use the Consult commands,
-it is advised to add keybindings for commands which are accessed often.
-Rarely used commands can be invoked via ‘M-x’.  Feel free to only bind
-the commands you consider useful to your workflow.  The configuration
-shown here relies on the ‘use-package’ macro, which is a convenient tool
-to manage package configurations.
+requires a little setup effort.  While the configuration example is
+long, it consists essentially of key bindings only, such that the risk
+of interference with other Emacs functionality is minimized.
+
+   In order to use the Consult commands, it is recommended to add
+keybindings for commands which are accessed often.  Rarely used commands
+can be invoked via ‘M-x’.  Feel free to only bind the commands you
+consider useful to your workflow.  The configuration shown here relies
+on the ‘use-package’ macro, which is a convenient tool to manage package
+configurations.
 
    *NOTE:* There is the Consult wiki
 (https://github.com/minad/consult/wiki), where you can contribute
@@ -836,7 +852,7 @@ additional configuration examples.
 
      ;; Example configuration for Consult
      (use-package consult
-       ;; Replace bindings. Lazily loaded due by `use-package'.
+       ;; Replace bindings. Lazily loaded by `use-package'.
        :bind (;; C-c bindings in `mode-specific-map'
               ("C-c M-x" . consult-mode-command)
               ("C-c h" . consult-history)
@@ -897,15 +913,12 @@ additional configuration examples.
        ;; The :init configuration is always executed (Not lazy)
        :init
 
-       ;; Optionally configure the register formatting. This improves the register
-       ;; preview for `consult-register', `consult-register-load',
-       ;; `consult-register-store' and the Emacs built-ins.
-       (setq register-preview-delay 0.5
-             register-preview-function #'consult-register-format)
-
-       ;; Optionally tweak the register preview window.
-       ;; This adds thin lines, sorting and hides the mode line of the window.
+       ;; Tweak the register preview for `consult-register-load',
+       ;; `consult-register-store' and the built-in commands.  This improves the
+       ;; register formatting, adds thin separator lines, register sorting and hides
+       ;; the window mode line.
        (advice-add #'register-preview :override #'consult-register-window)
+       (setq register-preview-delay 0.5)
 
        ;; Use Consult to select xref locations with preview
        (setq xref-show-xrefs-function #'consult-xref
@@ -924,7 +937,7 @@ additional configuration examples.
        ;; :preview-key on a per-command basis using the `consult-customize' macro.
        (consult-customize
         consult-theme :preview-key '(:debounce 0.2 any)
-        consult-ripgrep consult-git-grep consult-grep
+        consult-ripgrep consult-git-grep consult-grep consult-man
         consult-bookmark consult-recent-file consult-xref
         consult--source-bookmark consult--source-file-register
         consult--source-recent-file consult--source-project-recent-file
@@ -937,25 +950,11 @@ additional configuration examples.
 
        ;; Optionally make narrowing help available in the minibuffer.
        ;; You may want to use `embark-prefix-help-command' or which-key instead.
-       ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
-
-       ;; By default `consult-project-function' uses `project-root' from project.el.
-       ;; Optionally configure a different project root function.
-       ;;;; 1. project.el (the default)
-       ;; (setq consult-project-function #'consult--default-project--function)
-       ;;;; 2. vc.el (vc-root-dir)
-       ;; (setq consult-project-function (lambda (_) (vc-root-dir)))
-       ;;;; 3. locate-dominating-file
-       ;; (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
-       ;;;; 4. projectile.el (projectile-project-root)
-       ;; (autoload 'projectile-project-root "projectile")
-       ;; (setq consult-project-function (lambda (_) (projectile-project-root)))
-       ;;;; 5. No project support
-       ;; (setq consult-project-function nil)
+       ;; (keymap-set consult-narrow-map (concat consult-narrow-key " ?") #'consult-narrow-help)
      )
 
 
-File: docuDTmBE.info,  Node: Custom variables,  Next: Fine-tuning,  Prev: Use-package example,  Up: Configuration
+File: doc7WCabF.info,  Node: Custom variables,  Next: Project support,  Prev: Use-package example,  Up: Configuration
 
 3.2 Custom variables
 ====================
@@ -975,6 +974,7 @@ consult-async-min-input            Minimum numbers of input characters
 consult-async-refresh-delay        Refresh delay for asynchronous commands
 consult-async-split-style          Splitting style used for async commands
 consult-async-split-styles-alist   Available splitting styles used for async commands
+consult-async-indicator            Async indicator characters
 consult-bookmark-narrow            Narrowing configuration for ‘consult-bookmark’
 consult-buffer-filter              Filter for ‘consult-buffer’
 consult-buffer-sources             List of virtual buffer sources
@@ -996,7 +996,8 @@ consult-mode-histories             Mode-specific history variables
 consult-narrow-key                 Narrowing prefix key during completion
 consult-point-placement            Placement of the point when jumping to matches
 consult-preview-key                Keys which triggers preview
-consult-preview-allowed-hooks      List of ‘find-file’ hooks to enable during preview
+consult-preview-allowed-hooks      List of hooks to allow during preview
+consult-preview-excluded-buffers   Predicate to exclude buffers from preview
 consult-preview-excluded-files     Regexps matched against file names during preview
 consult-preview-max-count          Maximum number of files to keep open during preview
 consult-preview-partial-size       Files larger than this size are previewed partially
@@ -1008,12 +1009,38 @@ consult-register-prefix            Prefix string for register keys during comple
 consult-ripgrep-args               Command line arguments for ripgrep
 consult-themes                     List of themes to be presented for selection
 consult-widen-key                  Widening key during completion
-consult-yank-rotate                Rotate kill ring
 
 
-File: docuDTmBE.info,  Node: Fine-tuning,  Prev: Custom variables,  Up: Configuration
+File: doc7WCabF.info,  Node: Project support,  Next: Fine-tuning,  Prev: Custom variables,  Up: Configuration
 
-3.3 Fine-tuning of individual commands
+3.3 Project support
+===================
+
+Multiple Consult search commands like ‘consult-grep’ try to discover the
+current project and search in the project top level directory by
+default, if a project is found.  Otherwise they fall back to the
+‘default-directory’.  By default, Consult uses the Emacs built-in
+project discovery support (‘project-current’ and ‘project-root’).  It is
+possible to configure alternative methods via the customization variable
+‘consult-project-function’.
+
+     ;; Optionally configure a different project root function.
+     ;; 1. project.el (the default)
+     (setq consult-project-function #'consult--default-project--function)
+     ;; 2. vc.el (vc-root-dir)
+     (setq consult-project-function (lambda (_) (vc-root-dir)))
+     ;; 3. locate-dominating-file
+     (setq consult-project-function (lambda (_) (locate-dominating-file "." ".git")))
+     ;; 4. projectile.el (projectile-project-root)
+     (autoload 'projectile-project-root "projectile")
+     (setq consult-project-function (lambda (_) (projectile-project-root)))
+     ;; 5. Disable project support
+     (setq consult-project-function nil)
+
+
+File: doc7WCabF.info,  Node: Fine-tuning,  Prev: Project support,  Up: Configuration
+
+3.4 Fine-tuning of individual commands
 ======================================
 
 *NOTE:* Consult supports fine-grained customization of individual
@@ -1033,6 +1060,7 @@ replaced or renamed in future versions of the package.
    • ‘:preview-key’ set the preview key, default is
      ‘consult-preview-key’
    • ‘:initial’ set the initial input
+   • ‘:initial-narrow’ set the initial narrow key
    • ‘:default’ set the default value
    • ‘:history’ set the history variable symbol
    • ‘:add-history’ add items to the future history, for example symbol
@@ -1080,7 +1108,7 @@ by the following techniques:
   5. Write or propose a patch.
 
 
-File: docuDTmBE.info,  Node: Recommended packages,  Next: Bug reports,  Prev: Configuration,  Up: Top
+File: doc7WCabF.info,  Node: Recommended packages,  Next: Bug reports,  Prev: Configuration,  Up: Top
 
 4 Recommended packages
 **********************
@@ -1105,7 +1133,7 @@ model fits best for you.
 
    • The builtin completion UI, which pops up the ‘*Completions*’
      buffer.
-   • The builtin ‘icomplete-vertical-mode’ in Emacs 28 or newer.
+   • The builtin ‘icomplete-vertical-mode’.
    • mct by Protesilaos Stavrou (https://git.sr.ht/~protesilaos/mct):
      Minibuffer and Completions in Tandem, which builds on the default
      completion UI.
@@ -1125,7 +1153,7 @@ Consult wiki.  These packages integrate Consult with special programs or
 with other packages in the wider Emacs ecosystem.
 
 
-File: docuDTmBE.info,  Node: Bug reports,  Next: Contributions,  Prev: Recommended packages,  Up: Top
+File: doc7WCabF.info,  Node: Bug reports,  Next: Hacking,  Prev: Recommended packages,  Up: Top
 
 5 Bug reports
 *************
@@ -1148,12 +1176,12 @@ please carry out the following steps:
   5. Ensure that the ‘completion-styles’ variable is properly
      configured.  Try to set ‘completion-styles’ to a list including
      ‘substring’ or ‘orderless’.
-  6. Try to reproduce the issue by starting a bare bone Emacs instance
-     with ‘emacs -Q’ on the command line.  Execute the following minimal
-     code snippets in the scratch buffer.  This way we can exclude side
-     effects due to configuration settings.  If other packages are
-     relevant to reproduce the issue, include them in the minimal
-     configuration snippet.
+  6. Try to reproduce the issue with the newest stable Emacs version.
+     Start a bare bone Emacs instance with ‘emacs -Q’ on the command
+     line.  Execute the following minimal code snippets in the scratch
+     buffer.  This way we can exclude side effects due to configuration
+     settings.  If other packages are relevant to reproduce the issue,
+     include them in the minimal configuration snippet.
 
    Minimal setup with Vertico for ‘emacs -Q’:
      (package-initialize)
@@ -1190,9 +1218,105 @@ lexical binding
 Consult often relies on lambdas and lexical closures.
 
 
-File: docuDTmBE.info,  Node: Contributions,  Next: Acknowledgments,  Prev: Bug reports,  Up: Top
+File: doc7WCabF.info,  Node: Hacking,  Next: Contributions,  Prev: Bug reports,  Up: Top
 
-6 Contributions
+6 Hacking
+*********
+
+* Menu:
+
+* Creating asynchronous completion commands::
+* Live preview::
+
+
+File: doc7WCabF.info,  Node: Creating asynchronous completion commands,  Next: Live preview,  Up: Hacking
+
+6.1 Creating asynchronous completion commands
+=============================================
+
+If you have a completion source that’s both dynamic and expensive to
+generate, ‘completing-read’ may not be the best choice.  Instead,
+‘consult--read’ serves as a thin wrapper around ‘completing-read’ that
+provides this functionality.  For example, consider the following slow
+script that splits its input on space:
+
+     #!/usr/bin/env bash
+     # simulate work
+     sleep .1
+     # generate completion candidates
+     printf "%s\n" "$*" | tr " " "\n" | sort
+
+   Let’s assume this script is callable as ‘testibus hello world’.  To
+have Consult use it for completion, use ‘consult--process-collection’:
+
+     (consult--read
+      (consult--process-collection
+       (lambda (input) (list "testibus" (string-trim input))))
+      :prompt "run testibus: ")
+
+   If the completion candidates are generated by Lisp instead, use
+‘consult--dynamic-collection’:
+
+     (consult--read
+      (consult--dynamic-collection
+       (lambda (input)
+         (sleep-for 0.1) ;; Simulate work
+         (split-string input nil t)))
+      :prompt "run testibus: ")
+
+   ‘consult--dynamic-collection’ can take a function with a callback
+such that the completion UI can update for long running computations.
+
+     (consult--read
+      (consult--dynamic-collection
+       (lambda (input callback)
+         (dotimes (i 3)
+           (sleep-for 0.1) ;; Simulate work
+           (funcall callback (mapcar (lambda (s) (format "%s%s" s i))
+                                     (split-string input nil t))))))
+      :prompt "run testibus: ")
+
+   The asynchronous completion collections ‘consult--dynamic-collection’
+and ‘consult--process-collection’ can be used for ‘consult--multi’
+sources.  Specify them as ‘:async’ field of the source plist.
+
+
+File: doc7WCabF.info,  Node: Live preview,  Prev: Creating asynchronous completion commands,  Up: Hacking
+
+6.2 Live preview
+================
+
+Implementing live preview requires the definition of a state or preview
+function as defined by ‘consult--with-preview’.  The preview function
+receives the candidate and some action to perform (e.g., ‘'preview’).
+In its simplest form supporting live preview, it looks something like
+this:
+
+     (defun testibus--preview (action cand)
+       (pcase action
+         ('preview
+          (with-current-buffer-window " *testibus*" 'action nil
+            (erase-buffer)
+            (insert (format "input: %s\n" cand))))))
+
+   See the docstring of ‘consult--with-preview’ for the lifecycle of the
+action argument.  Once defined, we can use this preview function in
+‘consult--read’:
+
+     (consult--read
+      (consult--dynamic-collection
+       (lambda (input callback)
+         (dotimes (i 3)
+           (sleep-for 0.1) ;; Simulate work
+           (funcall callback (mapcar (lambda (s) (format "%s%s" s i))
+                                     (split-string input nil t))))))
+      :prompt "run testibus: "
+      :state #'testibus--preview)
+
+
+File: doc7WCabF.info,  Node: Contributions,  Next: Acknowledgments,  Prev: Hacking,  Up: Top
+
+7 Contributions
 ***************
 
 Consult is a community effort, please participate in the discussions.
@@ -1202,7 +1326,7 @@ contributions first.  Since this package is part of GNU ELPA
 copyright assignment to the FSF.
 
    If you have a proposal, take a look at the Consult issue tracker
-(https://github.com/consult/issues) and the Consult wishlist
+(https://github.com/minad/consult/issues) and the Consult wishlist
 (https://github.com/minad/consult/issues/6).  There have been many prior
 feature discussions.  Please search through the issue tracker, maybe
 your issue or feature request has already been discussed.  You can
@@ -1210,9 +1334,9 @@ contribute to the Consult wiki (https://github.com/minad/consult/wiki),
 in case you want to share small configuration or command snippets.
 
 
-File: docuDTmBE.info,  Node: Acknowledgments,  Next: Indices,  Prev: Contributions,  Up: Top
+File: doc7WCabF.info,  Node: Acknowledgments,  Next: Indices,  Prev: Contributions,  Up: Top
 
-7 Acknowledgments
+8 Acknowledgments
 *****************
 
 This package took inspiration from Counsel
@@ -1261,9 +1385,9 @@ Manuel Uberti (https://github.com/manuel-uberti/), Stefan Monnier
 (https://protesilaos.com).
 
 
-File: docuDTmBE.info,  Node: Indices,  Prev: Acknowledgments,  Up: Top
+File: doc7WCabF.info,  Node: Indices,  Prev: Acknowledgments,  Up: Top
 
-8 Indices
+9 Indices
 *********
 
 * Menu:
@@ -1272,9 +1396,9 @@ File: docuDTmBE.info,  Node: Indices,  Prev: Acknowledgments,  Up: Top
 * Concept index::                List of all Consult-specific concepts
 
 
-File: docuDTmBE.info,  Node: Function index,  Next: Concept index,  Up: Indices
+File: doc7WCabF.info,  Node: Function index,  Next: Concept index,  Up: Indices
 
-8.1 Function index
+9.1 Function index
 ==================
 
  [index ]
@@ -1300,6 +1424,7 @@ File: docuDTmBE.info,  Node: Function index,  Next: Concept index,  Up: Indices
 * consult-imenu:                         Navigation.            (line 6)
 * consult-imenu-multi:                   Navigation.            (line 6)
 * consult-info:                          Help.                  (line 6)
+* consult-info-define:                   Help.                  (line 6)
 * consult-isearch-history:               Histories.             (line 6)
 * consult-keep-lines:                    Search.                (line 6)
 * consult-kmacro:                        Editing.               (line 6)
@@ -1330,9 +1455,9 @@ File: docuDTmBE.info,  Node: Function index,  Next: Concept index,  Up: Indices
 * consult-yank-replace:                  Editing.               (line 6)
 
 
-File: docuDTmBE.info,  Node: Concept index,  Prev: Function index,  Up: Indices
+File: doc7WCabF.info,  Node: Concept index,  Prev: Function index,  Up: Indices
 
-8.2 Concept index
+9.2 Concept index
 =================
 
  [index ]
@@ -1364,36 +1489,40 @@ File: docuDTmBE.info,  Node: Concept index,  Prev: Function index,  Up: Indices
 
 Tag Table:
 Node: Top221
-Node: Available commands5040
-Node: Virtual Buffers6617
-Node: Editing8405
-Node: Register9261
-Node: Navigation10973
-Node: Search12216
-Node: Grep and Find14127
-Node: Compilation16276
-Node: Histories16952
-Node: Modes18172
-Node: Org Mode18652
-Node: Help19268
-Node: Miscellaneous20379
-Node: Special features22459
-Node: Live previews23588
-Node: Narrowing and grouping27468
-Node: Asynchronous search29471
-Node: Multiple sources32553
-Node: Embark integration37028
-Node: Configuration39223
-Node: Use-package example40294
-Node: Custom variables47529
-Node: Fine-tuning51316
-Node: Recommended packages54220
-Node: Bug reports56323
-Node: Contributions59378
-Node: Acknowledgments60288
-Node: Indices62838
-Node: Function index63076
-Node: Concept index66724
+Node: Available commands5204
+Node: Virtual Buffers6781
+Node: Editing8655
+Node: Register9511
+Node: Navigation11218
+Node: Search12461
+Node: Grep and Find14372
+Node: Compilation16648
+Node: Histories17324
+Node: Modes18544
+Node: Org Mode19024
+Node: Help19640
+Node: Miscellaneous20844
+Node: Special features22588
+Node: Live previews23717
+Node: Narrowing and grouping27858
+Node: Asynchronous search29861
+Node: Multiple sources32943
+Node: Embark integration37845
+Node: Configuration40040
+Node: Use-package example41190
+Node: Custom variables47683
+Node: Project support51544
+Node: Fine-tuning52809
+Node: Recommended packages55768
+Node: Bug reports57850
+Node: Hacking60931
+Node: Creating asynchronous completion commands61117
+Node: Live preview63082
+Node: Contributions64279
+Node: Acknowledgments65191
+Node: Indices67741
+Node: Function index67979
+Node: Concept index71700
 
 End Tag Table
 
