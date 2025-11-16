@@ -1,0 +1,307 @@
+#+title: Change log of show-font
+#+author: Protesilaos Stavrou
+#+email: info@protesilaos.com
+#+language: en
+#+options: ':t toc:nil author:t email:t num:t
+#+startup: content
+
+This document contains the release notes for each tagged commit on the
+project's main git repository: <https://github.com/protesilaos/show-font>.
+
+The newest release is at the top.  For further details, please consult
+the manual: <https://protesilaos.com/emacs/show-font>.
+
+#+toc: headlines 1 insert TOC here, with one headline level
+
+* Version 1.0.0 on 2025-09-07
+:PROPERTIES:
+:CUSTOM_ID: h:ca591fac-9b02-4dd3-980e-23be5df17ef7
+:END:
+
+This major update introduces support for fonts that cover more than
+the Latin script. It also expands the available functionality with
+quality-of-life refinements.
+
+** Support for Arabic, Chinese, Greek, Japanese, Korean, Russian
+:PROPERTIES:
+:CUSTOM_ID: h:f0cb2b7f-d81a-4b47-bdde-d029afcee70a
+:END:
+
+The commands ~show-font-tabulated~ (alias ~show-font-list~) and
+~show-font-select-preview~ can now generate a preview for fonts that
+are optimised to display the aforementioned languages. Each language
+provides its own user option to control the sample text it displays.
+The naming pattern ~show-font-LANGUAGE-sample~.
+
+Of those, I only know Greek and thus wrote the value of
+~show-font-greek-sample~, namely: ="Πρωτεσίλαος ο φιλόσοφος του οποίου
+τα έργα βρίθουν αστειισμών"=. For the others I used translation
+software to get the equivalent of ="Protesilaos does not read
+LANGUAGE"=. Please let me know if there are any mistakes in this
+regard. I was thinking of writing something a bit more funny, but was
+concerned the joke may not translate well.
+
+** Checking for language support among known families
+
+While I have written functions that test if a given font can display a
+range of characters, this approach is computationally intensive if we
+need to check for many code points across multiple fonts.
+
+The alternative is to maintain lists of known font families that are
+meant to work with the given language. Those generally support Latin
+as well, but the idea is to let them shine in the language they are
+meant to be used for.
+
+For example, here is how we know that a font family is meant to
+display Arabic script:
+
+#+begin_src emacs-lisp
+(defconst show-font-arabic-families
+  '("AlArabiya" "AlBattar" "AlHor" "AlManzomah" "AlYarmook"
+    "Dimnah" "Hani" "Haramain" "Hor" "Kayrawan" "Khalid" "Mashq"
+    "Nagham" "Noto Kufi Arabic" "Noto Naskh Arabic" "Noto Sans Arabic"
+    "Rehan" "Sharjah" "Sindbad")
+  "List of families that specialise in Arabic.
+Also see `show-font-greek-families' for the rationale of grouping font
+families in distinct variables.")
+#+end_src
+
+The list is not exhaustive and I am always eager to expand it. Just
+let me know.
+
+I learnt about these font families through trial and error by (i)
+installing them on my Debian system and (ii) searching online for
+common samples of them. Do =apt search -n fonts-= to check the
+relevant packages.
+
+** Support for music notation, mathematics, and other symbols
+:PROPERTIES:
+:CUSTOM_ID: h:53718517-d46e-40b4-8368-9b5c36ddfa18
+:END:
+
+As with the natural languages, there are some fonts that specialise in
+displaying symbols. For example, MathJax has a bunch of fonts for
+showing those fancy formulas in the processed output of LaTeX
+documents. Again, there is a ~defconst~ for each of those types of
+font listing the known families. The concomitant user options are:
+
+- ~show-font-mathematics-sample~
+- ~show-font-music-sample~
+- ~show-font-symbols-sample~
+
+** Problematic fonts are hidden from the list view
+:PROPERTIES:
+:CUSTOM_ID: h:ebab3870-25d1-453b-a2d9-c3600dd8d21e
+:END:
+
+The ~show-font-hidden-families~ lists the fonts that are not known to
+cause problems. They do not render properly any of the supported
+samples and I am not sure even when they claim to support a certain
+set of characters (e.g. ~show-font--displays-latin-p~ returns
+non-~nil~). If you think there is a mistake here, please contact me.
+
+** Show a full preview from the list view
+:PROPERTIES:
+:CUSTOM_ID: h:731fb370-ad5c-48cb-a8b4-0ca3a818c2ba
+:END:
+
+While in the buffer produced by ~show-font-tabulated~ (alias
+~show-font-list~), type =RET= to get a complete preview of the font
+family of the current line. This is the same as invoking the command
+~show-font-select-preview~ and then selecting the given family.
+
+The command called by that key binding is ~show-font-tabulated-select-preview~.
+A hint of it is also shown in the tabulated list header.
+
+** Quickly copy the name of the font in the list view
+:PROPERTIES:
+:CUSTOM_ID: h:cbcc97bc-aedb-45e1-b8ea-fccec600db58
+:END:
+
+As above, type =w= in the tabulated view to copy the name of the font
+family to the ~kill-ring~. The command is ~show-font-tabulated-copy-name~
+and there is also a hint of it in the tabulated list header.
+
+* Version 0.4.0 on 2025-08-26
+:PROPERTIES:
+:CUSTOM_ID: h:d62cc2cd-16ec-4b6f-9d2d-37061c7fe177
+:END:
+
+This version expands the capabilities of the font preview mechanism to
+handle emoji and icon fonts (i.e. those with codepoints in the Unicode
+Private Use Area).
+
+Both the ~show-font-select-preview~ and ~show-font-tabulated~ commands
+now handle these types of font.
+
+Previews for emoji or icon fonts are done using the string of
+characters set to the variable ~show-font-emoji-sample~ or
+~show-font-icon-sample~. These symbols are user options.
+
+* Version 0.3.0 on 2025-04-26
+:PROPERTIES:
+:CUSTOM_ID: h:e57d0359-f7dc-4abd-802e-27b854d633bf
+:END:
+
+This version adds some refinements to an already stable package.
+
+** The command ~show-font-list~ is an alias for ~show-font-tabulated~
+:PROPERTIES:
+:CUSTOM_ID: h:c1d85f05-af1f-4019-8f4a-fe2df95949d7
+:END:
+
+The ~show-font-list~ command was using a custom buffer that listed
+font families and their corresponding short preview. It did not have
+any other feature.
+
+I made changes under the hood to rely on the built-in
+~tabulated-list-mode~ which is a standard and gives us the option to
+sort by column. The ~show-font-list~ is thus an alias for the new
+command ~show-font-tabulated~. Right now the sorting facility only
+applies to reversing the name-based order. In the future we may have
+more columns, such as if we describe a font as "Latin", "Greek", etc.
+
+** The tabulated list marks fonts that cannot be previewed
+:PROPERTIES:
+:CUSTOM_ID: h:ae432193-64c3-4504-84e6-56690f8110cc
+:END:
+
+In the past, the font listing would include families that could not
+display the ~show-font-pangram~ or, indeed, any Latin character. Those
+would be rendered as empty boxes.
+
+I have now introduced a simple heuristic to test that the given family
+supports Latin characters. If it does not, then (i) it is highlighted
+with a different colour, (ii) it shows "No preview" instead of the
+pangram, and (iii) it displays the information in the Emacs default
+font family. Some families do not play nice with this approach though,
+as they pass the test but still do not display any Latin characters.
+This happens with icon fonts.
+
+The long-term goal is to support different scripts and show the
+appropriate text for each of them.
+
+** The ~show-font-sentences-sample~ adds more to the ~show-font-select-preview~
+:PROPERTIES:
+:CUSTOM_ID: h:1f1194e8-79bf-4a03-9797-28daacbd9a7f
+:END:
+
+The new user option ~show-font-sentences-sample~ is a list of strings
+that can be used to exhibit common patterns and letter combinations.
+The default value is carefully designed to show if a font family is
+stylistically consistent, such as with how it draws =i=, =l=, =t=, or
+=h=, =n=, =m=, and so on. Plus, it teaches you some obscure words like
+"scholarch", "antipode", and "heteroclite": use them with your Greek
+friends---and if they do not know those words, then they must buy you
+a café frappé!
+
+** Miscellaneous
+:PROPERTIES:
+:CUSTOM_ID: h:6b2ccce6-5ff7-463f-8c70-0c5ca70aa35c
+:END:
+
+- The face ~show-font-title-small~ is an obsolete alias for the more
+  appropriately named ~show-font-title-in-listing~.
+- The prompt used by the command ~show-font-select-preview~ now
+  correctly uses its own history and default value.
+- The default value of the user option ~show-font-character-sample~
+  includes some more patterns to better test the adequacy of a font
+  family. This sample is displayed in the buffer produced by the
+  command ~show-font-select-preview~.
+
+* Version 0.2.0 on 2025-01-25
+:PROPERTIES:
+:CUSTOM_ID: h:087ddf5c-6a65-4fb0-a1cb-0a64b3d181c2
+:END:
+
+This version includes quality-of-life refinements.
+
+** Show fonts in a tabulated listing
+:PROPERTIES:
+:CUSTOM_ID: h:ba63cb79-e469-45d6-bb29-2b1368f5f442
+:END:
+
+The command ~show-font-tabulated~ will produce a listing of font
+families and their preview that uses the built-in tabulated interface.
+This interface is the same as the one used by =M-x list-packages=.
+Users can sort fonts by font family name (move point to the given
+column and type =S= or call =M-x tabulated-list-sort=).
+
+When ~show-font-tabulated~ is called with a prefix argument (=C-u= by
+default), it prompts for a string or regular expression. It then shows
+only the font families matching the given input.
+
+** Limit font listing using a regular expression
+:PROPERTIES:
+:CUSTOM_ID: h:53df16bf-294c-46b7-81ba-fbb0120e37fb
+:END:
+
+The command ~show-font-list~ which we already had in version 0.1.0 is
+like the ~show-font-tabulated~, but uses a bespoke buffer where each
+font and its preview are shown one after the other. Now it also
+accepts an optional prefix argument to limit the list to only the
+matching fonts.
+
+** The ~show-font-display-buffer-action-alist~ controls buffer placement
+:PROPERTIES:
+:CUSTOM_ID: h:f844a1ff-80e4-4a66-9766-c19338f6ab60
+:END:
+
+The preview buffers we use will now conform with the value of the new
+user option ~show-font-display-buffer-action-alist~. This is a more
+advanced feature, due to how ~display-buffer~ works, so you may want
+to check the video I did recently about controlling where buffers are
+displayed: <https://protesilaos.com/codelog/2024-02-08-emacs-window-rules-display-buffer-alist/>.
+
+The default value of ~show-font-display-buffer-action-alist~ will show
+the buffer at the bottom of the frame.
+
+* Version 0.1.0 on 2024-09-10
+:PROPERTIES:
+:CUSTOM_ID: h:9fe44f53-9b84-49b9-bc35-780b25b72092
+:END:
+
+With ~show-font~ the user has the means to preview fonts inside of
+Emacs. This can be done in the following ways:
+
+- The command ~show-font-select-preview~ uses the minibuffer to
+  prompt with completion for a font on the system. The selected
+  font is then displayed in a bespoke buffer.
+
+- The command ~show-font-list~ produces a list with all the fonts
+  available on the system. Each font on display is styled with its
+  given character set.
+
+- The ~show-font-mode~ is a major mode that gets activated when the
+  user visits a =.ttf= or =.otf= file. It will preview with the font,
+  if it is installed on the system, else it will provide a helpful
+  message and an option to install the font (NOTE 2024-09-10: this
+  only works on Linux).
+
+The previews include a pangram, which is controlled by the user option
+~show-font-pangram~. The default value is a playful take on the more
+familiar "the quick brown fox jumps over the lazy dog" phrase. Users
+can select among a few presets, or define their own custom string.
+
+The function ~show-font-pangram-p~ is available for those who wish to
+experiment with writing their own pangrams (it is not actually limited
+to the Latin alphabet).
+
+The user option ~show-font-character-sample~ provides a more complete
+character set that is intended for use in full buffer previews (i.e.
+not in the list of fonts). It can be set to any string. The default
+value is a set of alphanumeric characters that are commonly used in
+programming: a good monospaced font should render all of them
+unambiguously.
+
+Finally, the following faces control the appearance of various
+elements.
+
+- ~show-font-small~
+- ~show-font-regular~
+- ~show-font-medium~
+- ~show-font-large~
+- ~show-font-title~
+- ~show-font-title-small~
+- ~show-font-misc~
+- ~show-font-button~

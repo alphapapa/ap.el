@@ -1,0 +1,2 @@
+;; Generated package description from show-font.el  -*- mode: lisp-data; no-byte-compile: t -*-
+(define-package "show-font" "1.0.0" "Show font features in a buffer" '((emacs "29.1")) :commit "07c46e3b96d726a674ae3d42e27eb4193208efd9" :authors '(("Protesilaos Stavrou" . "info@protesilaos.com")) :maintainer '("Protesilaos Stavrou" . "info@protesilaos.com") :keywords '("convenience" "writing" "font") :url "https://github.com/protesilaos/show-font")
