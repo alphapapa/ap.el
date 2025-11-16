@@ -1,7 +1,7 @@
-This is docq1ahZR.info, produced by makeinfo version 6.8 from
+This is docdzgy5X.info, produced by makeinfo version 6.8 from
 compat.texi.
 
-Copyright © 2022-2024 Free Software Foundation, Inc.
+Copyright © 2022-2025 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -20,16 +20,16 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: docq1ahZR.info,  Node: Top,  Next: Introduction,  Up: (dir)
+File: docdzgy5X.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
 "Compat" Manual
 ***************
 
 This manual documents the usage of the "Compat" Emacs lisp library, the
 forward-compatibility library for Emacs Lisp, corresponding to version
-29.1.4.5.
+30.1.0.0.
 
-   Copyright © 2022-2024 Free Software Foundation, Inc.
+   Copyright © 2022-2025 Free Software Foundation, Inc.
 
      Permission is granted to copy, distribute and/or modify this
      document under the terms of the GNU Free Documentation License,
@@ -65,10 +65,11 @@ Support
 * Emacs 27.1::                   Compatibility support for Emacs 27.1
 * Emacs 28.1::                   Compatibility support for Emacs 28.1
 * Emacs 29.1::                   Compatibility support for Emacs 29.1
+* Emacs 30.1::                   Compatibility support for Emacs 30.1
 
 
 
-File: docq1ahZR.info,  Node: Introduction,  Next: Support,  Prev: Top,  Up: Top
+File: docdzgy5X.info,  Node: Introduction,  Next: Support,  Prev: Top,  Up: Top
 
 1 Introduction
 **************
@@ -80,7 +81,7 @@ File: docq1ahZR.info,  Node: Introduction,  Next: Support,  Prev: Top,  Up: Top
 * Limitations::
 
 
-File: docq1ahZR.info,  Node: Overview,  Next: Usage,  Up: Introduction
+File: docdzgy5X.info,  Node: Overview,  Next: Usage,  Up: Introduction
 
 1.1 Overview
 ============
@@ -95,7 +96,7 @@ audience are package developers that are interested in using newer
 developments, without having to break compatibility.
 
 
-File: docq1ahZR.info,  Node: Usage,  Next: Limitations,  Prev: Overview,  Up: Introduction
+File: docdzgy5X.info,  Node: Usage,  Next: Limitations,  Prev: Overview,  Up: Introduction
 
 1.2 Usage
 =========
@@ -105,7 +106,7 @@ as a dependency in the header.  The version of the Compat library
 mirrors the version of Emacs releases.  The current version of Compat
 corresponds to the current Emacs release.
 
-     ;; Package-Requires: ((emacs "24.4") (compat "29.1.4.5"))
+     ;; Package-Requires: ((emacs "24.4") (compat "30.1.0.0"))
 
    There is no need to depend on ‘emacs 24.4’ specifically.  One can
 choose any newer version, if features not provided by Compat necessitate
@@ -125,7 +126,7 @@ such that no negative performance impact is incurred.
 newer.  Packages which are part of Emacs itself and want to take
 advantage of Compat, can also use ‘(require 'compat)’.  The advantage of
 the inclusion of a minimal Compat in Emacs is that Compat will not be
-installed if you require a version newer or equal than the current Emacs
+installed if you require a version older or equal than the current Emacs
 version.  For example, if a package depending on Emacs 25.1 and Compat
 29.1 is installed on Emacs 30.1, Compat will not be pulled in as
 dependency, since Emacs 30.1 already provides the required
@@ -184,7 +185,7 @@ provide a development mailing list
 <~pkal/compat-devel@lists.sr.ht>).
 
 
-File: docq1ahZR.info,  Node: Limitations,  Prev: Usage,  Up: Introduction
+File: docdzgy5X.info,  Node: Limitations,  Prev: Usage,  Up: Introduction
 
 1.3 Limitations
 ===============
@@ -276,7 +277,7 @@ belong here, a *note report: Development. would be much appreciated.
      on the level of Compat.
 
 
-File: docq1ahZR.info,  Node: Support,  Next: Development,  Prev: Introduction,  Up: Top
+File: docdzgy5X.info,  Node: Support,  Next: Development,  Prev: Introduction,  Up: Top
 
 2 Support
 *********
@@ -291,9 +292,10 @@ manage to provide for each Emacs version.
 * Emacs 27.1::                   Compatibility support for Emacs 27.1
 * Emacs 28.1::                   Compatibility support for Emacs 28.1
 * Emacs 29.1::                   Compatibility support for Emacs 29.1
+* Emacs 30.1::                   Compatibility support for Emacs 30.1
 
 
-File: docq1ahZR.info,  Node: Emacs 25.1,  Next: Emacs 26.1,  Up: Support
+File: docdzgy5X.info,  Node: Emacs 25.1,  Next: Emacs 26.1,  Up: Support
 
 2.1 Emacs 25.1
 ==============
@@ -475,28 +477,7 @@ functions are made available by Compat on Emacs versions older than
 
      *Note (elisp)Bool-Vectors::.
 
-2.1.2 Extended Definitions
---------------------------
-
-These functions must be called explicitly via ‘compat-call’, since their
-calling convention or behavior was extended in Emacs 25.1:
-
- -- Function: compat-call sort sequence predicate
-     This function sorts SEQUENCE stably.  Note that this function
-     doesn’t work for all sequences; it may be used only for lists and
-     vectors.  If SEQUENCE is a list, it is modified destructively.
-     This functions returns the sorted SEQUENCE and compares elements
-     using PREDICATE.  A stable sort is one in which elements with equal
-     sort keys maintain their relative order before and after the sort.
-     Stability is important when successive sorts are used to order
-     elements according to different criteria.
-
-     *Note (elisp)Sequence Functions::.
-
-     The compatibility version adds support for vectors to be sorted,
-     not just lists.
-
-2.1.3 Missing Definitions
+2.1.2 Missing Definitions
 -------------------------
 
 Compat does not provide support for the following Lisp features
@@ -524,7 +505,7 @@ implemented in 25.1:
    • The ‘thunk’ library.
 
 
-File: docq1ahZR.info,  Node: Emacs 26.1,  Next: Emacs 27.1,  Prev: Emacs 25.1,  Up: Support
+File: docdzgy5X.info,  Node: Emacs 26.1,  Next: Emacs 27.1,  Prev: Emacs 25.1,  Up: Support
 
 2.2 Emacs 26.1
 ==============
@@ -935,7 +916,7 @@ implemented in 26.1:
    • The ‘svg’ library (published separately as a :core package).
 
 
-File: docq1ahZR.info,  Node: Emacs 27.1,  Next: Emacs 28.1,  Prev: Emacs 26.1,  Up: Support
+File: docdzgy5X.info,  Node: Emacs 27.1,  Next: Emacs 28.1,  Prev: Emacs 26.1,  Up: Support
 
 2.3 Emacs 27.1
 ==============
@@ -1404,7 +1385,7 @@ implemented in 27.1:
    • The ‘image-converter’ library.
 
 
-File: docq1ahZR.info,  Node: Emacs 28.1,  Next: Emacs 29.1,  Prev: Emacs 27.1,  Up: Support
+File: docdzgy5X.info,  Node: Emacs 28.1,  Next: Emacs 29.1,  Prev: Emacs 27.1,  Up: Support
 
 2.4 Emacs 28.1
 ==============
@@ -1505,28 +1486,32 @@ available by Compat.
 
      *Note (elisp)Insertion::.
 
- -- Function: replace-string-in-region regexp replacement &optional
-          start end
-     This function replaces all the occurrences of REGEXP with
-     REPLACEMENT in the region of buffer text between START and END;
-     START defaults to position of point, and END defaults to the last
-     accessible position of the buffer.  The search for REGEXP is
-     case-sensitive, and REPLACEMENT is inserted without changing its
-     letter-case.  The REPLACEMENT string can use the same special
-     elements starting with ‘\’ as ‘replace-match’ does.  The function
-     returns the number of replaced occurrences, or ‘nil’ if REGEXP is
-     not found.  The function preserves the position of point.
-
-          (replace-regexp-in-region "foo[ \t]+bar" "foobar")
-     *Note (elisp)Search and Replace::.
-
- -- Function: replace-regexp-in-string string replacement &optional
+ -- Function: replace-string-in-region string replacement &optional
           start end
      This function works similarly to ‘replace-regexp-in-region’, but
      searches for, and replaces, literal STRINGs instead of regular
      expressions.
 
-     *Note (elisp)Search and Replace::.
+ -- Function: replace-regexp-in-string regexp rep string &optional
+          fixedcase literal subexp start
+     This function copies STRING and searches it for matches for REGEXP,
+     and replaces them with REP.  It returns the modified copy.  If
+     START is non-‘nil’, the search for matches starts at that index in
+     STRING, and the returned value does not include the first START
+     characters of STRING.  To get the whole transformed string,
+     concatenate the first START characters of STRING with the return
+     value.
+
+     This function uses ‘replace-match’ to do the replacement, and it
+     passes the optional arguments FIXEDCASE, LITERAL and SUBEXP along
+     to ‘replace-match’.
+
+     Instead of a string, REP can be a function.  In that case,
+     ‘replace-regexp-in-string’ calls REP for each match, passing the
+     text of the match as its sole argument.  It collects the value REP
+     returns and passes that to ‘replace-match’ as the replacement
+     string.  The match data at this point are the result of matching
+     REGEXP against a substring of STRING.
 
  -- Function: buffer-local-boundp variable buffer
      This returns non-‘nil’ if there’s either a buffer-local binding of
@@ -1774,11 +1759,6 @@ available by Compat.
      native compilation is not available, this function behaves
      identically to ‘subrp’.
 
- -- Function: subr-native-elisp-p object
-     Return ‘t’ if OBJECT if the object is native compiled lisp.  If
-     native compilation is not available, this function always returns
-     ‘nil’.
-
  -- Function: native-comp-available-p
      This function returns non-‘nil’ if the running Emacs process has
      the native-compilation support compiled into it.  On systems that
@@ -1865,7 +1845,7 @@ implemented in 28.1:
    • The ‘multisession’ library.
 
 
-File: docq1ahZR.info,  Node: Emacs 29.1,  Prev: Emacs 28.1,  Up: Support
+File: docdzgy5X.info,  Node: Emacs 29.1,  Next: Emacs 30.1,  Prev: Emacs 28.1,  Up: Support
 
 2.5 Emacs 29.1
 ==============
@@ -1880,6 +1860,12 @@ will be the need for changes, so use these functions with care.
 
    The ‘defcustom’ type ‘key’ introduced in Emacs 29.1 is made available
 by Compat.
+
+ -- Variable: untrusted-content
+     Non-nil means that current buffer originated from an untrusted
+     source.  Email clients and some other modes may set this non-nil to
+     mark the buffer contents as untrusted.  This variable might be
+     subject to change without notice.
 
  -- Variable: lisp-directory
      This variable holds a string naming the directory which holds
@@ -2699,7 +2685,320 @@ implemented in 29.1:
    • Support for symbols with position information.
 
 
-File: docq1ahZR.info,  Node: Development,  Next: Function Index,  Prev: Support,  Up: Top
+File: docdzgy5X.info,  Node: Emacs 30.1,  Prev: Emacs 29.1,  Up: Support
+
+2.6 Emacs 30.1
+==============
+
+2.6.1 Added Definitions
+-----------------------
+
+The following functions and macros are implemented in Emacs 30.1.  These
+functions are made available by Compat on Emacs versions older than
+30.1.  Note that due to upstream changes, it might happen that there
+will be the need for changes, so use these functions with care.
+
+ -- Variable: trusted-content
+     List of files and directories whose content we trust.  Be extra
+     careful here since trusting means that Emacs might execute the code
+     contained within those files and directories without an explicit
+     request by the user.  One important case when this might happen is
+     when ‘flymake-mode’ is enabled (for example, when it is added to a
+     mode hook).  Each element of the list should be a string: - If it
+     ends in "/", it is considered as a directory name and means that
+     Emacs should trust all the files whose name has this directory as a
+     prefix.  - else it is considered as a file name.  Use abbreviated
+     file names.  For example, an entry "~/mycode" means that Emacs will
+     trust all the files in your directory "mycode".  This variable can
+     also be set to ‘:all’, in which case Emacs will trust all files,
+     which opens a gaping security hole.
+
+ -- Function: trusted-content-p
+     Return non-nil if we trust the contents of the current buffer.
+     Here, "trust" means that we are willing to run code found inside of
+     it.  See also ‘trusted-content’.
+
+ -- Function: color-oklab-to-xyz l a b
+     Convert the OkLab color represented by L A B to CIE XYZ. Oklab is a
+     perceptual color space created by Björn Ottosson
+     <https://bottosson.github.io/posts/oklab/>.  It has the property
+     that changes in the hue and saturation of a color can be made while
+     maintaining the same perceived lightness.
+
+ -- Function: color-xyz-to-oklab x y z
+     Convert the CIE XYZ color represented by X Y Z to Oklab.
+
+ -- Function: color-oklab-to-srgb l a b
+     Convert the Oklab color represented by L A B to sRGB.
+
+ -- Function: color-srgb-to-oklab r g b
+     Convert the sRGB color R G B to Oklab.
+
+ -- Function: char-to-name char
+     This function returns the Unicode name of CHAR.  It returns ‘nil’
+     if CHAR is not a character or has no Unicode name.
+
+ -- Function: obarray-clear obarray
+     This function removes all symbols from OBARRAY.
+
+ -- Function: closurep object
+     This function returns ‘t’ if OBJECT is a closure, which is a
+     particular kind of function object.  Currently closures are used
+     for all byte-code functions and all interpreted functions.
+
+ -- Function: interpreted-function-p object
+     This function returns ‘t’ if OBJECT is an interpreted function.
+
+ -- Function: primitive-function-p object
+     Return ‘t’ if OBJECT is a built-in primitive function.  This
+     excludes special forms, since they are not functions.
+
+ -- Function: value< a b
+     This function returns non-‘nil’ if A comes before B in the standard
+     sorting order; this means that it returns ‘nil’ when B comes before
+     A, or if they are equal or unordered.
+
+     The arguments A and B must have the same type.  Specifically:
+
+        • Numbers are compared using ‘<’.
+        • Strings are compared using ‘string<’ and symbols are compared
+          by comparing their names as strings.
+        • Conses, lists, vectors and records are compared
+          lexicographically.  This means that the two sequences are
+          compared element-wise from left to right until they differ,
+          and the result is then that of ‘value<’ on the first pair of
+          differing elements.  If one sequence runs out of elements
+          before the other, the shorter sequence comes before the
+          longer.
+        • Markers are compared first by buffer, then by position.
+        • Buffers and processes are compared by comparing their names as
+          strings.  Dead buffers (whose name is ‘nil’) will compare
+          before any live buffer.
+        • Other types are considered unordered and the return value will
+          be ‘nil’.
+
+     Examples:
+          (value< -4 3.5) ⇒ t
+          (value< "dog" "cat") ⇒ nil
+          (value< 'yip 'yip) ⇒ nil
+          (value< '(3 2) '(3 2 0)) ⇒ t
+          (value< [3 2 "a"] [3 2 "b"]) ⇒ t
+
+     Note that ‘nil’ is treated as either a symbol or an empty list,
+     depending on what it is compared against:
+
+          (value< nil '(0)) ⇒ t
+          (value< 'nib nil) ⇒ t
+
+     There is no limit to the length of sequences (lists, vectors and so
+     on) that can be compared, but ‘value<’ may fail with an error if
+     used to compare circular or deeply nested data structures.
+
+ -- Function: drop n list
+     This function is an alias for ‘nthcdr’.  It returns the Nth CDR of
+     LIST.  In other words, it skips past the first N links of LIST and
+     returns what follows.
+
+ -- Function: get-truename-buffer filename
+     Return the buffer with ‘file-truename’ equal to FILENAME (a
+     string).  If there is no such live buffer, return nil.  See also
+     ‘find-buffer-visiting’.
+
+ -- Function: find-buffer variable value
+     Return the buffer with buffer-local VARIABLE equal to VALUE.  If
+     there is no such live buffer, return nil.
+
+ -- Function: require-with-check feature &optional filename noerror
+     This function works like ‘require’, except if FEATURE is already
+     loaded (i.e. is already a member of the list in ‘features’, see
+     below).  If FEATURE is already loaded, this function checks if
+     FEATURE was provided by a file different from FILENAME, and if so,
+     it by default signals an error.  If the value of the optional
+     argument NOERROR is ‘reload’, the function doesn’t signal an error,
+     but instead forcibly reloads FILENAME; if NOERROR is some other
+     non-‘nil’ value, the function emits a warning about FEATURE being
+     already provided by another file.
+
+ -- Function: merge-ordered-lists lists &optional error-function
+     Merge LISTS in a consistent order.  LISTS is a list of lists of
+     elements.  Merge them into a single list containing the same
+     elements (removing duplicates), obeying their relative positions in
+     each list.  The order of the (sub)lists determines the final order
+     in those cases where the order within the sublists does not impose
+     a unique choice.  Equality of elements is tested with ‘eql’.
+
+     If a consistent order does not exist, call ERROR-FUNCTION with a
+     remaining list of lists that we do not know how to merge.  It
+     should return the candidate to use to continue the merge, which has
+     to be the head of one of the lists.  By default we choose the head
+     of the first list.
+
+ -- Variable: completion-lazy-hilit
+     If non-nil, request lazy highlighting of completion candidates.
+
+     Lisp programs (a.k.a.  "front ends") that present completion
+     candidates may opt to bind this variable to a non-nil value when
+     calling functions (such as ‘completion-all-completions’) which
+     produce completion candidates.  This tells the underlying
+     completion styles that they do not need to fontify (i.e.,
+     propertize with the ‘face’ property) completion candidates in a way
+     that highlights the matching parts.  Then it is the front end which
+     presents the candidates that becomes responsible for this
+     fontification.  The front end does that by calling the function
+     ‘completion-lazy-hilit’ on each completion candidate that is to be
+     displayed to the user.
+
+     Note that only some completion styles take advantage of this
+     variable for optimization purposes.  Other styles will ignore the
+     hint and fontify eagerly as usual.  It is still safe for a front
+     end to call ‘completion-lazy-hilit’ in these situations.
+
+     To author a completion style that takes advantage of this variable,
+     see ‘completion-lazy-hilit-fn’ and
+     ‘completion-pcm--hilit-commonality’.
+
+ -- Variable: completion-lazy-hilit-fn
+     Fontification function set by lazy-highlighting completions styles.
+     When a given style wants to enable support for
+     ‘completion-lazy-hilit’ (which see), that style should set this
+     variable to a function of one argument.  It will be called with
+     each completion candidate, a string, to be displayed to the user,
+     and should destructively propertize these strings with the ‘face’
+     property.
+
+ -- Function: completion-lazy-hilit str
+     Return a copy of completion candidate STR that is face-propertized.
+     See documentation of the variable ‘completion-lazy-hilit’ for more
+     details.
+
+ -- Macro: static-if condition then-form else-forms...
+     Test CONDITION at macro-expansion time.  If its value is non-‘nil’,
+     expand the macro to THEN-FORM, otherwise expand it to ELSE-FORMS
+     enclosed in a ‘progn’.  ELSE-FORMS may be empty.
+
+     Here is an example of its use from CC Mode, which prevents a
+     ‘defadvice’ form being compiled in newer versions of Emacs:
+          (static-if (boundp 'comment-line-break-function)
+              (progn)
+            (defvar c-inside-line-break-advice nil)
+            (defadvice indent-new-comment-line (around c-line-break-advice
+                                                       activate preactivate)
+              "Call `c-indent-new-comment-line' if in CC Mode."
+              (if (or c-inside-line-break-advice
+                      (not c-buffer-is-cc-mode))
+                  ad-do-it
+                (let ((c-inside-line-break-advice t))
+                  (c-indent-new-comment-line (ad-get-arg 0))))))
+
+2.6.2 Extended Definitions
+--------------------------
+
+These functions must be called explicitly via ‘compat-call’, since their
+calling convention or behavior was extended in Emacs 30.1:
+
+ -- Function: compat-call sort sequence &rest keyword-args
+     This function sorts SEQUENCE, which must be a list or vector, and
+     returns a sorted sequence of the same type.  The sort is stable,
+     which means that elements with equal sort keys maintain their
+     relative order.  It takes the following optional keyword arguments:
+
+     ‘:key KEYFUNC’
+          Use KEYFUNC, a function that takes a single element from
+          SEQUENCE and returns its key value, to generate the keys used
+          in comparison.  If this argument is absent or if KEYFUNC is
+          ‘nil’ then ‘identity’ is assumed; that is, the elements
+          themselves are used as sorting keys.
+
+     ‘:lessp PREDICATE’
+          Use PREDICATE to order the keys.  PREDICATE is a function that
+          takes two sort keys as arguments and returns non-‘nil’ if the
+          first should come before the second.  If this argument is
+          absent or PREDICATE is ‘nil’, then ‘value<’ is used, which is
+          applicable to many different Lisp types and generally sorts in
+          ascending order.
+
+          For consistency, any predicate must obey the following rules:
+             • It must be “antisymmetric”: it cannot both order A before
+               B and B before A.
+             • It must be “transitive”: if it orders A before B and B
+               before C, then it must also order A before C.
+
+     ‘:reverse FLAG’
+          If FLAG is non-‘nil’, the sorting order is reversed.  With the
+          default ‘:lessp’ predicate this means sorting in descending
+          order.
+
+     ‘:in-place FLAG’
+          If FLAG is non-‘nil’, then SEQUENCE is sorted in-place
+          (destructively) and returned.  If ‘nil’, or if this argument
+          is not given, a sorted copy of the input is returned and
+          SEQUENCE itself remains unmodified.  In-place sorting is
+          slightly faster, but the original sequence is lost.
+
+     If the default behaviour is not suitable for your needs, it is
+     usually easier and faster to supply a new ‘:key’ function than a
+     different ‘:lessp’ predicate.  For example, consider sorting these
+     strings:
+
+          (setq numbers '("one" "two" "three" "four" "five" "six"))
+          (sort numbers)
+               ⇒ ("five" "four" "one" "six" "three" "two")
+
+     You can sort the strings by length instead by supplying a different
+     key function:
+
+          (sort numbers :key #'length)
+               ⇒ ("one" "two" "six" "four" "five" "three")
+
+     Note how strings of the same length keep their original order,
+     thanks to the sorting stability.  Now suppose you want to sort by
+     length, but use the string contents to break ties.  The easiest way
+     is to specify a key function that transforms an element to a value
+     that is sorted this way.  Since ‘value<’ orders compound objects
+     (conses, lists, vectors and records) lexicographically, you could
+     do:
+
+          (sort numbers :key (lambda (x) (cons (length x) x)))
+               ⇒ ("one" "six" "two" "five" "four" "three")
+
+     because ‘(3 . "six")’ is ordered before ‘(3 . "two")’ and so on.
+
+     For compatibility with previous versions of Emacs, the ‘sort’
+     function can also be called using the fixed two-argument form:
+
+          (sort SEQUENCE PREDICATE)
+
+     where PREDICATE is the ‘:lessp’ argument.  When using this form,
+     sorting is always done in-place.
+
+ -- Function: compat-call completion-metadata-get metadata prop
+     Get property PROP from completion METADATA.  If the metadata
+     specifies a completion category, the variables
+     ‘completion-category-overrides’ and ‘completion-category-defaults’
+     take precedence for category-specific overrides.  If the completion
+     metadata does not specify the property, the
+     ‘completion-extra-properties’ plist is consulted.  Note that the
+     keys of the ‘completion-extra-properties’ plist are keyword
+     symbols, not plain symbols.
+
+ -- Function: compat-call copy-tree tree &optional vectors-and-records
+     This function returns a copy of the tree TREE.  If TREE is a cons
+     cell, this makes a new cons cell with the same CAR and CDR, then
+     recursively copies the CAR and CDR in the same way.
+
+     Normally, when TREE is anything other than a cons cell, ‘copy-tree’
+     simply returns TREE.  However, if VECTORS-AND-RECORDS is non-‘nil’,
+     it copies vectors and records too (and operates recursively on
+     their elements).  The TREE argument must not contain cycles.
+
+2.6.3 Missing Definitions
+-------------------------
+
+Compat does not provide support for the following Lisp features
+implemented in 30.1:
+
+
+File: docdzgy5X.info,  Node: Development,  Next: Function Index,  Prev: Support,  Up: Top
 
 3 Development
 *************
@@ -2736,7 +3035,7 @@ version has been reasonably stabilized, e.g., around the time when the
 Emacs version branch is created in the Emacs repository on Savannah.
 
 
-File: docq1ahZR.info,  Node: Function Index,  Next: Variable Index,  Prev: Development,  Up: Top
+File: docdzgy5X.info,  Node: Function Index,  Next: Variable Index,  Prev: Development,  Up: Top
 
 Appendix A Function Index
 *************************
@@ -2744,54 +3043,63 @@ Appendix A Function Index
  [index ]
 * Menu:
 
-* add-display-text-property:             Emacs 29.1.          (line 190)
+* add-display-text-property:             Emacs 29.1.          (line 196)
 * alist-get:                             Emacs 25.1.          (line  82)
 * always:                                Emacs 28.1.          (line  83)
 * and-let*:                              Emacs 26.1.          (line 158)
 * assoc-delete-all:                      Emacs 26.1.          (line  13)
 * bignump:                               Emacs 27.1.          (line  55)
 * bool-vector:                           Emacs 25.1.          (line 177)
-* bounds-of-thing-at-mouse:              Emacs 28.1.          (line 292)
+* bounds-of-thing-at-mouse:              Emacs 28.1.          (line 296)
 * buffer-hash:                           Emacs 26.1.          (line  80)
-* buffer-local-boundp:                   Emacs 28.1.          (line 125)
-* buffer-local-restore-state:            Emacs 29.1.          (line  50)
-* buffer-local-set-state:                Emacs 29.1.          (line  50)
-* buffer-match-p:                        Emacs 29.1.          (line 258)
-* buttonize:                             Emacs 29.1.          (line 156)
-* buttonize-region:                      Emacs 29.1.          (line 165)
-* char-uppercase-p:                      Emacs 29.1.          (line 127)
-* cl-constantly:                         Emacs 29.1.          (line 635)
-* cl-once-only:                          Emacs 29.1.          (line 658)
-* cl-with-gensyms:                       Emacs 29.1.          (line 639)
-* color-dark-p:                          Emacs 28.1.          (line 322)
-* color-values-from-color-spec:          Emacs 28.1.          (line 328)
+* buffer-local-boundp:                   Emacs 28.1.          (line 129)
+* buffer-local-restore-state:            Emacs 29.1.          (line  56)
+* buffer-local-set-state:                Emacs 29.1.          (line  56)
+* buffer-match-p:                        Emacs 29.1.          (line 264)
+* buttonize:                             Emacs 29.1.          (line 162)
+* buttonize-region:                      Emacs 29.1.          (line 171)
+* char-to-name:                          Emacs 30.1.          (line  50)
+* char-uppercase-p:                      Emacs 29.1.          (line 133)
+* cl-constantly:                         Emacs 29.1.          (line 641)
+* cl-once-only:                          Emacs 29.1.          (line 664)
+* cl-with-gensyms:                       Emacs 29.1.          (line 645)
+* closurep:                              Emacs 30.1.          (line  57)
+* color-dark-p:                          Emacs 28.1.          (line 326)
+* color-oklab-to-srgb:                   Emacs 30.1.          (line  44)
+* color-oklab-to-xyz:                    Emacs 30.1.          (line  34)
+* color-srgb-to-oklab:                   Emacs 30.1.          (line  47)
+* color-values-from-color-spec:          Emacs 28.1.          (line 332)
+* color-xyz-to-oklab:                    Emacs 30.1.          (line  41)
 * compat-call:                           Usage.               (line  50)
 * compat-call alist-get:                 Emacs 26.1.          (line 344)
 * compat-call assoc:                     Emacs 26.1.          (line 316)
 * compat-call assoc-delete-all:          Emacs 27.1.          (line 417)
-* compat-call count-windows:             Emacs 28.1.          (line 412)
-* compat-call define-key:                Emacs 29.1.          (line 755)
+* compat-call completion-metadata-get:   Emacs 30.1.          (line 287)
+* compat-call copy-tree:                 Emacs 30.1.          (line 297)
+* compat-call count-windows:             Emacs 28.1.          (line 411)
+* compat-call define-key:                Emacs 29.1.          (line 761)
 * compat-call executable-find:           Emacs 27.1.          (line 429)
 * compat-call file-size-human-readable:  Emacs 27.1.          (line 397)
 * compat-call line-number-at-pos:        Emacs 26.1.          (line 330)
 * compat-call lookup-key:                Emacs 27.1.          (line 356)
 * compat-call make-temp-file:            Emacs 26.1.          (line 278)
-* compat-call plist-get:                 Emacs 29.1.          (line 771)
-* compat-call plist-member:              Emacs 29.1.          (line 795)
-* compat-call plist-put:                 Emacs 29.1.          (line 783)
+* compat-call plist-get:                 Emacs 29.1.          (line 777)
+* compat-call plist-member:              Emacs 29.1.          (line 801)
+* compat-call plist-put:                 Emacs 29.1.          (line 789)
 * compat-call recenter:                  Emacs 27.1.          (line 346)
 * compat-call regexp-opt:                Emacs 27.1.          (line 385)
-* compat-call set-transient-map:         Emacs 29.1.          (line 710)
+* compat-call set-transient-map:         Emacs 29.1.          (line 716)
 * compat-call setq-local:                Emacs 27.1.          (line 370)
-* compat-call sort:                      Emacs 25.1.          (line 189)
-* compat-call string-lines:              Emacs 29.1.          (line 746)
+* compat-call sort:                      Emacs 30.1.          (line 212)
+* compat-call string-lines:              Emacs 29.1.          (line 752)
 * compat-call string-trim:               Emacs 26.1.          (line 375)
 * compat-call string-trim-left:          Emacs 26.1.          (line 359)
 * compat-call string-trim-right:         Emacs 26.1.          (line 367)
-* compat-call string-width:              Emacs 28.1.          (line 395)
+* compat-call string-width:              Emacs 28.1.          (line 394)
 * compat-function:                       Usage.               (line  58)
-* compiled-function-p:                   Emacs 29.1.          (line 226)
-* count-sentences:                       Emacs 29.1.          (line  25)
+* compiled-function-p:                   Emacs 29.1.          (line 232)
+* completion-lazy-hilit:                 Emacs 30.1.          (line 182)
+* count-sentences:                       Emacs 29.1.          (line  31)
 * cXXXr:                                 Emacs 26.1.          (line  66)
 * cXXXXr:                                Emacs 26.1.          (line  67)
 * date-days-in-month:                    Emacs 27.1.          (line 213)
@@ -2801,27 +3109,28 @@ Appendix A Function Index
 * decoded-time-hour:                     Emacs 27.1.          (line 170)
 * decoded-time-minute:                   Emacs 27.1.          (line 165)
 * decoded-time-month:                    Emacs 27.1.          (line 180)
-* decoded-time-period:                   Emacs 28.1.          (line 359)
+* decoded-time-period:                   Emacs 28.1.          (line 363)
 * decoded-time-second:                   Emacs 27.1.          (line 160)
 * decoded-time-weekday:                  Emacs 27.1.          (line 190)
 * decoded-time-year:                     Emacs 27.1.          (line 185)
 * decoded-time-zone:                     Emacs 27.1.          (line 200)
-* define-keymap:                         Emacs 29.1.          (line 518)
-* defvar-keymap:                         Emacs 29.1.          (line 586)
-* delete-line:                           Emacs 29.1.          (line  59)
-* directory-abbrev-apply:                Emacs 29.1.          (line 382)
-* directory-abbrev-make-regexp:          Emacs 29.1.          (line 379)
-* directory-empty-p:                     Emacs 28.1.          (line 243)
+* define-keymap:                         Emacs 29.1.          (line 524)
+* defvar-keymap:                         Emacs 29.1.          (line 592)
+* delete-line:                           Emacs 29.1.          (line  65)
+* directory-abbrev-apply:                Emacs 29.1.          (line 388)
+* directory-abbrev-make-regexp:          Emacs 29.1.          (line 385)
+* directory-empty-p:                     Emacs 28.1.          (line 247)
 * directory-name-p:                      Emacs 25.1.          (line  56)
-* dlet:                                  Emacs 28.1.          (line 143)
+* dlet:                                  Emacs 28.1.          (line 147)
 * dolist-with-progress-reporter:         Emacs 27.1.          (line 119)
-* ensure-list:                           Emacs 28.1.          (line 158)
-* ert-with-temp-directory:               Emacs 29.1.          (line 623)
-* ert-with-temp-file:                    Emacs 29.1.          (line 617)
+* drop:                                  Emacs 30.1.          (line 110)
+* ensure-list:                           Emacs 28.1.          (line 162)
+* ert-with-temp-directory:               Emacs 29.1.          (line 629)
+* ert-with-temp-file:                    Emacs 29.1.          (line 623)
 * file-attribute-access-time:            Emacs 26.1.          (line 223)
 * file-attribute-collect:                Emacs 26.1.          (line 260)
 * file-attribute-device-number:          Emacs 26.1.          (line 255)
-* file-attribute-file-identifier:        Emacs 29.1.          (line 339)
+* file-attribute-file-identifier:        Emacs 29.1.          (line 345)
 * file-attribute-group-id:               Emacs 26.1.          (line 218)
 * file-attribute-inode-number:           Emacs 26.1.          (line 250)
 * file-attribute-link-number:            Emacs 26.1.          (line 208)
@@ -2831,71 +3140,77 @@ Appendix A Function Index
 * file-attribute-status-change-time:     Emacs 26.1.          (line 234)
 * file-attribute-type:                   Emacs 26.1.          (line 203)
 * file-attribute-user-id:                Emacs 26.1.          (line 213)
-* file-backup-file-names:                Emacs 28.1.          (line 347)
-* file-has-changed-p:                    Emacs 29.1.          (line 364)
+* file-backup-file-names:                Emacs 28.1.          (line 351)
+* file-has-changed-p:                    Emacs 29.1.          (line 370)
 * file-local-name:                       Emacs 26.1.          (line 167)
-* file-modes-number-to-symbolic:         Emacs 28.1.          (line 341)
+* file-modes-number-to-symbolic:         Emacs 28.1.          (line 345)
 * file-name-concat:                      Emacs 28.1.          (line  53)
-* file-name-parent-directory:            Emacs 29.1.          (line 355)
+* file-name-parent-directory:            Emacs 29.1.          (line 361)
 * file-name-quote:                       Emacs 26.1.          (line 102)
 * file-name-quoted-p:                    Emacs 26.1.          (line  95)
-* file-name-split:                       Emacs 29.1.          (line 345)
+* file-name-split:                       Emacs 29.1.          (line 351)
 * file-name-unquote:                     Emacs 26.1.          (line  90)
-* file-name-with-extension:              Emacs 28.1.          (line 225)
+* file-name-with-extension:              Emacs 28.1.          (line 229)
 * file-size-human-readable-iec:          Emacs 27.1.          (line 251)
+* find-buffer:                           Emacs 30.1.          (line 120)
 * fixnump:                               Emacs 27.1.          (line  60)
 * flatten-tree:                          Emacs 27.1.          (line 132)
 * format-message:                        Emacs 25.1.          (line  44)
-* format-prompt:                         Emacs 28.1.          (line 254)
-* funcall-with-delayed-message:          Emacs 29.1.          (line 148)
-* function-alias-p:                      Emacs 29.1.          (line 233)
+* format-prompt:                         Emacs 28.1.          (line 258)
+* funcall-with-delayed-message:          Emacs 29.1.          (line 154)
+* function-alias-p:                      Emacs 29.1.          (line 239)
 * garbage-collect-maybe:                 Emacs 28.1.          (line  68)
 * gensym:                                Emacs 26.1.          (line  70)
-* get-display-property:                  Emacs 29.1.          (line 173)
-* get-scratch-buffer-create:             Emacs 29.1.          (line  38)
+* get-display-property:                  Emacs 29.1.          (line 179)
+* get-scratch-buffer-create:             Emacs 29.1.          (line  44)
+* get-truename-buffer:                   Emacs 30.1.          (line 115)
 * hash-table-empty:                      Emacs 25.1.          (line 119)
 * if-let:                                Emacs 25.1.          (line  96)
 * if-let*:                               Emacs 26.1.          (line 149)
 * ignore-errors:                         Emacs 27.1.          (line 106)
 * image-property:                        Emacs 26.1.          (line 198)
 * insert-into-buffer:                    Emacs 28.1.          (line  92)
-* key-parse:                             Emacs 29.1.          (line 419)
-* key-valid-p:                           Emacs 29.1.          (line 387)
-* keymap-global-lookup:                  Emacs 29.1.          (line 514)
-* keymap-global-set:                     Emacs 29.1.          (line 448)
-* keymap-global-unset:                   Emacs 29.1.          (line 468)
-* keymap-local-lookup:                   Emacs 29.1.          (line 510)
-* keymap-local-set:                      Emacs 29.1.          (line 458)
-* keymap-local-unset:                    Emacs 29.1.          (line 483)
-* keymap-lookup:                         Emacs 29.1.          (line 497)
-* keymap-set:                            Emacs 29.1.          (line 424)
-* keymap-substitute:                     Emacs 29.1.          (line 489)
+* interpreted-function-p:                Emacs 30.1.          (line  62)
+* key-parse:                             Emacs 29.1.          (line 425)
+* key-valid-p:                           Emacs 29.1.          (line 393)
+* keymap-global-lookup:                  Emacs 29.1.          (line 520)
+* keymap-global-set:                     Emacs 29.1.          (line 454)
+* keymap-global-unset:                   Emacs 29.1.          (line 474)
+* keymap-local-lookup:                   Emacs 29.1.          (line 516)
+* keymap-local-set:                      Emacs 29.1.          (line 464)
+* keymap-local-unset:                    Emacs 29.1.          (line 489)
+* keymap-lookup:                         Emacs 29.1.          (line 503)
+* keymap-set:                            Emacs 29.1.          (line 430)
+* keymap-substitute:                     Emacs 29.1.          (line 495)
 * length<:                               Emacs 28.1.          (line  45)
 * length=:                               Emacs 28.1.          (line  42)
 * length>:                               Emacs 28.1.          (line  50)
-* list-of-strings-p:                     Emacs 29.1.          (line  62)
-* macroexp-file-name:                    Emacs 28.1.          (line 301)
+* list-of-strings-p:                     Emacs 29.1.          (line  68)
+* macroexp-file-name:                    Emacs 28.1.          (line 305)
 * macroexp-parse:                        Emacs 25.1.          (line 174)
 * macroexp-quote:                        Emacs 25.1.          (line 171)
-* macroexp-warn-and-return:              Emacs 28.1.          (line 305)
+* macroexp-warn-and-return:              Emacs 28.1.          (line 309)
 * macroexpand-1:                         Emacs 25.1.          (line 164)
 * major-mode-restore:                    Emacs 27.1.          (line  22)
 * major-mode-suspend:                    Emacs 27.1.          (line  13)
 * make-empty-file:                       Emacs 27.1.          (line 254)
-* make-lock-file-name:                   Emacs 28.1.          (line 355)
+* make-lock-file-name:                   Emacs 28.1.          (line 359)
 * make-nearby-temp-file:                 Emacs 26.1.          (line 120)
 * make-separator-line:                   Emacs 28.1.          (line  88)
 * mapcan:                                Emacs 26.1.          (line  53)
-* mark-thing-at-mouse:                   Emacs 28.1.          (line 298)
-* match-buffers:                         Emacs 29.1.          (line 292)
+* mark-thing-at-mouse:                   Emacs 28.1.          (line 302)
+* match-buffers:                         Emacs 29.1.          (line 298)
+* merge-ordered-lists:                   Emacs 30.1.          (line 135)
 * minibuffer-history-value:              Emacs 27.1.          (line  32)
-* named-let:                             Emacs 28.1.          (line 207)
-* native-comp-available-p:               Emacs 28.1.          (line 376)
-* ntake:                                 Emacs 29.1.          (line 213)
+* named-let:                             Emacs 28.1.          (line 211)
+* native-comp-available-p:               Emacs 28.1.          (line 375)
+* ntake:                                 Emacs 29.1.          (line 219)
+* obarray-clear:                         Emacs 30.1.          (line  54)
 * package-get-version:                   Emacs 27.1.          (line 205)
-* plistp:                                Emacs 29.1.          (line  65)
-* pos-bol:                               Emacs 29.1.          (line 119)
-* pos-eol:                               Emacs 29.1.          (line 123)
+* plistp:                                Emacs 29.1.          (line  71)
+* pos-bol:                               Emacs 29.1.          (line 125)
+* pos-eol:                               Emacs 29.1.          (line 129)
+* primitive-function-p:                  Emacs 30.1.          (line  65)
 * process-lines-handling-status:         Emacs 28.1.          (line  20)
 * process-lines-ignore-status:           Emacs 28.1.          (line  16)
 * proper-list-p:                         Emacs 27.1.          (line  76)
@@ -2903,59 +3218,62 @@ Appendix A Function Index
 * read-answer:                           Emacs 26.1.          (line  17)
 * read-char-from-minibuffer:             Emacs 27.1.          (line  44)
 * read-multiple-choice:                  Emacs 26.1.          (line 185)
-* readablep:                             Emacs 29.1.          (line  28)
+* readablep:                             Emacs 29.1.          (line  34)
 * region-bounds:                         Emacs 25.1.          (line  28)
 * region-noncontiguous-p:                Emacs 25.1.          (line  34)
-* replace-regexp-in-string:              Emacs 28.1.          (line 117)
+* replace-regexp-in-string:              Emacs 28.1.          (line 108)
 * replace-string-in-region:              Emacs 28.1.          (line 102)
+* require-with-check:                    Emacs 30.1.          (line 124)
 * ring-resize:                           Emacs 27.1.          (line  28)
 * save-mark-and-excursion:               Emacs 25.1.          (line  39)
-* string-chop-newline:                   Emacs 28.1.          (line 202)
-* string-clean-whitespace:               Emacs 28.1.          (line 171)
+* static-if:                             Emacs 30.1.          (line 187)
+* string-chop-newline:                   Emacs 28.1.          (line 206)
+* string-clean-whitespace:               Emacs 28.1.          (line 175)
 * string-distance:                       Emacs 27.1.          (line  86)
-* string-equal-ignore-case:              Emacs 29.1.          (line 246)
-* string-fill:                           Emacs 28.1.          (line 178)
-* string-glyph-split:                    Emacs 29.1.          (line 301)
+* string-equal-ignore-case:              Emacs 29.1.          (line 252)
+* string-fill:                           Emacs 28.1.          (line 182)
+* string-glyph-split:                    Emacs 29.1.          (line 307)
 * string-greaterp:                       Emacs 25.1.          (line  64)
-* string-lines:                          Emacs 28.1.          (line 186)
-* string-pad:                            Emacs 28.1.          (line 193)
+* string-lines:                          Emacs 28.1.          (line 190)
+* string-pad:                            Emacs 28.1.          (line 197)
 * string-replace:                        Emacs 28.1.          (line  77)
 * string-search:                         Emacs 28.1.          (line  34)
-* string-split:                          Emacs 29.1.          (line 252)
-* subr-native-elisp-p:                   Emacs 28.1.          (line 371)
-* subr-primitive-p:                      Emacs 28.1.          (line 364)
-* substitute-quotes:                     Emacs 29.1.          (line  34)
-* take:                                  Emacs 29.1.          (line 199)
+* string-split:                          Emacs 29.1.          (line 258)
+* subr-primitive-p:                      Emacs 28.1.          (line 368)
+* substitute-quotes:                     Emacs 29.1.          (line  40)
+* take:                                  Emacs 29.1.          (line 205)
 * temporary-file-directory:              Emacs 26.1.          (line 137)
 * text-property-search-backward:         Emacs 27.1.          (line 332)
 * text-property-search-forward:          Emacs 27.1.          (line 260)
 * text-quoting-style:                    Emacs 28.1.          (line  28)
-* thing-at-mouse:                        Emacs 28.1.          (line 285)
+* thing-at-mouse:                        Emacs 28.1.          (line 289)
 * thread-first:                          Emacs 25.1.          (line 122)
 * thread-last:                           Emacs 25.1.          (line 143)
 * time-equal-p:                          Emacs 27.1.          (line 208)
-* use-region-beginning:                  Emacs 29.1.          (line  47)
-* use-region-end:                        Emacs 29.1.          (line  44)
-* use-region-noncontiguous-p:            Emacs 29.1.          (line  41)
+* trusted-content-p:                     Emacs 30.1.          (line  29)
+* use-region-beginning:                  Emacs 29.1.          (line  53)
+* use-region-end:                        Emacs 29.1.          (line  50)
+* use-region-noncontiguous-p:            Emacs 29.1.          (line  47)
+* value<:                                Emacs 30.1.          (line  69)
 * when-let:                              Emacs 25.1.          (line 114)
 * when-let*:                             Emacs 26.1.          (line 153)
-* while-let:                             Emacs 29.1.          (line 606)
-* window-configuration-equal-p:          Emacs 29.1.          (line 612)
-* with-buffer-unmodified-if-unchanged:   Emacs 29.1.          (line 324)
-* with-delayed-message:                  Emacs 29.1.          (line 131)
-* with-environment-variables:            Emacs 28.1.          (line 309)
-* with-existing-directory:               Emacs 28.1.          (line 132)
+* while-let:                             Emacs 29.1.          (line 612)
+* window-configuration-equal-p:          Emacs 29.1.          (line 618)
+* with-buffer-unmodified-if-unchanged:   Emacs 29.1.          (line 330)
+* with-delayed-message:                  Emacs 29.1.          (line 137)
+* with-environment-variables:            Emacs 28.1.          (line 313)
+* with-existing-directory:               Emacs 28.1.          (line 136)
 * with-file-modes:                       Emacs 25.1.          (line  71)
-* with-memoization:                      Emacs 29.1.          (line  68)
+* with-memoization:                      Emacs 29.1.          (line  74)
 * with-minibuffer-selected-window:       Emacs 27.1.          (line  38)
-* with-restriction:                      Emacs 29.1.          (line  73)
+* with-restriction:                      Emacs 29.1.          (line  79)
 * with-suppressed-warnings:              Emacs 27.1.          (line  65)
-* with-window-non-dedicated:             Emacs 28.1.          (line 384)
-* without-restriction:                   Emacs 29.1.          (line 107)
+* with-window-non-dedicated:             Emacs 28.1.          (line 383)
+* without-restriction:                   Emacs 29.1.          (line 113)
 * xor:                                   Emacs 27.1.          (line 142)
 
 
-File: docq1ahZR.info,  Node: Variable Index,  Prev: Function Index,  Up: Top
+File: docdzgy5X.info,  Node: Variable Index,  Prev: Function Index,  Up: Top
 
 Appendix B Variable Index
 *************************
@@ -2963,31 +3281,36 @@ Appendix B Variable Index
  [index ]
 * Menu:
 
+* completion-lazy-hilit:                 Emacs 30.1.          (line 149)
+* completion-lazy-hilit-fn:              Emacs 30.1.          (line 173)
 * exec-path:                             Emacs 27.1.          (line 228)
 * gensym-counter:                        Emacs 26.1.          (line  77)
-* lisp-directory:                        Emacs 29.1.          (line  17)
+* lisp-directory:                        Emacs 29.1.          (line  23)
 * mounted-file-systems:                  Emacs 26.1.          (line 133)
 * regexp-unmatchable:                    Emacs 27.1.          (line 152)
-* set-transient-map-timeout:             Emacs 29.1.          (line 736)
+* set-transient-map-timeout:             Emacs 29.1.          (line 742)
 * text-quoting-style:                    Emacs 25.1.          (line  13)
+* trusted-content:                       Emacs 30.1.          (line  14)
+* untrusted-content:                     Emacs 29.1.          (line  17)
 
 
 
 Tag Table:
 Node: Top829
-Node: Introduction2258
-Node: Overview2421
-Node: Usage2947
-Node: Limitations7326
-Node: Support12192
-Node: Emacs 25.112777
-Node: Emacs 26.122179
-Node: Emacs 27.139473
-Node: Emacs 28.159870
-Node: Emacs 29.179951
-Node: Development117330
-Node: Function Index119064
-Node: Variable Index134496
+Node: Introduction2328
+Node: Overview2491
+Node: Usage3017
+Node: Limitations7396
+Node: Support12262
+Node: Emacs 25.112917
+Node: Emacs 26.121405
+Node: Emacs 27.138699
+Node: Emacs 28.159096
+Node: Emacs 29.179232
+Node: Emacs 30.1116911
+Node: Development131723
+Node: Function Index133457
+Node: Variable Index150276
 
 End Tag Table
 

@@ -1,6 +1,6 @@
 ;;; compat-28.el --- Functionality added in Emacs 28.1 -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -396,7 +396,8 @@ not a list, return a one-element list containing OBJECT."
 
 ;;;; Defined in data.c
 
-(compat-defalias subr-native-elisp-p ignore) ;; <compat-tests:subr-native-elisp-p>
+;; Renamed in Emacs 30 to `native-comp-function-p'.
+(compat-defalias subr-native-elisp-p ignore :obsolete t) ;; <compat-tests:obsolete-subr-native-elisp-p>
 
 ;;;; Defined in subr-x.el
 
@@ -835,7 +836,7 @@ function will never return nil."
 ;;;; Defined in button.el
 
 ;; Obsolete Alias since 29
-(compat-defalias button-buttonize buttonize :obsolete t) ;; <compat-tests:button-buttonize>
+(compat-defalias button-buttonize buttonize :obsolete t) ;; <compat-tests:obsolete-button-buttonize>
 
 ;;;; Defined in wid-edit.el
 
